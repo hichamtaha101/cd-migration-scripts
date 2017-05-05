@@ -2,6 +2,7 @@
 
 include_once( dirname(__FILE__) . '/includes/wpdb.php' );
 
+
 class Chrome_Data_API {
 
 	private $account_login;
@@ -13,9 +14,7 @@ class Chrome_Data_API {
 
 	private $soap;
 
-	private $api_call_configurables;
-
-	public function __construct( $country_code ) {
+	function __construct( $country_code ) {
 
 		$this->number   = '308652';
 		$this->secret   = '8343ac07bb984bcb';
@@ -40,21 +39,23 @@ class Chrome_Data_API {
 
 	}
 
-	public function soap_call( $function, $args = array(), $all_years = false ) {
+	protected function soap_call( $function, $args = array(), $all_years = false ) {
 
 		$args['accountInfo'] = $this->account_info;
 
 		$soap_response = $this->soap->__soapCall( $function, array( $args ) );
 
 		if ( $soap_response->responseStatus->responseCode === 'Successful' ) {
+
 			return $soap_response;
+
 		}
 
 		return false;
 
 	}
 
-	public function soap_call_loop( $function, $args = array() ) {
+	protected function soap_call_loop( $function, $args = array() ) {
 
 		$args = $this->append_with_year_parameter( $args );
 
@@ -67,7 +68,7 @@ class Chrome_Data_API {
 				$parameters
 			);
 
-			array_push( $response, $api_call );
+			$response[] = $api_call;
 
 		}
 
@@ -113,14 +114,7 @@ class Chrome_Data_API {
 		foreach( $this->years as $year ) {
 
 			$year_parameter = array( 'modelYear' => $year );
-
-			array_push( 
-				$parameters,
-				array_merge( 
-					$year_parameter, 
-					$args 
-				)
-			);
+			$parameters[] = array_merge( $year_parameter, $args );
 
 		}
 
@@ -129,3 +123,60 @@ class Chrome_Data_API {
 	}
 
 }
+
+Class Convertus_API {
+
+}
+
+class Convertus_DB_Updater extends Chrome_Data_API {
+
+	private $db;
+
+	function __construct( $country_code ) {
+
+		parent::__construct( $country_code );
+		$this->db = new WPDB();
+
+		$this->update_divisions();
+
+	}
+
+	public function update_divisions() {
+
+		$response = $this->soap_call_loop( 'getDivisions' );
+
+		$divisions = $this->truncate_response_data( 
+			$response, 
+			array( 
+				'property' => 'division', 
+				'unique' => true 
+			) 
+		);
+
+		$returned_divisions = array();
+		foreach( $divisions as $index => $object ) {
+			$returned_divisions[] = array( 'name' => $object->_, 'logo' => $object->_ );
+		}
+
+	}
+
+	private function truncate_response_data( $data, $args ) {
+
+		$truncated_data = array_column( $data, $args['property'] );
+
+		if ( $args['unique'] ) {
+			$truncated_data = array_values( 
+				array_unique( 
+					call_user_func_array( 'array_merge', $truncated_data ), 
+					SORT_REGULAR 
+				) 
+			);
+		}
+
+		return $truncated_data;
+
+	}
+
+}
+
+new Convertus_DB_Updater( 'CA' );

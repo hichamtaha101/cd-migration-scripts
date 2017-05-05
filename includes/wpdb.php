@@ -10,13 +10,13 @@
 define('WP_DEBUG', true);
 
 /** The name of the database for WordPress */
-define('DB_NAME', 'krome_api');
+define('DB_NAME', 'convertus_api');
 
 /** MySQL database username */
 define('DB_USER', 'root');
 
 /** MySQL database password */
-define('DB_PASSWORD', 'hecknoi1');
+define('DB_PASSWORD', 'hecknoI1?');
 
 /** MySQL hostname */
 define('DB_HOST', 'localhost');
