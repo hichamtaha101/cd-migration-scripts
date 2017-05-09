@@ -36,7 +36,7 @@ class Chrome_Data_API {
 		);
 
 		$this->soap  = new SoapClient( $this->api_url );
-		$this->years = $this->get_years( 3 );
+		$this->years = $this->get_years( 2 );
 
 	}
 
@@ -166,8 +166,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		parent::__construct( $country_code );
 		$this->db = new WPDB();
 
-		$this->update_divisions();
-
 	}
 
 	public function get_divisions() {
@@ -234,7 +232,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		if ( $divisions ) {
 			$soap_response = array();
 			foreach( $divisions as $division ) {
-				$soap_response[] = $this->soap_call_loop( 'getModels', array( 'divisionId' => $division->division_id ) );
+				$soap_response[] = $this->soap_call_loop( 'getModels', array( 'divisionId' => $division->division_id, 'includeMediaGallery' => 'Multi-View' ) );
 			}
 		}
 
@@ -280,7 +278,43 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
+	private function update_models() {
+
+		$models = $this->get_models();
+
+		$query = 'INSERT models ( model_year, model_name, model_id, division_id ) VALUES ';
+		$sql_values = array();
+
+		foreach( $models as $model ) {
+			$sql_values[] = "({$model->year}, '{$model->name}', {$model->id}, {$model->division_id})";
+		}
+		$query .= implode( ',', $sql_values );
+
+		$this->db->query( 'TRUNCATE models' );
+		$this->db->query( $query );
+
+	}
+
+	public function get_model_details( $model_name ) {
+
+		$model = $this->db->get_row( "SELECT * FROM models WHERE model_name = '{$model_name}' ORDER BY model_year DESC" );
+
+		if ( is_object( $model ) ) {
+			$soap_response = $this->soap_call( 
+				'describeVehicle', 
+				array( 'modelYear' => $model->model_year, 
+					'modelName' => $model->model_name, 
+					'makeName' => 'Honda', 
+					'includeMediaGallery' => 'Multi-View' 
+				) 
+			);
+		}
+
+		return $soap_response->response->style;
+
+	}
+
 }
 
 $obj = new Convertus_DB_Updater( 'CA' );
-print_r($obj->get_models());
+var_dump($obj->get_model_details( 'Civic Sedan' ) );
