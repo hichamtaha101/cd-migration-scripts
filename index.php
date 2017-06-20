@@ -3,7 +3,6 @@
 include_once( dirname(__FILE__) . '/includes/wpdb.php' );
 include_once( dirname(__FILE__) . '/includes/formatting.php' );
 
-
 class Chrome_Data_API {
 
 	private $account_login;
@@ -161,10 +160,114 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	private $db;
 
+	// The properties for style property sanitiziation into convertus api from chrome
+	private $style_properties;
+	private $engine_properties;
+
 	function __construct( $country_code ) {
 
 		parent::__construct( $country_code );
 		$this->db = new WPDB();
+
+		$this->style_properties = array(
+			array(
+				'prop' => 'id',
+				'field' => 'style_id'
+			),
+			array(
+				'prop' => 'acode',
+				'field' => 'acode',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'mfrModelCode',
+				'field' => 'model_code'
+			),
+			array(
+				'prop' => 'modelYear',
+				'field' => 'model_year'
+			),
+			array(
+				'prop' => 'division',
+				'field' => 'division',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'subdivision',
+				'field' => 'subdivision',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'model',
+				'field' => 'model_name',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'trim',
+				'field' => 'trim',
+			),
+			array(
+				'prop' => 'bodyType',
+				'field' => 'body_type',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'marketClass',
+				'field' => 'market_class',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'basePrice',
+				'field' => 'msrp',
+				'value' => 'msrp'
+			),
+			array(
+				'prop' => 'drivetrain',
+				'field' => 'drivetrain',
+			),
+			array(
+				'prop' => 'passDoors',
+				'field' => 'doors'
+			)
+		);
+
+		$this->engine_properties = array(
+			array(
+				'prop' => 'engineType',
+				'field' => 'engine_type',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'fuelType',
+				'field' => 'fuel_type',
+				'value' => '_'
+			),
+			array(
+				'prop' => 'horsepower',
+				'field' => 'horsepower'
+			),
+			array(
+				'prop' => 'netTorque',
+				'field' => 'net_torque',
+			),
+			array(
+				'prop' => 'cylinders',
+				'field' => 'cylinders',
+			),
+			array(
+				'prop' => 'fuelEconomy',
+				'field' => 'fuel_economy',
+			),
+			array(
+				'prop' => 'fuelCapacity',
+				'field' => 'fuel_capacity'
+			),
+			array(
+				'prop' => 'forcedInduction',
+				'field' => 'forced_induction',
+				'value' => '_'
+			)
+		);
 
 	}
 
@@ -216,6 +319,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		foreach( $divisions as $division ) {
 			$sql_values[] = "('{$division->name}', {$division->id}, '{$division->image}')";
 		}
+
 		$query .= implode( ',', $sql_values );
 
 		$this->db->query( 'TRUNCATE divisions' );
@@ -232,7 +336,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		if ( $divisions ) {
 			$soap_response = array();
 			foreach( $divisions as $division ) {
-				$soap_response[] = $this->soap_call_loop( 'getModels', array( 'divisionId' => $division->division_id, 'includeMediaGallery' => 'Multi-View' ) );
+				$soap_response[] = $this->soap_call_loop( 'getModels', array( 'divisionName' => $division->division_name, 'divisionId' => $division->division_id, 'includeMediaGallery' => 'Multi-View' ) );
 			}
 		}
 
@@ -250,6 +354,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 							$model->name = $model->_;
 							$model->year = $response->parameters['modelYear'];
+							$model->division_name = $response->parameters['divisionName'];
 							$model->division_id = $response->parameters['divisionId'];
 							unset( $model->_ );
 
@@ -262,6 +367,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 						$model = $response->response->model;
 						$model->name = $model->_;
 						$model->year = $response->parameters['modelYear'];
+						$model->division_name = $response->parameters['divisionName'];
 						$model->division_id = $response->parameters['divisionId'];
 						unset( $model->_ );
 						$models[] = $model;
@@ -282,11 +388,11 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 		$models = $this->get_models();
 
-		$query = 'INSERT models ( model_year, model_name, model_id, division_id ) VALUES ';
+		$query = 'INSERT models ( model_year, model_name, model_id, division_name, division_id ) VALUES ';
 		$sql_values = array();
 
 		foreach( $models as $model ) {
-			$sql_values[] = "({$model->year}, '{$model->name}', {$model->id}, {$model->division_id})";
+			$sql_values[] = "({$model->year}, '{$model->name}', {$model->id}, '{$model->division_name}', {$model->division_id})";
 		}
 		$query .= implode( ',', $sql_values );
 
@@ -295,26 +401,203 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
-	public function get_model_details( $model_name ) {
+	public function get_model_details() {
 
-		$model = $this->db->get_row( "SELECT * FROM models WHERE model_name = '{$model_name}' ORDER BY model_year DESC" );
+		$model = $this->db->get_row( "SELECT * FROM models ORDER BY RAND() LIMIT 1" );
+		//$model = $this->db->get_row( "SELECT * FROM models WHERE model_id = '29478' " );
+		print_r($model);
 
-		if ( is_object( $model ) ) {
-			$soap_response = $this->soap_call( 
-				'describeVehicle', 
-				array( 'modelYear' => $model->model_year, 
-					'modelName' => $model->model_name, 
-					'makeName' => 'Honda', 
-					'includeMediaGallery' => 'Multi-View' 
-				) 
-			);
+		$soap_call = $this->soap_call( 
+			'describeVehicle', 
+			array( 'modelYear' => $model->model_year, 
+				'modelName' => $model->model_name, 
+				'makeName' => $model->division_name,
+				'switch' => array(
+					'ShowAvailableEquipment'
+				)
+			) 
+		);
+
+		if ( $soap_call->response->responseStatus->responseCode === 'Unsuccessful' ) {
+			return $soap_call;
 		}
 
-		return $soap_response->response->style;
+		$soap_response = $soap_call->response->style;
+
+		$styles = array();
+		$calls = array();
+
+		switch( gettype( $soap_response ) ) {
+			case 'object':
+				$styles = $this->set_style( $soap_call );
+				$calls = $soap_call;
+				break;
+			case 'array':
+				foreach( $soap_response as $i => $response_item ) {
+					$soap_call_internal = $this->soap_call( 
+						'describeVehicle', 
+						array( 
+							'styleId' => $response_item->id, 
+							'switch' => array(
+								'ShowAvailableEquipment'
+							)
+						) 
+					);
+					if ( $soap_call->response->responseStatus->responseCode === 'Unsuccessful' ) {
+						break;
+					}
+					$calls[] = $soap_call_internal;
+					$styles[] = $this->set_style( $soap_call_internal );
+				}
+				break;
+			default:
+		}
+
+		return array(
+			'truncated_styles' => $styles,
+			'actual_api_calls' => $calls
+		);
+
+	}
+
+	private function set_style( $call ) {
+
+		$style = array();
+
+		// style properties as defined at the top of the class in an array of objects
+		if ( $data = $call->response->style ) {
+			$style['style']  = $this->set_properties( $data, $this->style_properties );
+		}
+		// ^ engine
+		if ( $data = $call->response->engine ) {
+			if ( is_object( $data ) ) {
+				$style['multiple'] = 'false';
+				$style['engine'] = $this->set_properties( $data, $this->engine_properties );
+			} else if ( is_array( $data ) ) {
+				$style['multiple'] = 'true';
+				foreach( $data as $engine ) {
+					$style['engine'][] = $this->set_properties( $engine, $this->engine_properties );
+				}
+			}
+		}
+		// ^ standard equipment
+		if ( $data = $call->response->standard ) {
+			foreach( $data as $item ) {
+				$style['standard'][ strtolower( $item->header->_ ) ][] = $item->description;
+			}
+		}
+
+		// if ( $data = $soap_call_internal->response->factoryOption ) {
+
+		// 	foreach( $data as $item ) {
+
+		// 		$available = array();
+
+		// 		if ( property_exists( $item, 'description' ) ) {
+		// 			$available['description'] = $item->description;
+		// 		}
+
+		// 		if ( property_exists( $item, 'chromeCode' ) ) {
+		// 			$available['chrome_code'] = $item->chromeCode;
+		// 		}
+
+		// 		if ( property_exists( $item, 'oemCode' ) ) {
+		// 			$available['oem_code'] = $item->oemCode;
+		// 		}
+
+		// 		if ( property_exists( $item, 'standard' ) ) {
+		// 			$available['standard'] = $item->standard;
+		// 		}
+
+		// 		if ( property_exists( $item, 'price' ) ) {
+		// 			$available['price'] = $item->price;
+		// 		}
+
+		// 		$styles[ $i ]['option'][ strtolower( $item->header->_ ) ][] = $available;
+		// 	}
+
+		// }
+
+		return $style;
+
+	}
+
+	private function set_properties( $style, $properties ) {
+
+		$returned_properties = array();
+
+		// Loop through all properties we need for the showroom
+		foreach( $properties as $prop ) {
+
+			// Check if a particular property exists in the chrome object returned that we want
+			if ( property_exists( $style, $prop['prop'] ) ) {
+
+				$style_prop = $style->{$prop['prop']};
+				$value = array();
+
+				switch( gettype( $style_prop ) ) {
+					case 'object':
+						$value = ( array_key_exists( 'value', $prop ) ) ? $style_prop->{$prop['value']} : $style_prop;
+						break;
+					case 'array':
+						foreach( $style_prop as $single_prop ) {
+							$value[] = $single_prop->{$prop['value']};
+						}
+						break;
+					case 'string':
+					default:
+						$value = $style_prop;
+				}
+
+				$returned_properties[ $prop['field'] ] = $value;
+
+			}
+
+		}
+
+		return $returned_properties;
+
+	}
+
+
+	private function set_engine_properties( $style, $properties ) {
+
+		$returned_properties = array();
+
+		// Loop through all properties we need for the showroom
+		foreach( $properties as $prop ) {
+
+			// Check if a particular property exists in the chrome object returned that we want
+			if ( property_exists( $style, $prop['prop'] ) ) {
+
+				$style_prop = $style->{$prop['prop']};
+				$value = array();
+
+				switch( gettype( $style_prop ) ) {
+					case 'object':
+						$value = ( array_key_exists( 'value', $prop ) ) ? $style_prop->{$prop['value']} : $style_prop;
+						break;
+					case 'array':
+						foreach( $style_prop as $single_prop ) {
+							$value[] = $single_prop->{$prop['value']};
+						}
+						break;
+					case 'string':
+					default:
+						$value = $style_prop;
+				}
+
+				$returned_properties[ $prop['field'] ] = $value;
+
+			}
+
+		}
+
+		return $returned_properties;
 
 	}
 
 }
 
 $obj = new Convertus_DB_Updater( 'CA' );
-var_dump($obj->get_model_details( 'Civic Sedan' ) );
+var_dump($obj->get_model_details());
