@@ -77,22 +77,32 @@ function download_1280_images( $media ) {
 		mkdir( './media/' . $style_id . '/01', 0777, true );
 	}
 
-	// If media is snapshot 01, download colorized images
-	if ( strpos( $fname, '_1280_01.png' ) ) {
-		$file = 'cc_' . str_replace( '_1280_01', '_01_1280', $fname );
-		$file = str_replace( '.png', '', $file );
-		$media['fname'] = $file;
-		download_colorized_variations( $media );
-	}
-
 	// Download view image from chrome data
 	$save_location = './media/' . $style_id . '/view/' . $fname;
 	if ( ! file_exists( $save_location ) ) {
 		copy( $media['url'], $save_location );
 		echo 'Successfully copied over ' . $save_location . '<br>';
 	} else {
-		echo 'view already exists for ' . $save_location . '<br>';
+		echo 'View already exists for ' . $save_location . '<br>';
 	}
+
+	// If media is snapshot 01, download colorized images
+	if ( strpos( $fname, '_1280_01.png' ) ) {
+		// If colorized already exists, skip
+		if ( ! is_dir_empty( './media/' . $style_id . '/01' ) ) {
+			echo 'Colorized images for style id ' . $media['style_id'] . ' already exists.<br>';
+			return;
+		}
+		$file = 'cc_' . str_replace( '_1280_01', '_01_1280', $fname );
+		$file = str_replace( '.png', '', $file );
+		$media['fname'] = $file;
+		download_colorized_variations( $media );
+	}
+}
+
+function is_dir_empty($dir) {
+	if ( ! is_readable( $dir) ) return NULL; 
+	return ( count( scandir( $dir ) ) == 2);
 }
 
 /**
@@ -129,11 +139,6 @@ function download_colorized_variations( $media ) {
 
 	foreach ( $contents as $image ) {
 		$image_info = pathinfo( $image );
-		// Skip files that already exists
-		if ( file_exists( $tmp_directory . $image_info['basename'] ) ) { 
-			echo 'File already exists: ' . $tmp_directory . $image_info['basename'] . '<br>';
-			continue; 
-		}
 		// Otherwise copy them over
 		if ( ftp_get( $conn_id, $tmp_directory . $image_info['basename'], $image, FTP_BINARY ) ) {
 			echo 'Successfully copied over ' . $image . ' to directory ' . $tmp_directory . '<br>';
@@ -142,7 +147,7 @@ function download_colorized_variations( $media ) {
 	echo '<br>';
 }
 
-	/**
+/**
 	 * This function stores all images on s3
 	 * and updates their references in the media
 	 * table
@@ -151,7 +156,7 @@ function download_colorized_variations( $media ) {
 	 *
 	 * @return none
 	 */
-	function update_media_db_s3() {
+function update_media_db_s3() {
 	global $wpdb;
 
 	foreach ( new DirectoryIterator('./media' ) as $folder ) {
