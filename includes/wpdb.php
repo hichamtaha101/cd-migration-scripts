@@ -13,10 +13,10 @@ define('WP_DEBUG', true);
 define('DB_NAME', 'convertus_api');
 
 /** MySQL database username */
-define('DB_USER', 'root');
+define('DB_USER', 'dev_convertus');
 
 /** MySQL database password */
-define('DB_PASSWORD', '');
+define('DB_PASSWORD', 'convertus2013');
 
 /** MySQL hostname */
 define('DB_HOST', 'localhost');

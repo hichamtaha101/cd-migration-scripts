@@ -218,3 +218,42 @@ function utf8_uri_encode( $utf8_string, $length = 0 ) {
 
 	return $unicode;
 }
+
+
+function merge_unique_colors( &$array1, $array2 ) {
+	if ( ! is_array( $array2 ) ) { return; }
+	foreach ( $array2 as $color ) {
+		if ( ! in_array_field( $color['code'], 'code', $array1 ) ) {
+			array_push( $array1, $color );
+		}
+	}
+}
+
+function in_array_field( $needle, $needle_field, $haystack, $strict = false ) {
+	if ($strict) {
+		foreach ($haystack as $item)
+			if (isset($item[$needle_field]) && $item[$needle_field] === $needle)
+				return $item;
+	}
+	else {
+		foreach ($haystack as $item)
+			if (isset($item[$needle_field]) && $item[$needle_field] == $needle)
+				return $item;
+	}
+	return false;
+}
+
+function in_std_field( $needle, $needle_field, $haystack, $strict = false ) {
+	if ($strict) {
+		foreach ($haystack as $item)
+			if (isset($item->$needle_field) && $item->$needle_field === $needle)
+				return $item;
+	}
+	else {
+		foreach ($haystack as $item)
+			if (isset($item->$needle_field) && $item->$needle_field == $needle)
+				return $item;
+	}
+	return false;
+}
+
