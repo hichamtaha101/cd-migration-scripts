@@ -1,1 +1,2 @@
-media/
+# Ignore all images inside the media folder
+media/**
