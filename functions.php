@@ -146,11 +146,8 @@ class Chrome_Data_API {
 				)
 			);
 		}
-
 		return $truncated_data;
-
 	}
-
 }
 
 class Convertus_DB_Updater extends Chrome_Data_API {
@@ -315,40 +312,40 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		);
 
 		// Might not need this anymore ( grab colorized from ftp )
-//		$this->colorized_image_properties = array(
-//			array(
-//				'property' => 'url',
-//				'field' => 'url',
-//			),
-//			array(
-//				'property' => 'width',
-//				'field' => 'width',
-//			),
-//			array(
-//				'property' => 'height',
-//				'field' => 'height',
-//			),
-//			array(
-//				'property' => 'shotCode',
-//				'field' => 'shot_code',
-//			),
-//			array(
-//				'property' => 'backgroundDescription',
-//				'field' => 'background_description',
-//			),
-//			array(
-//				'property' => 'primaryColorOptionCode',
-//				'field' => 'primary_color_option_code',
-//			),
-//			array(
-//				'property' => 'primaryRGBHexCode',
-//				'field' => 'primary_rgb_hex_code',
-//			),
-//			array(
-//				'property' => 'styleId',
-//				'field' => 'style_id',
-//			),
-//		);
+		//		$this->colorized_image_properties = array(
+		//			array(
+		//				'property' => 'url',
+		//				'field' => 'url',
+		//			),
+		//			array(
+		//				'property' => 'width',
+		//				'field' => 'width',
+		//			),
+		//			array(
+		//				'property' => 'height',
+		//				'field' => 'height',
+		//			),
+		//			array(
+		//				'property' => 'shotCode',
+		//				'field' => 'shot_code',
+		//			),
+		//			array(
+		//				'property' => 'backgroundDescription',
+		//				'field' => 'background_description',
+		//			),
+		//			array(
+		//				'property' => 'primaryColorOptionCode',
+		//				'field' => 'primary_color_option_code',
+		//			),
+		//			array(
+		//				'property' => 'primaryRGBHexCode',
+		//				'field' => 'primary_rgb_hex_code',
+		//			),
+		//			array(
+		//				'property' => 'styleId',
+		//				'field' => 'style_id',
+		//			),
+		//		);
 
 	}
 
@@ -389,7 +386,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	}
 
 	public function update_divisions() {
-		
+
 		$divisions = $this->get_divisions();
 
 		$query = 'INSERT division ( division_name, division_id, oem_logo, last_updated ) VALUES ';
@@ -522,7 +519,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 						$soap_call = $this->get_style_details( $response_item->id );
 						$calls[] = $soap_call;
 						$styles[] = $this->set_style( $soap_call, $response_item->id );
-//						break;
+						//						break;
 					}
 					break;
 				default:
@@ -549,7 +546,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		);
 
 		// 396212
-
 		if ( $soap_response->response->responseStatus->responseCode === 'Unsuccessful' ) {
 			var_dump( $soap_response->response );
 		}
@@ -570,7 +566,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			'msrpMax'			=> null,
 			'categories'	=> null
 		);
-		
+
 		if ( isset( $item->oemCode ) ) {
 			$option['oemCode'] = $item->oemCode;
 		}
@@ -603,7 +599,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		if ( isset( $response->factoryOption ) ) {
 			$style['options'] = array();
 			$data = $response->factoryOption;
-			
+
 			foreach( $data as $item ) {
 				$option = $this->set_option( $item );
 				$style['options'][] = $option;
@@ -639,14 +635,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 		}
 
-		//$style['style']['engine'] = json_encode( $style['engine'] );
-
 		// ^ standard equipment
 		if ( isset( $response->standard ) ) {
 			$data = $response->standard;
 			foreach ( $data as $item ) {
-				//				var_dump( $item->header->_ . ' : ' . $item->description ); echo '<br><br>';
-				$style['standard'][ strtolower( $item->header->_ ) ][] = $item->description;
+
+				$style['standard'][] = array(
+					'type'				=> $item->header->_,
+					'description'	=> $item->description,
+					'categories'	=> $this->get_standard_categories( $item )
+				);
+				// If transmission was not grabbed before, grab from equipment
 				if ( ! array_key_exists( 'transmission', $style['style'] ) ) {
 					if ( strcasecmp( $item->header->_, 'mechanical' ) === 0 && stripos( $item->description, 'Transmission: ' ) !== false ) {
 						$style['style']['transmission'] = str_ireplace( 'transmission: ', '', $item->description );
@@ -713,20 +712,35 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			// Colorized 
 			// Dont need this, grabs snapshot 3 from the FTP
-//			if ( $data = $response->style->mediaGallery->colorized ) {
-//				foreach ( $data as $image ) {
-//					if ( property_exists( $image, 'url' ) ) {
-//						$image->styleId = $style_id;
-//						$colorized = $this->set_properties( $image, $this->colorized_image_properties );
-//						$colorized['color_name'] = $style['style_colors'][$colorized['primary_color_option_code']]['name'];
-//						$style['colorized'][] = $colorized;
-//					}
-//				}
-//			}
+			//			if ( $data = $response->style->mediaGallery->colorized ) {
+			//				foreach ( $data as $image ) {
+			//					if ( property_exists( $image, 'url' ) ) {
+			//						$image->styleId = $style_id;
+			//						$colorized = $this->set_properties( $image, $this->colorized_image_properties );
+			//						$colorized['color_name'] = $style['style_colors'][$colorized['primary_color_option_code']]['name'];
+			//						$style['colorized'][] = $colorized;
+			//					}
+			//				}
+			//			}
 		}
 
 		return $style;
 
+	}
+
+	private function get_standard_categories( $item ) {
+		$categories = '';
+		if ( isset( $item->category ) ) {
+			if ( is_array( $item->category ) ) {
+				foreach ( $item->category as $category ) {
+					$categories .= $category->id . ',';
+				}
+				$categories = substr( $categories, 0, -1 );
+			} else {
+				$categories = (string)$item->category->id;
+			}
+		}
+		return $categories;
 	}
 
 	private function set_properties( $style, $properties ) {
@@ -969,13 +983,13 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					$this->db->query( $color_query . $color_query_sql_values );
 				}
 			}
-			
+
 			if ( array_key_exists( 'options', $style ) ) {
 				$options = $style['options'];
 				$option_query = 'INSERT option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
 				foreach ( $options as $option ) {
 					$option_query_sql_values = "({$option['id']}, '{$option['header']}', {$option['styleId']}, '{$option['description']}', '{$option['isChild']}', '{$option['oemCode']}', '{$option['chromeCode']}', {$option['msrpMin']}, {$option['msrpMax']}, '{$option['categories']}' )";
-					
+
 					$this->db->query( $option_query . $option_query_sql_values );
 				}
 			}
@@ -987,21 +1001,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				}
 			}
 
-//			if ( array_key_exists( 'colorized', $style ) ) {
-//				$colorized_media_query = 'INSERT media ( style_id, type, url, width, height, shot_code, background, rgb_hex_code, color_option_code, color_name, created ) VALUES ';
-//				foreach ( $style['colorized'] as $image ) {
-//					$colorized_media_query_sql_values[] = "('{$image['style_id']}', 'colorized', '{$image['url']}', {$image['width']}, {$image['height']}, {$image['shot_code']}, '{$image['background_description']}', '{$image['primary_rgb_hex_code']}', '{$image['primary_color_option_code']}', '{$image['color_name']}', now())";
-//				}
-//			}
+			//			if ( array_key_exists( 'colorized', $style ) ) {
+			//				$colorized_media_query = 'INSERT media ( style_id, type, url, width, height, shot_code, background, rgb_hex_code, color_option_code, color_name, created ) VALUES ';
+			//				foreach ( $style['colorized'] as $image ) {
+			//					$colorized_media_query_sql_values[] = "('{$image['style_id']}', 'colorized', '{$image['url']}', {$image['width']}, {$image['height']}, {$image['shot_code']}, '{$image['background_description']}', '{$image['primary_rgb_hex_code']}', '{$image['primary_color_option_code']}', '{$image['color_name']}', now())";
+			//				}
+			//			}
 
 			if ( array_key_exists( 'standard', $style ) ) {
-				$standard_query = 'INSERT standard ( style_id, type, description ) VALUES ';
-				foreach ( $style['standard'] as $header => $descriptions ) {
-					foreach ( $descriptions as $key => $value ) {
-						$descriptions[ $key ] = str_replace( "'", "''", $value );
-					}
-					$descriptions = json_encode( $descriptions );
-					$standard_query_sql_values[] = "({$style_id}, '{$header}', '{$descriptions}')";
+				$standard_query = 'INSERT standard ( style_id, type, description, categories ) VALUES ';
+				foreach ( $style['standard'] as $item ) {
+					$standard_query_sql_values[] = "({$style_id}, '{$item['type']}', '{$item['description']}', '{$item['categories']}')";
 				}
 			}
 		}
@@ -1015,8 +1025,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		$media_query .= implode( ',', $media_query_sql_values );
 		$this->db->query( $media_query );
 
-//		$colorized_media_query .= implode( ',', $colorized_media_query_sql_values );
-//		$this->db->query( $colorized_media_query );
+		//		$colorized_media_query .= implode( ',', $colorized_media_query_sql_values );
+		//		$this->db->query( $colorized_media_query );
 
 		$standard_query .= implode( ',', $standard_query_sql_values );
 		$this->db->query( $standard_query );
@@ -1101,10 +1111,32 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 		return $text;
 	}
-	
+
 	public function truncate_all( $tables ) {
 		foreach ( $tables as $table ) {
 			$this->db->query('TRUNCATE ' . $table );
 		}
 	}
 }
+$obj = new Convertus_DB_Updater( 'CA' );
+$styles = $obj->get_model_details( "model_name LIKE 'M4'" );
+//echo '<pre>'; var_dump( $styles ); echo '</pre>';
+$obj->update_styles( $styles );
+
+//$styles = $obj->get_model_details( "model_name LIKE 'M4'" );
+//$obj->update_styles( $styles );
+
+//$response = $obj->soap_call(
+//	'describeVehicle',
+//	array(
+//		'styleId' => 390597,
+//		'includeMediaGallery' => 'Both',
+//		'switch' => array(
+//			'ShowAvailableEquipment',
+//			'ShowConsumerInformation',
+//			'ShowExtendedTechnicalSpecifications',
+//			'IncludeDefinitions',
+//		),
+//	)
+//);
+//echo '<pre>'; var_dump( $response ); echo '</pre>';
