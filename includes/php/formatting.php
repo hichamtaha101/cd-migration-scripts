@@ -257,3 +257,4 @@ function in_std_field( $needle, $needle_field, $haystack, $strict = false ) {
 	return false;
 }
 
+?>

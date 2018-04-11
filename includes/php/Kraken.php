@@ -106,3 +106,4 @@ class Kraken {
         return $response;
     }
 }
+?>

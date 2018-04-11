@@ -1,8 +1,6 @@
 <?php // Silence is golden
-
-include_once( dirname( __FILE__ ) . '/includes/wpdb.php' );
-include_once( dirname( __FILE__ ) . '/includes/formatting.php' );
-
+include_once( dirname( __FILE__ ) . '/wpdb.php' );
+include_once( dirname( __FILE__ ) . '/formatting.php' );
 
 class Chrome_Data_API {
 
@@ -310,42 +308,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				'field' => 'style_id',
 			),
 		);
-
-		// Might not need this anymore ( grab colorized from ftp )
-		//		$this->colorized_image_properties = array(
-		//			array(
-		//				'property' => 'url',
-		//				'field' => 'url',
-		//			),
-		//			array(
-		//				'property' => 'width',
-		//				'field' => 'width',
-		//			),
-		//			array(
-		//				'property' => 'height',
-		//				'field' => 'height',
-		//			),
-		//			array(
-		//				'property' => 'shotCode',
-		//				'field' => 'shot_code',
-		//			),
-		//			array(
-		//				'property' => 'backgroundDescription',
-		//				'field' => 'background_description',
-		//			),
-		//			array(
-		//				'property' => 'primaryColorOptionCode',
-		//				'field' => 'primary_color_option_code',
-		//			),
-		//			array(
-		//				'property' => 'primaryRGBHexCode',
-		//				'field' => 'primary_rgb_hex_code',
-		//			),
-		//			array(
-		//				'property' => 'styleId',
-		//				'field' => 'style_id',
-		//			),
-		//		);
 
 	}
 
@@ -710,18 +672,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					}
 				}
 			}
-			// Colorized 
-			// Dont need this, grabs snapshot 3 from the FTP
-			//			if ( $data = $response->style->mediaGallery->colorized ) {
-			//				foreach ( $data as $image ) {
-			//					if ( property_exists( $image, 'url' ) ) {
-			//						$image->styleId = $style_id;
-			//						$colorized = $this->set_properties( $image, $this->colorized_image_properties );
-			//						$colorized['color_name'] = $style['style_colors'][$colorized['primary_color_option_code']]['name'];
-			//						$style['colorized'][] = $colorized;
-			//					}
-			//				}
-			//			}
 		}
 
 		return $style;
@@ -993,20 +943,15 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					$this->db->query( $option_query . $option_query_sql_values );
 				}
 			}
-
+			
+			
+			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
 				$media_query = 'INSERT media ( style_id, type, url, width, height, shot_code, background, created ) VALUES ';
 				foreach ( $style['view'] as $image ) {
 					$media_query_sql_values[] = "('{$image['style_id']}', 'view', '{$image['url']}', {$image['width']}, {$image['height']}, {$image['shot_code']}, '{$image['background_description']}', now())";
 				}
 			}
-
-			//			if ( array_key_exists( 'colorized', $style ) ) {
-			//				$colorized_media_query = 'INSERT media ( style_id, type, url, width, height, shot_code, background, rgb_hex_code, color_option_code, color_name, created ) VALUES ';
-			//				foreach ( $style['colorized'] as $image ) {
-			//					$colorized_media_query_sql_values[] = "('{$image['style_id']}', 'colorized', '{$image['url']}', {$image['width']}, {$image['height']}, {$image['shot_code']}, '{$image['background_description']}', '{$image['primary_rgb_hex_code']}', '{$image['primary_color_option_code']}', '{$image['color_name']}', now())";
-			//				}
-			//			}
 
 			if ( array_key_exists( 'standard', $style ) ) {
 				$standard_query = 'INSERT standard ( style_id, type, description, categories ) VALUES ';
@@ -1118,13 +1063,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 	}
 }
-$obj = new Convertus_DB_Updater( 'CA' );
-$styles = $obj->get_model_details( "model_name LIKE 'M4'" );
-//echo '<pre>'; var_dump( $styles ); echo '</pre>';
-$obj->update_styles( $styles );
 
-//$styles = $obj->get_model_details( "model_name LIKE 'M4'" );
-//$obj->update_styles( $styles );
 
 //$response = $obj->soap_call(
 //	'describeVehicle',
@@ -1139,4 +1078,4 @@ $obj->update_styles( $styles );
 //		),
 //	)
 //);
-//echo '<pre>'; var_dump( $response ); echo '</pre>';
+?>
