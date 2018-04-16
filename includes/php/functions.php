@@ -10,32 +10,40 @@ $obj = new Convertus_DB_Updater('CA');
 function update_all_makes() {
 	global $obj;
 	$obj->update_divisions();
-	return array( 'Successfully updated all makes' );
+	$results['outputs'] = $obj->outputs;
+	return $results;
 }
 
-function update_make_by_name( $make ) {
+function update_all_models() {
 	global $obj;
+	$obj->update_models();
+	$results = get_models();
+	$results['outputs'] = $obj->outputs;  
+	return $results;
+}
+
+function update_styles_by_model( $model ) {
+	global $obj;
+	$outputs = array();
 	
-	return array( 'Successfully updated all makes' );
-}
-
-function update_model_by_name( $model ) {
-	global $obj;
 	$styles = $obj->get_model_details( "model_name LIKE '{$model}'" );
-	//echo '<pre>'; var_dump( $styles ); echo '</pre>';
 	$obj->update_styles( $styles );
-	return array();
-}
-
-function update_style( $id ) {
-	global $obj;
+	$results['outputs'] = $obj->outputs;
 	
-	return array();
+	return $results;
 }
 
 function update_db_images() {
 	
 	return array();
+}
+
+function get_models() {
+	global $obj;
+	$updated = $obj->db->get_col('SELECT DISTINCT model.model_name FROM model INNER JOIN style ON style.model_name = model.model_name');
+	$models = $obj->db->get_col('SELECT DISTINCT model_name FROM model');
+	
+	return array( 'models' => $models, 'updated' => $updated );
 }
 
 

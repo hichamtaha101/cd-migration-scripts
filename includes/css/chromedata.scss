@@ -11,6 +11,9 @@ h1, h2, h3, h4, h5, h6, body {
 .error { color: red; }
 .success { color: green; }
 .notification { padding-bottom: 5px 0px; }
+#value {
+	input { margin: 0px 10px; }
+}
 .functions {
 	margin-top: 15px;
 	.item {
@@ -26,7 +29,6 @@ h1, h2, h3, h4, h5, h6, body {
 				text-shadow: 0 0 5px rgba(0,0,0,0.5);
 			}
 		}
-
 		&__title {
 			font-weight: bold;
 		}
@@ -45,9 +47,12 @@ h1, h2, h3, h4, h5, h6, body {
 		}
 	}
 }
-.output {
+.section {
 	padding: 10px;
 	min-height: 200px;
+	max-height: 480px;
+	overflow-y: auto;
+	overflow-x: hidden;
 	border: 1px solid black;
 	position: relative;
 	.empty {
@@ -58,5 +63,10 @@ h1, h2, h3, h4, h5, h6, body {
 		position: absolute;
 		left: 0;
 		right: 0;
+	}
+	.note { font-weight: bold; }
+	ul {
+		column-count: 2;
+		list-style-type: none;
 	}
 }

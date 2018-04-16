@@ -8,6 +8,7 @@ class Chrome_Data_API {
 	private $number;
 	private $secret;
 
+	public $outputs;
 	public $country_code;
 	public $language;
 
@@ -19,6 +20,7 @@ class Chrome_Data_API {
 		$this->secret   = '8343ac07bb984bcb';
 		$this->api_url  = 'http://services.chromedata.com/Description/7b?wsdl';
 		$this->language = 'en';
+		$this->outputs = array();
 
 		$this->country_code = $country_code;
 
@@ -361,7 +363,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		$query .= implode( ',', $sql_values );
 
 		$this->db->query( 'TRUNCATE division' );
-		$this->db->query( $query );
+		$result = $this->db->query( $query );
+		if ( $result ) {
+			$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all makes' );
+		} else {
+			$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all makes' );
+		}
 
 	}
 
@@ -439,13 +446,30 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		$query .= implode( ',', $sql_values );
 
 		$this->db->query( 'TRUNCATE model' );
-		$this->db->query( $query );
+		$result = $this->db->query( $query );
+		if ( $result ) {
+			$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all models' );
+		} else {
+			$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all models' );
+		}
 
+	}
+
+	private function error_caught( $response_status ) {
+		if ( $response_status->responseCode === 'Unsuccessful' ) {
+			$error = $response_status->status->_ . ' : ' . $response_status->status->code;
+			$this->outputs[] = array( 'type' => 'error', 'msg' => $error );
+			return true;
+		}
+		return false;
 	}
 
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
+		if ( empty( $models ) ) {
+			$this->outputs[] = array( 'type' => 'error', 'msg' => 'Couldn\'t find model(s) with query ' . $filter . ' in the DB' );
+		}
 
 		$styles = array();
 		$calls = array();
@@ -462,9 +486,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				)
 			);
 
-			if ( $soap_call->response->responseStatus->responseCode === 'Unsuccessful' ) {
-				var_dump( $soap_call->response );
-				break;
+			// Skip error responses
+			if ( $this->error_caught( $soap_call->response->responseStatus ) ) { continue; } 
+			else {
+				$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated styles for ' . $model->model_year . ' ' . $model->division_name . ' ' . $model->model_name );
 			}
 
 			$soap_response = $soap_call->response->style;
@@ -472,6 +497,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					// Model only has one trim variation ( object )
 				case 'object':
 					$soap_call = $this->get_style_details( $soap_response->id );
+					if ( $soap_call === FALSE ) { break; }
+
 					$styles[] = $this->set_style( $soap_call, $soap_response->id );
 					$calls[] = $soap_call;
 					break;
@@ -479,13 +506,15 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					// Model has multiple trim variations ( array )
 					foreach ( $soap_response as $i => $response_item ) {
 						$soap_call = $this->get_style_details( $response_item->id );
+						if ( $soap_call === FALSE ) { continue; }
+
 						$calls[] = $soap_call;
 						$styles[] = $this->set_style( $soap_call, $response_item->id );
 						//						break;
 					}
 					break;
 				default:
-					var_dump('This should not happen');
+					echo 'This should not happen';
 			}
 		}
 
@@ -507,10 +536,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			)
 		);
 
-		// 396212
-		if ( $soap_response->response->responseStatus->responseCode === 'Unsuccessful' ) {
-			var_dump( $soap_response->response );
-		}
+		// Skip error responses
+		if ( $this->error_caught( $soap_response->response->responseStatus ) ) { return false; }
 		return $soap_response;
 	}
 
@@ -622,17 +649,28 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 
 		// ^ exterior colors
-
 		if ( isset( $response->exteriorColor ) ) {
 			$data = $response->exteriorColor;
 			foreach ( $data as $item ) {
 				$color = array();
+				// Skip if these fields are empty
+				if ( empty( $item->colorCode ) || empty( $item->rbgValue) ) { continue; }
+
 				if ( isset( $item->genericColor ) ) {
-					if ( isset( $item->genericColor->name ) ) {
+					// Grab generic/primary name from object/array
+					if ( is_object( $item->genericColor ) ) {
 						$color['generic_name'] = $item->genericColor->name;
-					}
-					if ( isset( $item->genericColor->primary ) ) {
 						$color['primary'] = $item->genericColor->primary;
+					} else if ( is_array( $item->genericColor ) ) {
+						foreach ( $item->genericColor as $c ) {
+							// Store if primary color
+							if ( $c->primary ) {
+								$color['generic_name'] = $c->name;
+								$color['primary'] = $c->primary;
+								break;
+							}
+						}
+
 					}
 				}
 				if ( isset( $item->colorName ) ) {
@@ -641,11 +679,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				if ( isset( $item->colorCode ) ) {
 					$color['code'] = $item->colorCode;
 				}
-
 				if ( isset( $item->rgbValue ) ) {
 					$color['rgb_value'] = $item->rgbValue;
 				}
-
 				if ( isset( $item->styleId ) ) {
 					$color['style_id'] = $item->styleId;
 				} else {
@@ -655,8 +691,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$style['style']['exterior_colors'][] = $item->colorName;
 			}
 		}
-		//		var_dump( $style['style_colors'] );
-		$style['style']['exterior_colors'] = json_encode( array_unique( $style['style']['exterior_colors'] ) );
+
+		if ( isset( $style['style']['exterior_colors'] ) ) {
+			$style['style']['exterior_colors'] = json_encode( array_unique( $style['style']['exterior_colors'] ) );
+		} else {
+			$style['style']['exterior_colors'] = json_encode( array() );
+		}
 
 		// ^ media gallery
 		if ( property_exists( $response->style, 'mediaGallery' ) ) {
@@ -768,6 +808,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	private function set_engine_properties( $data ) {
 
 		$engine = new stdClass;
+		$engine->engine = '';
 
 		if ( isset( $data->engineType ) && isset( $data->engineType->_ ) ) {
 			$engine->engine_type = $data->engineType->_;
@@ -777,6 +818,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 		if ( isset( $data->fuelType ) && isset( $data->fuelType->_ ) ) {
 			$engine->fuel_type = $data->fuelType->_;
+		} elseif ( isset( $data->fuel_type ) ) {
+			$engine->fuel_type = $data->fuel_type;
 		} else {
 			$engine->fuel_type = 'null';
 		}
@@ -787,27 +830,22 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			$engine->cylinders = 'null';
 		}
 
+		$engine->fuel_economy_city_low = ( isset( $data->fuel_economy_city_low ) ? $data->fuel_economy_city_low : 'null' );
+		$engine->fuel_economy_hwy_low = ( isset( $data->fuel_economy_hwy_low ) ? $data->fuel_economy_hwy_low : 'null' );
+		$engine->fuel_economy_city_high = ( isset( $data->fuel_economy_city_high ) ? $data->fuel_economy_city_high : 'null' );
+		$engine->fuel_economy_hwy_high = ( isset( $data->fuel_economy_hwy_high ) ? $data->fuel_economy_hwy_high : 'null' );
+
+		// This will override the above null values if property exists
 		if ( isset( $data->fuelEconomy ) ) {
 			$this->set_fuel_economy( $engine, $data->fuelEconomy );
 		}
 
-		if ( isset( $data->fuelCapacity ) ) {
-			if ( isset( $data->fuelCapacity->low ) ) {
-				$engine->fuel_capacity_low = $data->fuelCapacity->low;
-			} else {
-				$engine->fuel_capacity_low = 'null';
-			}
-			if ( isset( $data->fuelCapacity->high ) ) {
-				$engine->fuel_capacity_high = $data->fuelCapacity->high;
-			} else {
-				$engine->fuel_capacity_high = 'null';
-			}
-			if ( isset( $data->fuelCapacity->unit ) ) {
-				$engine->fuel_capacity_unit = $data->fuelCapacity->unit;
-			} else {
-				$engine->fuel_capacity_unit = 'null';
-			}
-		}
+		// Might need to rework
+		$engine->fuel_capacity_low = ( isset( $data->fuelCapacity->low ) ? $data->fuelCapacity->low : 'null' );
+		$engine->fuel_capacity_high = ( isset( $data->fuelCapacity->high ) ? $data->fuelCapacity->high : 'null' );
+		$engine->fuel_capacity_unit = ( isset( $data->fuelCapacity->unit ) ? $data->fuelCapacity->unit : 'null' );
+		// Remove later
+		if ( isset( $data->fuel_capacity_low ) ) { var_dump('wuddahell'); }
 
 		if ( isset( $data->horsepower->value ) ) {
 			$engine->horsepower = $data->horsepower->value;
@@ -832,7 +870,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		} else {
 			$engine->net_torque_rpm = 'null';
 		}
-
+		
+		
 		if ( isset( $data->displacement->value ) ) {
 			if ( isset( $data->displacement->value->_ ) ) {
 				$engine->displacement = $data->displacement->value->_;
@@ -848,6 +887,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			} else {
 				$engine->displacement_unit = 'null';
 			}
+		}	else {
+			$engine->displacement = 'null';
+			$engine->displacement_unit = 'null';
 		}
 
 		if ( isset( $data->engineType ) ) {
@@ -858,7 +900,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 
 		return $engine;
-
 	}
 
 	private function set_fuel_economy( &$engine, $data ) {
@@ -888,9 +929,28 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	}
 
 	public function update_styles( $styles ) {
-
-		$style_query_sql_values = array();
-		$engine_query_sql_values = array();
+		
+		// Defaults needed for queries
+		$queries = array(
+			'styles' => array(
+				'values' => array()
+			),
+			'engines' => array(
+				'values' => array()
+			),
+			'colors' => array(
+				'values' => array()
+			),
+			'media' => array(
+				'values' => array()
+			),
+			'options' => array(
+				'values' => array()
+			),
+			'standard' => array(
+				'values' => array()
+			),
+		);
 
 		foreach ( $styles as $style ) {
 
@@ -908,73 +968,70 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					$this->db->delete( 'exterior_color', array( 'style_id' => $value['style_id'] ) );
 					$this->db->delete( 'option', array( 'style_id' => $value['style_id'] ) );
 				}
-
-				$style_query = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, last_updated ) VALUES ';
-				$style_query_sql_values[] = "({$value['style_id']}, '{$value['model_code']}', {$value['model_year']}, '{$value['model_name']}', '{$value['division']}', '{$value['subdivision']}', '{$value['trim']}', '{$value['body_type']}', '{$value['market_class']}', {$value['msrp']}, '{$value['drivetrain']}', '{$value['transmission']}', {$value['doors']}, '{$value['acode']}', '{$value['exterior_colors']}', now())";
+				
+				$queries['styles']['query'] = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors ) VALUES ';
+				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s')";
+				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'] );
 
 				$value = $style['engine'];
-
-				$engine_query = 'INSERT engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
+				$queries['engines']['query'] = 'INSERT engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
 
 				if ( is_object( $value ) ) {
-					$engine_query_sql_values[] = "({$style_id}, '{$value->engine}', '{$value->engine_type}', '{$value->fuel_type}', {$value->cylinders}, {$value->fuel_capacity_high}, {$value->fuel_capacity_low}, '{$value->fuel_capacity_unit}', {$value->fuel_economy_hwy_high}, {$value->fuel_economy_hwy_low}, {$value->fuel_economy_city_high}, {$value->fuel_economy_city_low}, {$value->horsepower}, {$value->horsepower_rpm}, {$value->net_torque}, {$value->net_torque_rpm}, {$value->displacement}, '{$value->displacement_unit}')";
+					$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
+					array_push( $queries['engines']['values'], $style_id, $value->engine, $value->engine_type, $value->fuel_type, $value->cylinders, $value->fuel_capacity_high, $value->fuel_capacity_low, $value->fuel_capacity_unit, $value->fuel_economy_hwy_high, $value->fuel_economy_hwy_low, $value->fuel_economy_city_high, $value->fuel_economy_city_low, $value->horsepower, $value->horsepower_rpm, $value->net_torque, $value->net_torque_rpm, $value->displacement, $value->displacement_unit );
 				} else if ( is_array( $value ) ) {
 					foreach ( $value as $single_value ) {
-						$engine_query_sql_values[] = "({$style_id}, '{$single_value->engine}', '{$single_value->engine_type}', '{$single_value->fuel_type}', {$single_value->cylinders}, {$single_value->fuel_capacity_high}, {$single_value->fuel_capacity_low}, '{$single_value->fuel_capacity_unit}', {$single_value->fuel_economy_hwy_high}, {$single_value->fuel_economy_hwy_low}, {$single_value->fuel_economy_city_high}, {$single_value->fuel_economy_city_low}, {$single_value->horsepower}, {$single_value->horsepower_rpm}, {$single_value->net_torque}, {$single_value->net_torque_rpm}, {$single_value->displacement}, '{$single_value->displacement_unit}')";
+						$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
+						array_push( $queries['engines']['values'], $style_id, $single_value->engine, $single_value->engine_type, $single_value->fuel_type, $single_value->cylinders, $single_value->fuel_capacity_high, $single_value->fuel_capacity_low, $single_value->fuel_capacity_unit, $single_value->fuel_economy_hwy_high, $single_value->fuel_economy_hwy_low, $single_value->fuel_economy_city_high, $single_value->fuel_economy_city_low, $single_value->horsepower, $single_value->horsepower_rpm, $single_value->net_torque, $single_value->net_torque_rpm, $single_value->displacement, $single_value->displacement_unit );
 					}
 				}
 			}
-
+			
 			if ( array_key_exists('style_colors', $style ) ) {
 				$colors = $style['style_colors'];
-				$color_query = 'INSERT exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
+				$queries['colors']['query'] = 'INSERT exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
 				foreach ( $colors as $color ) {
-					$color_query_sql_values = "({$color['style_id']}, '{$color['generic_name']}', '{$color['name']}', '{$color['code']}', '{$color['rgb_value']}')";
-					$this->db->query( $color_query . $color_query_sql_values );
+					$queries['colors']['prepare'][] = "('%d', '%s', '%s', '%s', '%s')";
+					array_push( $queries['colors']['values'], $color['style_id'], $color['generic_name'], $color['name'], $color['code'], $color['rgb_value'] );
 				}
 			}
 
 			if ( array_key_exists( 'options', $style ) ) {
 				$options = $style['options'];
-				$option_query = 'INSERT option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
+				
+				$queries['options']['query'] = 'INSERT option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
 				foreach ( $options as $option ) {
-					$option_query_sql_values = "({$option['id']}, '{$option['header']}', {$option['styleId']}, '{$option['description']}', '{$option['isChild']}', '{$option['oemCode']}', '{$option['chromeCode']}', {$option['msrpMin']}, {$option['msrpMax']}, '{$option['categories']}' )";
-
-					$this->db->query( $option_query . $option_query_sql_values );
+					$queries['options']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%s')";
+					array_push( $queries['options']['values'], $option['id'], $option['header'], $option['styleId'], $option['description'], $option['isChild'], $option['oemCode'], $option['chromeCode'], $option['msrpMin'], $option['msrpMax'], $option['categories'] );
 				}
 			}
-			
-			
+
 			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
-				$media_query = 'INSERT media ( style_id, type, url, width, height, shot_code, background, created ) VALUES ';
+				$queries['media']['query'] = 'INSERT media ( style_id, type, url, width, height, shot_code, background ) VALUES ';
 				foreach ( $style['view'] as $image ) {
-					$media_query_sql_values[] = "('{$image['style_id']}', 'view', '{$image['url']}', {$image['width']}, {$image['height']}, {$image['shot_code']}, '{$image['background_description']}', now())";
+					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s')";
+					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'] );
 				}
 			}
 
 			if ( array_key_exists( 'standard', $style ) ) {
-				$standard_query = 'INSERT standard ( style_id, type, description, categories ) VALUES ';
+				$queries['standard']['query'] = 'INSERT standard ( style_id, type, description, categories ) VALUES ';
 				foreach ( $style['standard'] as $item ) {
-					$standard_query_sql_values[] = "({$style_id}, '{$item['type']}', '{$item['description']}', '{$item['categories']}')";
+					$queries['standard']['prepare'][] = "('%d', '%s', '%s', '%s')";
+					array_push( $queries['standard']['values'], $style_id, $item['type'], $item['description'], $item['categories'] );
 				}
 			}
 		}
-
-		$style_query .= implode( ',', $style_query_sql_values );
-		$this->db->query( $style_query );
-
-		$engine_query .= implode( ',', $engine_query_sql_values );
-		$this->db->query( $engine_query );
-
-		$media_query .= implode( ',', $media_query_sql_values );
-		$this->db->query( $media_query );
-
-		//		$colorized_media_query .= implode( ',', $colorized_media_query_sql_values );
-		//		$this->db->query( $colorized_media_query );
-
-		$standard_query .= implode( ',', $standard_query_sql_values );
-		$this->db->query( $standard_query );
+		
+//		echo '<pre>'; var_dump( $queries ); echo '</pre>'; exit();
+		
+		foreach( $queries as $values ) {
+			// Incase there are no entries to update for a particular table
+			if ( ! isset( $values['query']) || ! isset($values['prepare']) ) { continue; }
+			$query = $values['query'] . implode(',', $values['prepare'] );
+			$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
+		}
 
 	}
 
