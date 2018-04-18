@@ -7,6 +7,14 @@ $obj = new Convertus_DB_Updater('CA');
 
 /************************* CHROME DATA FUNCTIONS *************************/
 
+function get_models() {
+	global $obj;
+	$updated = $obj->db->get_col('SELECT DISTINCT model.model_name FROM model INNER JOIN style ON style.model_name = model.model_name');
+	$models = $obj->db->get_col('SELECT DISTINCT model_name FROM model');
+
+	return array( 'models' => $models, 'updated' => $updated );
+}
+
 function update_all_makes() {
 	global $obj;
 	$obj->update_divisions();
@@ -25,26 +33,27 @@ function update_all_models() {
 function update_styles_by_model( $model ) {
 	global $obj;
 	$outputs = array();
-	
+
 	$styles = $obj->get_model_details( "model_name LIKE '{$model}'" );
 	$obj->update_styles( $styles );
 	$results['outputs'] = $obj->outputs;
-	
+
 	return $results;
 }
 
+function update_db_images_style( $style_id ) {
+	global $obj;
+	$sql = "SELECT * FROM media WHERE url LIKE '%media.chromedata.com%' AND style_id LIKE '{$style_id}'";
+	$results = $obj->db->get_results( $sql, ARRAY_A );
+	var_dump( $results );
+}
+
 function update_db_images() {
-	
+
 	return array();
 }
 
-function get_models() {
-	global $obj;
-	$updated = $obj->db->get_col('SELECT DISTINCT model.model_name FROM model INNER JOIN style ON style.model_name = model.model_name');
-	$models = $obj->db->get_col('SELECT DISTINCT model_name FROM model');
-	
-	return array( 'models' => $models, 'updated' => $updated );
-}
+
 
 
 /************************* IMAGES FUNCTIONS *************************/
@@ -290,7 +299,7 @@ function get_params( $args, $storage_path, $type ) {
 				"storage_path" 	=> $storage_path . '_sm' . $type,
 			),
 			array(
-				"id"						=> "xs",
+				"id"						=> "xs", 
 				"width" 				=> 320,
 				"height" 				=> 240,
 				"strategy" 			=> "auto",

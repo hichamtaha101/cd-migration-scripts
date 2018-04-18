@@ -21,6 +21,12 @@ jQuery(document).ready(function($){
 			args: true
 		},
 		{
+			title: 'Update Database Images By Style ID ( may take some time )',
+			fname: 'update_db_images_style',
+			desc: 'Grabs style id, downloads all colorized images, optimizes and formats images, stores on s3 and updates Database Media table for style.',
+			args: true
+		},
+		{
 			title: 'Update All Styles ( may take some time )',
 			fname: 'update_all_styles',
 			desc: 'Updates styles table by each non-updated model, progress is reported in the output section.',
@@ -68,6 +74,10 @@ jQuery(document).ready(function($){
 				var args = [];
 				switch( item.fname ) {
 					case 'update_styles_by_model':
+						args.push(val);
+						break;
+					
+					case 'update_db_images_style':
 						args.push(val);
 						break;
 				}
@@ -120,6 +130,7 @@ jQuery(document).ready(function($){
 	// Recursive function to update all model styles one model at a time
 	function update_all_styles(event) {
 		// Start Loading
+		console.time();
 		$(event.target).parent().addClass('active');
 		$(event.target).parent().find('.loader').addClass('active');
 
@@ -131,6 +142,7 @@ jQuery(document).ready(function($){
 				run_php_function('update_styles_by_model', [model], callback);
 			}else {
 				// Finished updating all models
+				console.timeEnd();
 				$(event.target).parent().removeClass('active');
 				$(event.target).parent().find('.loader').removeClass('active');
 			}
