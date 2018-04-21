@@ -21,9 +21,9 @@ jQuery(document).ready(function($){
 			args: true
 		},
 		{
-			title: 'Update Database Images By Style ID ( may take some time )',
-			fname: 'update_db_images_style',
-			desc: 'Grabs style id, downloads all colorized images, optimizes and formats images, stores on s3 and updates Database Media table for style.',
+			title: 'Update Database Images By Model ( may take some time )',
+			fname: 'update_db_images_model',
+			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
 			args: true
 		},
 		{
@@ -77,7 +77,7 @@ jQuery(document).ready(function($){
 						args.push(val);
 						break;
 					
-					case 'update_db_images_style':
+					case 'update_db_images_model':
 						args.push(val);
 						break;
 				}

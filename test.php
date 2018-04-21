@@ -15,9 +15,13 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 //echo '<pre>'; var_dump( $styles ); echo '</pre>';
 //$obj->update_styles( $styles );
 
-$test = update_styles_by_model( 'Soul EV' );
-echo '<pre>'; var_dump( $test ); echo '</pre>';
+//$test = update_styles_by_model( 'Soul EV' );
+//echo '<pre>'; var_dump( $test ); echo '</pre>';
 
 //$styles = $obj->get_model_details( "model_name LIKE 'Transit Connect Van'" );
+
+//update_all_images();
+
+update_db_images_model('M4');
 
 ?>

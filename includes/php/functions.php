@@ -3,6 +3,7 @@ include_once( dirname( __FILE__ ) . '/Convertus_Data_API.php' );
 include_once( dirname( __FILE__ ) . '/Kraken.php' );
 $kraken = new Kraken("3a229550bd763f7848f362ef48cfa8d9", "0ec10e979cdde48de4f9dd6e2c0de9e9c412ee44");
 $obj = new Convertus_DB_Updater('CA');
+$media_entries = array();
 
 
 /************************* CHROME DATA FUNCTIONS *************************/
@@ -41,44 +42,75 @@ function update_styles_by_model( $model ) {
 	return $results;
 }
 
-function update_db_images_style( $style_id ) {
+function update_db_images_model( $model ) {
 	global $obj;
-	$sql = "SELECT * FROM media WHERE url LIKE '%media.chromedata.com%' AND style_id LIKE '{$style_id}'";
+	$sql = "SELECT style_id FROM style WHERE model_name LIKE '{$model}'";
 	$results = $obj->db->get_results( $sql, ARRAY_A );
-	var_dump( $results );
+	// Check if model exists
+	if ( ! $results ) { 
+		return array( 'outputs' => array( 
+			'type'=>'error', 
+			'msg'=>'Could not find model ' . $model . ' in database.' 
+		)); 
+	}
+	
+	$sql = "SELECT * FROM media WHERE style_id LIKE ";
+	foreach ( $results as $result ) {
+		$sql .= $result['style_id'] . ' OR style_id LIKE ';
+	}
+	$sql = substr( $sql, 0 , -18 );
+	$results = $obj->db->get_results( $sql, ARRAY_A );
+	if ( ! $results ) { 
+		return array( 'outputs' => array( 
+			'type'=>'error', 
+			'msg'=>'Could not find model ' . $model . ' in database.' 
+		)); 
+	}
+	
+	// Update all $results images here
 }
 
+// Idk bout this yet
 function update_db_images() {
-
-	return array();
+	$sql = "SELECT * FROM media WHERE url LIKE '%media.chromedata.com'";
 }
 
+//$start = microtime(true);
+//
+//$time_elapsed_secs = microtime(true) - $start;
+//var_dump( $time_elapsed_secs );
 
 
 
 /************************* IMAGES FUNCTIONS *************************/
 
-//update_all_images();
 function update_all_images() {
-	global $obj;
+	global $obj, $media_entries;
 
 	// urls with media.chromedata.com need to be updated
 	$sql = 'SELECT * FROM media WHERE url LIKE "%media.chromedata.com%"';
 	$results = $obj->db->get_results( $sql, ARRAY_A );
 	if ( $results ) {
 		if ( count( $results ) > 0 ) {
+			$start = microtime(true);
 			foreach ( $results as $media ) {
-				//				kraken_s3_url( $media ); 
-				//				break;
-				//								$start = microtime(true);
+
+				$fname = explode( '/', $media['url'] );
+				$fname = end( $fname );
+				$fname = str_replace( '.png', '', $fname );
+				$media['fname'] = $fname;
+				$media['storage_path'] = 'media/' . strrev( $media['style_id'] ) . '/view/';
+				array_push( $media_entries, $media );
+				// Test three
+				if ( count( $media_entries ) == 24 ) { kraken_s3(); break; } else { continue; }
 				if ( $media['shot_code'] === '1' ) {
+					$media['storage_path'] = 'media/' . strrev( $media['style_id'] ) . '/01/';
 					update_colorized_images( $media );
 				}
-
-				//								$time_elapsed_secs = microtime(true) - $start;
-				//								var_dump( $time_elapsed_secs );
 				break;
 			}
+			$time_elapsed_secs = microtime(true) - $start;
+			var_dump( $time_elapsed_secs );
 		} else {
 			echo 'All chrome data images have already been formatted and uploaded to S3';
 		}
@@ -93,11 +125,12 @@ function update_all_images() {
 	 * This function grabs and download all 1280 images from the url field in the media table.
 	 * Additionally, each image is cropped and uploaded to s3 via the kraken API.
 	 *
-	 * @param array $media, object containing the media's style_id, type, and url
+	 * @param array $media
 	 *
-	 * @return
+	 * @return nothing
 	 */
 function update_colorized_images( $media ) {
+	global $media_entries;
 
 	// Make dir if not exist
 	// Reverse id so its stored at random on the s3 bucket ( faster access :o )
@@ -106,13 +139,6 @@ function update_colorized_images( $media ) {
 		mkdir( './media/' . $style_id, 0777, true );
 		mkdir( './media/' . $style_id . '/01', 0777, true );
 	}
-	// fname is the format used to reference the colorized folder in the ftp
-	$fname = explode( '/', $media['url'] );
-	$fname = end( $fname );
-	$fname = 'cc_' . str_replace( '_1280_01', '_01_1280', $fname );
-	$fname = str_replace( '.png', '', $fname );
-	$media['fname'] = $fname;
-	$media['type']	= 'colorized';
 
 	$ftp_server = 'ftp.chromedata.com';
 	$ftp_user = 'u311191';
@@ -130,148 +156,118 @@ function update_colorized_images( $media ) {
 	// Passive mode to iterate directory and download images
 	ftp_pasv( $conn_id, true );
 
-	$contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $fname . '/' );
-	$local_path = './media/' . strrev( $media['style_id'] ) . '/01/';
+	$media['type'] = 'colorized';
+	$media['local_path'] = './media/' . strrev( $media['style_id'] ) . '/01/';
+	$folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $media['fname'] );
+	$contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
+
+	// Foreach color variation
 	foreach ( $contents as $image ) {
 		$image_info = pathinfo( $image );
-		if ( ftp_get( $conn_id, $local_path . $image_info['basename'], $image, FTP_BINARY ) ) {
-			$color_code = explode( '_', $image_info['filename'] );
-			$color_code = end( $color_code );
-			$media['color_option_code'] = $color_code;
-			kraken_s3_upload( $media );
+		$color_code = explode( '_', $image_info['filename'] );
+		$color_code = end( $color_code );
+		$copy = $media;
+		$copy['color_option_code'] = $color_code;
+		$copy['fname'] .= '_' . $color_code;
+		$copy['local_path'] .= $copy['fname'] . '.png';
+		if ( ftp_get( $conn_id, $copy['local_path'], $image, FTP_BINARY ) ) {
+			array_push( $media_entries, $copy );
+			// Add one
 			break;
 		}
 	} // End of colorized image loop
 }
 
-/**
-	 * This function uploads all remotely stored media images into s3
-	 * after optimization via Kraken
-	 *
-	 * @param array $media
-	 * @return 
-	 */
-function kraken_s3_url( $media ) {
-	global $kraken;
-	$fname = explode( '/', $media['url'] );
-	$fname = end( $fname );
-	$fname = str_replace( '.png', '', $fname );
-	$storage_path = 'media/' . strrev( $media['style_id'] ) . '/view/' . $fname;
+function kraken_s3() {
+	global $kraken, $media_entries;
+	$params = array();
 
-	//	 JPEG images
-	$params = get_params( array(
-		'url' 		=> $media['url'], 
-		'lossy' 	=> true,
-		'wait'		=> true,
-		'convert'	=> array(
-			'format'	=> 'jpeg',
-			'background'	=> '#ffffff'
-		),
-	), $storage_path, '.jpg' );
-	$data = $kraken->url( $params );
-	update_media_db( $data, $media );
+	foreach ( $media_entries as $media ) {
+		// jpg Images
+		$media['storage_path'] .= $media['fname'];
+		$param = get_params( array(
+			'lossy' 			=> true,
+			'convert'			=> array(
+				'format'			=> 'jpeg',
+				'background'	=> '#ffffff'
+			),
+			'media'				=> $media
+		), '.jpg' );
+		array_push( $params, $param );
 
-	// PNG Images
-	$params = get_params( array(
-		'url' => $media['url']
-	), $storage_path, '.png' );
-	$data = $kraken->url( $params );
-	update_media_db( $data, $media );
+		// png images
+		$param = get_params( array( 'media' => $media ), '.png' );
+		array_push( $params, $param );
+	}
 
+	$responses = $kraken->multiple_request( $params );
+	display_var( $responses );
+//	update_media_db( $responses );
 }
 
 /**
-	 * This function uploads all remotely stored media images into s3
-	 * after optimization via Kraken
+	 * This function checks the response data from kraken and if successful,
+	 * stores the media entries in the database
 	 *
-	 * @param array $media
-	 * @return 
+	 * @param arrays $data, array $media
+	 * @return nothing
 	 */
-function kraken_s3_upload( $media ) {
-	global $kraken, $obj;
-	$storage_path = 'media/' . strrev( $media['style_id'] ) . '/01/' . $media['fname'] . '_' . $media['color_option_code'];
-	$local_path = './' . $storage_path . '.png';
-
-	$params = get_params( array(
-		'file'				=> realpath( $local_path ),
-		'lossy' 			=> true,
-		'convert'			=> array(
-			'format'			=> 'jpeg',
-			'background'	=> '#ffffff'
-		)
-	), $storage_path, '.jpg' );
-	$data = $kraken->upload( $params );
-	update_media_db( $data, $media );
-
-	$params = get_params( array(
-		'file'				=> realpath( $local_path ),
-	), $storage_path, '.png' );
-	$data = $kraken->upload( $params );
-	update_media_db( $data, $media );
-
-}
-
-/**
-	 * This function 
-	 *
-	 *
-	 * @param 
-	 * @return 
-	 */
-function update_media_db( $data, $media ) {
+function update_media_db( $responses ) {
 	global $obj;
-	//echo '<pre>'; var_dump( $data ); echo '</pre>';
 
-	if ( $data["success"] ) {
-		// Delete old entries
-		$extension = substr( $data['results']['lg']['kraked_url'], -4 );
-		$sql = "DELETE FROM media WHERE 
-		style_id LIKE '{$media['style_id']}' 
-		AND type LIKE '{$media['type']}' 
-		AND shot_code LIKE {$media['shot_code']} 
+	foreach ( $responses as $data ) {
+		if ( $data["success"] ) {
+			// Delete old entries, keeps reference to the chromedata entires
+			$extension = substr( $data['results']['lg']['kraked_url'], -4 );
+			$sql = "DELETE FROM media WHERE 
+		style_id LIKE '{$media['style_id']}'
+		AND type LIKE '{$media['type']}'
+		AND shot_code LIKE {$media['shot_code']}
 		AND color_option_code LIKE '{$media['color_option_code']}'
-		AND url LIKE '%amazonaws%' 
+		AND url LIKE '%amazonaws%'
 		AND url LIKE '%{$extension}%'";
-		$obj->db->query( $sql );
+			$obj->db->query( $sql );
 
-		$sql = '';
-		$values = array();
-		// SQL Insert
-		if ( $media['type'] == 'view' ) {
-			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, created ) VALUES ";
-		} elseif ( $media['type'] == 'colorized' )  { 
-			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, created ) VALUES ";
-		}
-
-		// SQL Values
-		foreach ( $data['results'] as $result ) {
-			$background = 'Transparent';
-			if ( strpos( $result['kraked_url'], '.jpg' ) !== false ) { $background = 'White'; }
-			if ( $media['type'] == 'view' )  {
-				$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', now() )";
-			} elseif ( $media['type'] == 'colorized' )  {
-				$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', now())";
+			$sql = '';
+			$values = array();
+			// SQL Insert
+			if ( $media['type'] == 'view' ) {
+				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, created ) VALUES ";
+			} elseif ( $media['type'] == 'colorized' )  { 
+				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, created ) VALUES ";
 			}
+
+			// SQL Values
+			foreach ( $data['results'] as $result ) {
+				$background = 'Transparent';
+				if ( strpos( $result['kraked_url'], '.jpg' ) !== false ) { $background = 'White'; }
+				if ( $media['type'] == 'view' )  {
+					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', now() )";
+				} elseif ( $media['type'] == 'colorized' )  {
+					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', now())";
+				}
+			}
+
+			echo '<pre>'; var_dump( $values ); echo '</pre>';
+			echo '<br>';
+
+			// SQL query
+			$obj->db->query( $sql . implode( ',', $values ) );
+		} else {
+			echo "Fail. Error message: " . $data["message"];
 		}
-
-		echo '<pre>'; var_dump( $values ); echo '</pre>';
-		echo '<br>';
-
-		// SQL query
-		$obj->db->query( $sql . implode( ',', $values ) );
-	} else {
-		echo "Fail. Error message: " . $data["message"];
 	}
 }
 
 /**
-	 * This function 
+	 * This function generates the arguments necessary for the kraken api
+	 * based on the media object passed in and the type of file to be converted
 	 *
-	 *
-	 * @param 
+	 * @param array $args, array $media, string $type
 	 * @return 
 	 */
-function get_params( $args, $storage_path, $type ) {
+function get_params( $args, $type ) {
+	$storage_path = $args['media']['storage_path'];
 	$params = array(
 		"wait"		 		=> true,
 		"auto_orient"	=> true,
@@ -317,6 +313,13 @@ function get_params( $args, $storage_path, $type ) {
 			)
 		)
 	);
+	// Check if file is remote or local
+	if ( array_key_exists( 'local_path', $args['media'] ) ) {
+		$params['file'] = realpath( $args['media']['local_path'] );
+	} else {
+		$params['url'] = $args['media']['url'];
+	}
+
 	foreach ( $args as $key => $value ) {
 		$params[$key] = $value;
 	}
@@ -324,15 +327,32 @@ function get_params( $args, $storage_path, $type ) {
 }
 
 /**
-	 * This function 
+	 * This function uses the kraken object based on the paramaters
+	 * passed in.
 	 *
-	 *
-	 * @param 
-	 * @return 
+	 * @param array $params
+	 * @return array $data
 	 */
+function get_kraken_data( $params ) {
+	global $kraken;
+	$data = array();
+	if ( array_key_exists( 'file', $params ) ) {
+		$data = $kraken->upload( $params );
+	} elseif ( array_key_exists( 'url', $params ) ) {
+		$data = $kraken->url( $params );
+	}
+	return $data;
+}
+
 function is_dir_empty($dir) {
 	if ( ! is_readable( $dir) ) return NULL; 
 	return ( count( scandir( $dir ) ) == 2);
+}
+
+function display_var( $var ) {
+	echo '<pre>';
+	var_dump( $var );
+	echo '</pre>';
 }
 
 ?>
