@@ -1,6 +1,7 @@
-<?php // Silence is golden
+<?php
 include_once( dirname( __FILE__ ) . '/wpdb.php' );
 include_once( dirname( __FILE__ ) . '/formatting.php' );
+include_once( '../../config.php' );
 
 class Chrome_Data_API {
 
@@ -16,8 +17,8 @@ class Chrome_Data_API {
 
 	function __construct( $country_code ) {
 
-		$this->number   = '308652';
-		$this->secret   = '8343ac07bb984bcb';
+		$this->number   = CHROME_DATA_ACCOUNT_ID;
+		$this->secret   = CHROME_DATA_SECRET_ACCESS_KEY;
 		$this->api_url  = 'http://services.chromedata.com/Description/7b?wsdl';
 		$this->language = 'en';
 		$this->outputs = array();
@@ -308,6 +309,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			array(
 				'property' => 'styleId',
 				'field' => 'style_id',
+			),
+			array (
+				'property'	=> 'fileName',
+				'field'			=> 'file_name',
 			),
 		);
 
@@ -704,9 +709,13 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$style_id = $response->style->mediaGallery->styleId;
 				foreach ( $data as $image ) {
 					if ( property_exists( $image, 'url' ) ) {
-						// Only need these images, the rest is grabbed via ftp and optimized on Kraken 
+						// Only need these images, the rest is grabbed via ftp and the sizes are optimized via Kraken 
 						if ( $image->width == 1280 && $image->height == 960 && $image->backgroundDescription == 'Transparent' ) {
 							$image->styleId = $style_id;
+							$fname = explode( '/', $image->url );
+							$fname = end( $fname );
+							$fname = str_replace( '.png', '', $fname );	
+							$image->fileName = $fname;
 							$style['view'][] = $this->set_properties( $image, $this->image_gallery_properties );
 						}
 					}
@@ -715,7 +724,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 
 		return $style;
-
 	}
 
 	private function get_standard_categories( $item ) {
@@ -1008,10 +1016,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
-				$queries['media']['query'] = 'INSERT media ( style_id, type, url, width, height, shot_code, background ) VALUES ';
+				$queries['media']['query'] = 'INSERT media ( style_id, type, url, width, height, shot_code, background, file_name ) VALUES ';
 				foreach ( $style['view'] as $image ) {
-					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s')";
-					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'] );
+					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s')";
+					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'] );
 				}
 			}
 
@@ -1032,7 +1040,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			$query = $values['query'] . implode(',', $values['prepare'] );
 			$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
 		}
-
 	}
 
 	private function define_equipment_group( $equipment_group_raw ) {
@@ -1135,4 +1142,3 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 //		),
 //	)
 //);
-?>

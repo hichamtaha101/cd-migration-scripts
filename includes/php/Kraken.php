@@ -19,9 +19,6 @@ class Kraken {
 	public function url($opts = array()) {
 		$data = json_encode(array_merge($this->auth, $opts));
 		return $data;
-
-//		$response = self::request($data, 'https://api.kraken.io/v1/url', 'url');
-		//		return $response;
 	}
 
 	public function upload($opts = array()) {
@@ -53,9 +50,6 @@ class Kraken {
 		));
 
 		return $data;
-
-		//		$response = self::request($data, 'https://api.kraken.io/v1/upload', 'upload');
-		//		return $response;
 	}
 
 	public function status() {
@@ -69,78 +63,68 @@ class Kraken {
 		return $response;
 	}
 
-	private function request($data, $url, $type) {
-		$curl = curl_init();
-
-		if ($type === 'url') {
-			curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-				'Content-Type: application/json'
-			));
+	public function multiple_requests( $requests ) {
+		$batch_size = 100;
+		// Can only handle 10 colorized requests because of the local file size in the request
+		if ( $requests[0]['media']['type'] == 'colorized' ) {
+			$batch_size = 11;
 		}
 
-		curl_setopt($curl, CURLOPT_URL, $url);
-
-		// Force continue-100 from server
-		curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36");
-		curl_setopt($curl, CURLOPT_POST, 1);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-		curl_setopt($curl, CURLOPT_FAILONERROR, 0);
-		curl_setopt($curl, CURLOPT_CAINFO, __DIR__ . "/cacert.pem");
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
-		curl_setopt($curl, CURLOPT_TIMEOUT, $this->timeout);
-
-		if (isset($this->proxyParams['proxy'])) {
-			curl_setopt($curl, CURLOPT_PROXY, $this->proxyParams['proxy']);
+		// Divide requests by batch_size
+		$chunks = array_chunk( $requests, $batch_size );
+		$results = array(
+			'errors'				=> array(),
+			'invalid_json'	=> array(),
+			'responses'			=> array()
+		);
+		foreach ( $chunks as $chunk ) {
+			$start = microtime(true);
+			
+			$response = self::batch_request( $chunk );
+			foreach ( $response as $key => $value ) {
+				$results[$key] = array_merge( $results[$key], $response[$key] );
+			}
+			
+			$end = microtime(true) - $start;
+			echo $end . '<br>';
 		}
 
-		$response = json_decode(curl_exec($curl), true);
-
-		if ($response === null) {
-			$response = array (
-				"success" => false,
-				"error" => 'cURL Error: ' . curl_error($curl)
-			);
-		}
-
-		curl_close($curl);
-
-		return $response;
+		return $results;
 	}
 
-	public function multiple_request( $params ) {
+	public function batch_request( $requests ) {
 		
 		$curls = array();
 		$mh = curl_multi_init();
 
 		// Grab post fields from each param and store into curls
-		foreach ( $params as &$param ) {
+		foreach ( $requests as &$request ) {
 			$curl = curl_init();
-			$media = $param['media'];
-			unset( $param['media'] );
-			
+			$media = $request['media'];
+			unset( $request['media'] );
+
 			// Set options for file postdata based curls
-			if ( array_key_exists( 'file', $param ) ) {
-				$param = self::upload( $param );
+			if ( array_key_exists( 'file', $request ) ) {
+				$request = self::upload( $request );
 				curl_setopt( $curl, CURLOPT_URL, 'https://api.kraken.io/v1/upload' );
 			// Set options for url postdata based curls
-			} elseif ( array_key_exists( 'url', $param ) ) {
-				$param = self::url( $param );
-				curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-					'Content-Type: application/json'
-				));
+			} elseif ( array_key_exists( 'url', $request ) ) {
+				$request = self::url( $request );
 				curl_setopt( $curl, CURLOPT_URL, 'https://api.kraken.io/v1/url' );
+				curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+					'Content-Type: application/json',
+				));
 			// Else, there's something wrong with the media entry
 			} else {
-				echo 'Something wrong with the following entry <pre>'; var_dump( $param ); echo '</pre>';
+				echo 'Request does not have a url or file param :/ <pre>'; var_dump( $request ); echo '</pre>';
 				continue;
 			}
-
+			
 			// Force continue-100 from server
 			curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36");
 			curl_setopt($curl, CURLOPT_POST, 1);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($curl, CURLOPT_POSTFIELDS, $param);
+			curl_setopt($curl, CURLOPT_POSTFIELDS, $request);
 			curl_setopt($curl, CURLOPT_FAILONERROR, 0);
 			curl_setopt($curl, CURLOPT_CAINFO, __DIR__ . "/cacert.pem");
 			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
@@ -150,7 +134,7 @@ class Kraken {
 			}
 			
 			// need this to remove curls afterwards, and refer to correct media for db
-			$curls[] = array( 
+			$curls[] = array(
 				'curl' => $curl, 
 				'media' => $media 
 			); 
@@ -168,13 +152,22 @@ class Kraken {
 		curl_multi_close( $mh );
 
 		// all of our requests are done, we can now access the results
+		// $responses = array( 'responses' => array(), 'invalid_json' => array() );
 		foreach ( $curls as $ch ) {
-			$responses[] = array(
-				'response' 	=> json_decode( curl_multi_getcontent( $ch['curl'] ), true ),
-				'media'			=> $ch['media']
-			);
+			$response = json_decode( curl_multi_getcontent( $ch['curl'] ), true );
+			if ( $response['success'] ) { 
+				$responses['responses'][] = array(
+					'response' 	=> json_decode( curl_multi_getcontent( $ch['curl'] ), true ),
+					'media'			=> $ch['media']
+				);
+				continue; 
+			}
+			if ( $response['message'] == 'Incoming request body does not contain a valid JSON object' ) {
+				$responses['invalid_json'][] = $ch['media'];
+			} else {
+				$responses['errors'][] = $ch['media'];
+			}
 		}
-		
 		return $responses;
 	}
 

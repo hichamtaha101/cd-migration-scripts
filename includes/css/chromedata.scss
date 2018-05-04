@@ -7,6 +7,7 @@ h1, h2, h3, h4, h5, h6, body {
 	max-width: 1140px;
 	margin: 0 auto;
 	padding: 15px;
+	padding-bottom: 50px;
 }
 .error { color: red; }
 .success { color: green; }
@@ -53,7 +54,6 @@ h1, h2, h3, h4, h5, h6, body {
 	max-height: 320px;
 	overflow-y: auto;
 	overflow-x: hidden;
-	border: 1px solid black;
 	position: relative;
 	.empty {
 		text-align: center;
@@ -69,4 +69,8 @@ h1, h2, h3, h4, h5, h6, body {
 		column-count: 2;
 		list-style-type: none;
 	}
+}
+
+.ui.menu.tabular .item {
+	cursor: pointer;
 }

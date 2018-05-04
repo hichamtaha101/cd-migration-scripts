@@ -38,27 +38,54 @@
 					{{ output.msg }}
 				</div>
 			</div>
-			<h2>Models:</h2>
-			<div class="section ui segment">
-				<div class="row">
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<h3>Needs Updating</h3>
-						<!-- All models have been updated -->
-						<div class="note" v-if="updating.length == 0">No Models Need Updating</div>
-						<!-- If model not found in updated, needs to be updated -->
-						<ul v-if="updating.length > 0">
-							<li v-for="model in updating">{{ model }}</li>
-						</ul>
-					</div>
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<h3>Updated</h3>
-						<div class="note" v-if="updated.length == 0">No Models Have Been Updated</div>
-						<ul v-if="updated.length > 0">
-							<li v-for="model in updated">{{ model }}</li>
-						</ul>
-					</div>
-				</div>
+			<h2>Status:</h2>
+			<div class="ui top attached tabular menu">
+				<div class="item active" data-tab="styles">Styles</div>
+				<div class="item" data-tab="media-view">Media View</div>
+				<div class="item" data-tab="media-colorized">Media Colorized</div>
+			</div>
+			<div class="ui bottom attached tab segment active section" data-tab="styles">
+				<updating-table 
+				:updated="updated.models" 
+				:updating="updating.models"
+				name="Models"></updating-table>
+			</div>
+			<div class="ui bottom attached tab segment section" data-tab="media-view">
+				<updating-table 
+				:updated="updated.modelViews" 
+				:updating="updating.modelViews"
+				name="Views Media"></updating-table>
+			</div>
+			<div class="ui bottom attached tab segment section" data-tab="media-colorized">
+				<updating-table 
+				:updated="updated.modelColorized" 
+				:updating="updating.modelColorized"
+				name="Colorized Media"></updating-table>
 			</div>
 		</div>
 	</body>
+
+	<!-- Vue Template -->
+	<script type="text/x-template" id="updating-table">
+	<div>
+		<div class="row">
+			<div class="col-md-6 col-sm-6 col-xs-12">
+				<h3>Models That Needs Updating</h3>
+				<!-- All models have been updated -->
+				<div class="note" v-if="updating.length == 0">No {{ name }} Need Updating</div>
+				<!-- If model not found in updated, needs to be updated -->
+				<ul v-if="updating.length > 0">
+					<li v-for="model in updating">{{ model }}</li>
+				</ul>
+			</div>
+			<div class="col-md-6 col-sm-6 col-xs-12">
+				<h3>Models Updated</h3>
+				<div class="note" v-if="updated.length == 0">No {{ name }} Have Been Updated</div>
+				<ul v-if="updated.length > 0">
+					<li v-for="model in updated">{{ model }}</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	</script>
 </html>
