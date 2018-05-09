@@ -15,14 +15,22 @@ function get_updated_models() {
 	$results = $obj->db->get_results( $sql, ARRAY_A );
 	$views_updated = array();
 	foreach ( $results as $result ) {
-		// Images = styles * 4 shot_codes * 4 sizes
-		if ( $result['images'] == ( $result['styles'] * 4 * 4 ) ) {
+		// Images = styles * 4 views(1,2,3,12) * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
+		if ( $result['images'] == ( $result['styles'] * IMAGES_PER_REQUEST * 2 * 4 ) ) {
 			$views_updated[] = $result['model_name'];
 		}
 	}
 
+	$sql = str_replace( 'view', 'colorized', $sql );
+	$results = $obj->db->get_results( $sql, ARRAY_A );
 	// Check for colorized images per model
-	$colorized_updated = $obj->db->get_col('SELECT DISTINCT style.model_name FROM style INNER JOIN media ON style.style_id = media.style_id WHERE media.url LIKE "%amazonaws%" AND media.type LIKE "%colorized%"');
+	$colorized_updated = array();
+	foreach ( $results as $result ) {
+		// Images = styles * 22 colors * 2 types(jpg,png) * 4sizes(lg,md,sm,xs)
+		if ( $result['images'] == ( $result['styles'] * COLORIZED_IMAGES * 2 * 4 ) ) {
+			$colorized_updated[] = $result['model_name'];
+		}
+	}
 
 	return array(
 		'models' 	=> $models,
@@ -61,71 +69,43 @@ function update_styles_by_model( $model ) {
 	return $results;
 }
 
-function update_db_views_model( $model ) {
-	global $obj, $k_s3;
-	$sql = "SELECT style_id FROM style WHERE model_name LIKE '{$model}'";
-	$styles = $obj->db->get_results( $sql, ARRAY_A );
-	// Check if model exists
-	if ( ! $styles ) {
-		return array( 'outputs' => array( 
-			'type'=>'error', 
-			'msg'=>'Could not find model ' . $model . ' in database.' 
-		));
-	}
-
-	$sql = "SELECT style_id, type, url, shot_code, file_name, color_option_code FROM media WHERE url LIKE '%media.chromedata%' AND ( style_id LIKE ";
-	foreach ( $styles as $style ) {
-		$sql .= $style['style_id'] . ' OR style_id LIKE ';
-	}
-	$sql = substr( $sql, 0 , -18 );
-	$sql .= ' )';
-	$media = $obj->db->get_results( $sql, ARRAY_A );
-	if ( ! $media ) {
-		return array( 'outputs' => array( 
-			'type'=>'error', 
-			'msg'=>'Could not find model ' . $model . ' in database.' 
-		)); 
-	}
-
-	// Optimize and store all media images here
-	$k_s3->update_views( $media );
-
-	$results['update'] = array( 'key' => 'models', 'data' => $model );
-	return $results;
-}
-
-
-function update_db_colorized_model( $model ) {
+function update_model_images( $model, $type ) {
 	global $obj, $k_s3;
 	
+	$outputs = array( array(
+		'type'=>'error', 
+		'msg'=>'Could not find model ' . $model . ' in database.' 
+	));
 	$sql = "SELECT style_id FROM style WHERE model_name LIKE '{$model}'";
 	$styles = $obj->db->get_results( $sql, ARRAY_A );
 	// Check if model exists
 	if ( ! $styles ) {
-		return array( 'outputs' => array( 
-			'type'=>'error', 
-			'msg'=>'Could not find model ' . $model . ' in database.' 
-		));
+		return array( 'outputs' => $outputs );
 	}
 
-	$sql = "SELECT style_id, type, url, shot_code, file_name, color_option_code FROM media WHERE url LIKE '%media.chromedata%' AND shot_code LIKE '1' AND  ( style_id LIKE ";
+	$sql = "SELECT style_id, type, url, shot_code, file_name, color_option_code FROM media WHERE url LIKE '%media.chromedata%' AND shot_code LIKE '1' AND ( style_id LIKE ";
+	if ( $type == 'view' ) { $sql = str_replace( " shot_code LIKE '1' AND", "", $sql ); }
 	foreach ( $styles as $style ) {
 		$sql .= $style['style_id'] . ' OR style_id LIKE ';
 	}
 	$sql = substr( $sql, 0 , -18 );
 	$sql .= ' )';
 	$media = $obj->db->get_results( $sql, ARRAY_A );
-	if ( ! $media ) {
-		return array( 'outputs' => array( 
-			'type'=>'error', 
-			'msg'=>'Could not find model ' . $model . ' in database.' 
-		)); 
-	}
-
+	
 	// Optimize and store all media images here
-	$k_s3->update_colorized( $media );
-
-	$results['update'] = array( 'key' => 'models', 'data' => $model );
+	$result = $k_s3->update_images( $media, $type );
+	$outputs[0]['type'] = 'success';
+	$outputs[0]['msg'] = 'Updated all ' . $model . ' ' . $type . ' images in s3 and database';
+	if ( $result === FALSE ) {
+		$outputs[0]['msg'] = 'Already updated all ' . $model . ' ' . $type . ' images in s3 and database';
+	}
+	$results = array(
+		'update'	=> array(
+			'key' 		=> ( $type == 'view' ) ? 'modelViews' : 'modelColorized', 
+			'data' 		=> $model,
+		),
+		'outputs'	=> $outputs
+	);
 	return $results;
 }
 

@@ -64,43 +64,32 @@ class Kraken {
 	}
 
 	public function multiple_requests( $requests ) {
-		$batch_size = 100;
-		// Can only handle 10 colorized requests because of the local file size in the request
-		if ( $requests[0]['media']['type'] == 'colorized' ) {
-			$batch_size = 11;
-		}
 
 		// Divide requests by batch_size
-		$chunks = array_chunk( $requests, $batch_size );
-		$results = array(
-			'errors'				=> array(),
-			'invalid_json'	=> array(),
-			'responses'			=> array()
-		);
+		$responses = array();
+		$chunks = array_chunk( $requests, 100 );
 		foreach ( $chunks as $chunk ) {
-			$start = microtime(true);
-			
-			$response = self::batch_request( $chunk );
-			foreach ( $response as $key => $value ) {
-				$results[$key] = array_merge( $results[$key], $response[$key] );
-			}
-			
-			$end = microtime(true) - $start;
-			echo $end . '<br>';
+			$response = self::recursive_batch_request( $chunk );
+			$responses = array_merge( $response, $responses );
 		}
-
-		return $results;
+		return $responses;
 	}
 
-	public function batch_request( $requests ) {
-		
-		$curls = array();
+	public function recursive_batch_request( $batch_requests, $attempt = 0 ) {
+		// $start = microtime(true);
+
+		if ( $attempt == 3 ) {
+			echo 'Too many recursive calls';
+			exit();
+		}
+
+		$success = $redo = $curls = array();
 		$mh = curl_multi_init();
 
 		// Grab post fields from each param and store into curls
-		foreach ( $requests as &$request ) {
+		foreach ( $batch_requests as $request ) {
 			$curl = curl_init();
-			$media = $request['media'];
+			$req = $request;
 			unset( $request['media'] );
 
 			// Set options for file postdata based curls
@@ -133,10 +122,10 @@ class Kraken {
 				curl_setopt($curl, CURLOPT_PROXY, $this->proxyParams['proxy']);
 			}
 			
-			// need this to remove curls afterwards, and refer to correct media for db
+			// need this to remove curls afterwards, and recall failed reqeusts
 			$curls[] = array(
 				'curl' => $curl, 
-				'media' => $media 
+				'request'	=> $req
 			); 
 			curl_multi_add_handle( $mh, $curl );
 		}
@@ -151,24 +140,34 @@ class Kraken {
 		foreach ( $curls as $ch ) { curl_multi_remove_handle( $mh, $ch['curl'] ); }
 		curl_multi_close( $mh );
 
-		// all of our requests are done, we can now access the results
-		// $responses = array( 'responses' => array(), 'invalid_json' => array() );
+		// handle responses
 		foreach ( $curls as $ch ) {
 			$response = json_decode( curl_multi_getcontent( $ch['curl'] ), true );
-			if ( $response['success'] ) { 
-				$responses['responses'][] = array(
-					'response' 	=> json_decode( curl_multi_getcontent( $ch['curl'] ), true ),
-					'media'			=> $ch['media']
+			// successful response
+			if ( $response['success'] ) {
+				$success[] = array(
+					'response' 	=> $response,
+					'media'			=> $ch['request']['media']
 				);
 				continue; 
 			}
+			// unsuccessful response
 			if ( $response['message'] == 'Incoming request body does not contain a valid JSON object' ) {
-				$responses['invalid_json'][] = $ch['media'];
-			} else {
-				$responses['errors'][] = $ch['media'];
+				echo 'fuark'; exit();
+				$ch['request']['breakdown'] = true;
 			}
+			$redo[] = $ch['request'];
 		}
-		return $responses;
+
+		// $end = microtime(true) - $start;
+		// echo $end . '<br>';
+
+		// recursive function to ensure no more errors
+		if ( count( $redo ) > 0 ) {
+			return array_merge( $success, self::recursive_batch_request( $redo, $attempt + 1 ) );
+		} else {
+			return $success;
+		}
 	}
 
 }

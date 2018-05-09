@@ -21,31 +21,31 @@ jQuery(document).ready(function($){
 			args: true
 		},
 		{
-			title: 'Update All Styles ( may take some time )',
-			fname: 'update_all_styles',
-			desc: 'Updates styles table by each non-updated model, progress is reported in the output section.',
-			args: false
-		},
-		{
-			title: 'Update Database Views Media By Model ( may take some time )',
+			title: 'Update Views Media By Model ( may take some time )',
 			fname: 'update_db_views_model',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
 			args: true
 		},
 		{
-			title: 'Update Database Colorized Media By Model ( may take some time )',
+			title: 'Update Colorized Media By Model ( may take some time )',
 			fname: 'update_db_colorized_model',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
 			args: true
 		},
 		{
-			title: 'Update Database Views ( may take some time )',
+			title: 'Update All Styles ( may take a long time )',
+			fname: 'update_all_styles',
+			desc: 'Updates styles table by each non-updated model, progress is reported in the output section.',
+			args: false
+		},
+		{
+			title: 'Update All Database Views ( may take a long time )',
 			fname: 'udpate_db_views',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
 			args: false
 		},
 		{
-			title: 'Update Database Colorized ( may take some time )',
+			title: 'Update All Database Colorized ( may take a long time )',
 			fname: 'update_db_colorized',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
 			args: false
@@ -108,10 +108,14 @@ jQuery(document).ready(function($){
 					
 					case 'update_db_views_model':
 						args.push(val);
+						args.push('view');
+						item.fname = 'update_model_images';
 						break;
 
 					case 'update_db_colorized_model' :
-					args.push(val);
+						args.push(val);
+						args.push('colorized');
+						item.fname = 'update_model_images';
 						break;
 				}
 
@@ -124,7 +128,6 @@ jQuery(document).ready(function($){
 					$(event.target).parent().find('.loader').removeClass('active');
 				};
 				run_php_function( item.fname, args, callback );
-  
 			}
 		}
 	});

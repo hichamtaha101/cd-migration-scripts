@@ -22,6 +22,7 @@ $obj = new Convertus_DB_Updater('CA');
 
 //$styles = $obj->get_model_details( "model_name LIKE 'Transit Connect Van'" );
 
-// update_db_views_model('M4');
-update_db_colorized_model('M4');
+$result = get_updated_models();
+// $result = update_model_images('M4', 'view');
+display_var( $result );
 // get_models();
