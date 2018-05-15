@@ -22,6 +22,7 @@ class Chrome_Data_API {
 		$this->api_url  = 'http://services.chromedata.com/Description/7b?wsdl';
 		$this->language = 'en';
 		$this->outputs = array();
+		$this->valid = TRUE;
 
 		$this->country_code = $country_code;
 
@@ -53,7 +54,6 @@ class Chrome_Data_API {
 		$response->parameters = $args;
 
 		return $response;
-
 	}
 
 	protected function soap_call_loop( $function, $args = array() ) {
@@ -433,9 +433,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				}
 			}
 		}
-
 		return $models;
-
 	}
 
 	public function update_models() {
@@ -460,25 +458,18 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
-	private function error_caught( $response_status ) {
-		if ( $response_status->responseCode === 'Unsuccessful' ) {
-			$error = $response_status->status->_ . ' : ' . $response_status->status->code;
-			$this->outputs[] = array( 'type' => 'error', 'msg' => $error );
-			return true;
-		}
-		return false;
-	}
-
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
 		if ( empty( $models ) ) {
-			$this->outputs[] = array( 'type' => 'error', 'msg' => 'Couldn\'t find model(s) with query ' . $filter . ' in the DB' );
+			$this->outputs[] = array( 
+				'type' => 'error', 
+				'msg' => 'Couldn\'t find model(s) with query ' . $filter . ' in the DB' 
+			);
+			return FALSE;
 		}
 
 		$styles = array();
-		$calls = array();
-
 		foreach ( $models as $model ) {
 
 			// Grab all trim variations per model
@@ -487,43 +478,62 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				array(
 					'modelYear' => $model->model_year,
 					'modelName' => $model->model_name,
-					'makeName' => $model->division_name,
+					'makeName' 	=> $model->division_name,
 				)
 			);
+			if ( $this->error_caught( $soap_call->response->responseStatus ) ) { continue; } // Skip these
 
-			// Skip error responses
-			if ( $this->error_caught( $soap_call->response->responseStatus ) ) { continue; } 
-			else {
-				$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated styles for ' . $model->model_year . ' ' . $model->division_name . ' ' . $model->model_name );
-			}
-
+			// All model year for this model
 			$soap_response = $soap_call->response->style;
+
 			switch ( gettype( $soap_response ) ) {
-					// Model only has one trim variation ( object )
+					// Model only has one year ( object )
 				case 'object':
 					$soap_call = $this->get_style_details( $soap_response->id );
-					if ( $soap_call === FALSE ) { break; }
-
+					if ( $soap_call === FALSE ) { break; } // Skip this
 					$styles[] = $this->set_style( $soap_call, $soap_response->id );
-					$calls[] = $soap_call;
 					break;
+					// Model has multiple years ( array )
 				case 'array':
-					// Model has multiple trim variations ( array )
 					foreach ( $soap_response as $i => $response_item ) {
 						$soap_call = $this->get_style_details( $response_item->id );
-						if ( $soap_call === FALSE ) { continue; }
-
-						$calls[] = $soap_call;
+						if ( $soap_call === FALSE ) { continue; } // Skip this
 						$styles[] = $this->set_style( $soap_call, $response_item->id );
-						//						break;
 					}
 					break;
 				default:
 					echo 'This should not happen';
+					exit();
 			}
 		}
 
+
+		// Test to see if all models styles pass 
+		$results = self::meets_requirements( $styles );
+		if ( $results === TRUE ) {
+			$this->outputs[] = array(
+				'type' => 'success', 
+				'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name 
+			);
+		} else {
+			$this->valid = $results;
+		}
+
 		return $styles;
+	}
+
+	private function error_caught( $response_status ) {
+		if ( $response_status->responseCode === 'Unsuccessful' ) {
+			$output = array( 'type' => 'error' );
+			$error = $response_status->status->_ . ' : ' . $response_status->status->code;
+			if ( strpos( $error, 'NameMatchNotFound' ) !== FALSE ) {
+				$output['type'] = 'warning';
+			}
+			$output['msg'] = $error;
+			$this->outputs[] = $output;
+			return true;
+		}
+		return false;
 	}
 
 	private function get_style_details( $id ) {
@@ -584,6 +594,32 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $option;
 	}
 
+	private function get_transmission( $desc ) {
+		if ( stripos($desc, 'Transmission,' ) !== FALSE ) {
+			$desc = explode( ', ', $desc );
+			return $desc[1];
+		} elseif ( stripos( $desc, 'Transmission:' ) !== FALSE ) {
+			$desc = explode( ' ', $desc );
+			$values = array();
+			foreach( $desc as $value ) {
+				if ( strpos( $value, ':' ) !== FALSE ) {
+					$key = str_replace( ':', '', $value );
+					$values[$key] = array();
+				} else {
+					$values[$key][] = $value;
+				}
+			}
+			return implode( ' ', $values['Transmission'] );
+		} elseif ( stripos( $desc, ' transmission' ) !== FALSE ) {
+			$desc = str_replace( ' transmission', '', $desc );
+			return $desc;
+		} elseif ( strpos( $desc, 'Transmission' ) === 0 ) {
+			return $desc;
+		} else {
+			return NULL;
+		}
+	}
+
 	private function set_style( $soap_call, $style_id ) {
 
 		$style = array();
@@ -641,8 +677,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				);
 				// If transmission was not grabbed before, grab from equipment
 				if ( ! array_key_exists( 'transmission', $style['style'] ) ) {
-					if ( strcasecmp( $item->header->_, 'mechanical' ) === 0 && stripos( $item->description, 'Transmission: ' ) !== false ) {
-						$style['style']['transmission'] = str_ireplace( 'transmission: ', '', $item->description );
+					if ( strcasecmp( $item->header->_, 'mechanical' ) === 0 && stripos( $item->description, 'Transmission' ) !== false ) {
+						$style['style']['transmission'] = self::get_transmission($item->description);
 					}
 				}
 			}
@@ -653,13 +689,21 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 		}
 
+		// If transmission still not grabbed, check if car is electric
+		if ( ! isset( $style['style']['transmission'] ) ) {
+			if ( strpos( $style['engine']->fuel_type, 'Electric' ) !== FALSE ) {
+				$style['style']['transmission'] = 'Electric';
+			}
+		}
+
 		// ^ exterior colors
 		if ( isset( $response->exteriorColor ) ) {
 			$data = $response->exteriorColor;
 			foreach ( $data as $item ) {
 				$color = array();
+				
 				// Skip if these fields are empty
-				if ( empty( $item->colorCode ) || empty( $item->rbgValue) ) { continue; }
+				if ( empty( $item->colorCode ) || empty( $item->rgbValue) ) { continue; }
 
 				if ( isset( $item->genericColor ) ) {
 					// Grab generic/primary name from object/array
@@ -675,7 +719,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 								break;
 							}
 						}
-
 					}
 				}
 				if ( isset( $item->colorName ) ) {
@@ -692,6 +735,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				} else {
 					$color['style_id'] = $style['style']['style_id'];
 				}
+				
 				$style['style_colors'][$item->colorCode] = $color;
 				$style['style']['exterior_colors'][] = $item->colorName;
 			}
@@ -704,6 +748,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 
 		// ^ media gallery
+		$style['style']['has_media'] = false;
+		$style['style']['media_count'] = 0;
 		if ( property_exists( $response->style, 'mediaGallery' ) ) {
 			if ( $data = $response->style->mediaGallery->view ) {
 				$style_id = $response->style->mediaGallery->styleId;
@@ -720,10 +766,62 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 						}
 					}
 				}
+				$style['style']['media_count'] = count( $style['view'] );
+				$style['style']['has_media'] = TRUSE;
 			}
 		}
 
 		return $style;
+	}
+
+	private function meets_requirements( $styles ) {
+		$pass = TRUE;
+		$msg = '<b>Styles do not meet all requirements:</b><br>';
+		foreach ( $styles as $style ) {
+			$model = $style['style']['model_name'];
+			$style_id = $style['style']['style_id'];
+
+			if ( count( $style['options'] ) < 1 ) {
+				$msg .= 'No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
+				$pass = FALSE;
+			}
+			if ( ! isset( $style['style']['msrp'] ) ) {
+				$msg .= 'No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				$pass = FALSE;	
+			}
+			if ( empty( $style['style']['transmission'] ) ) {
+				$msg .= 'No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				$pass = FALSE;	
+			}
+			if ( empty( $style['style']['drivetrain'] ) ) {
+				$msg .= 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				$pass = FALSE;	
+			}
+			if ( empty( $style['style']['body_type'] ) ) {
+				$msg .= 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				$pass = FALSE;	
+			}
+			if ( empty( $style['style']['exterior_colors'] ) ) {
+				$msg .= 'No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				$pass = FALSE;
+			}
+			if ( empty( $style['engine'] ) ) {
+				$msg .= 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				$pass = FALSE;
+			}
+			if ( $style['style']['has_media'] && $style['style']['media_count'] === 0 ) {
+				$msg .= 'Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
+				$pass = FALSE;
+			}
+		}
+		if ( ! $pass ) {
+			$msg .= 'Fix Errors Then Re-Run The Script!';
+			return array(
+				'type'	=> 'error',
+				'msg'		=> $msg
+			);
+		}
+		return $pass;
 	}
 
 	private function get_standard_categories( $item ) {
@@ -967,19 +1065,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$value = $style['style'];
 				$style_id = $value['style_id'];
 
-				$exists = $this->db->get_row( "SELECT * FROM style WHERE style_id = {$value['style_id']} AND acode = '{$value['acode']}'" );
-				if ( $exists !== null ) {
-					$this->db->delete( 'style', array( 'style_id' => $value['style_id'] ) );
-					$this->db->delete( 'media', array( 'style_id' => $value['style_id'] ) );
-					$this->db->delete( 'engine', array( 'style_id' => $value['style_id'] ) );
-					$this->db->delete( 'standard', array( 'style_id' => $value['style_id'] ) );
-					$this->db->delete( 'exterior_color', array( 'style_id' => $value['style_id'] ) );
-					$this->db->delete( 'option', array( 'style_id' => $value['style_id'] ) );
-				}
+				// Delete all currently existing entries
+				$this->db->delete( 'style', array( 'style_id' => $style_id ) );
+				$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
+				$this->db->delete( 'engine', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'standard', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'exterior_color', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'option', array( 'style_id' => $style_id ) );
 				
-				$queries['styles']['query'] = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors ) VALUES ';
-				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s')";
-				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'] );
+				$queries['styles']['query'] = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, media_count ) VALUES ';
+				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
+				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['media_count'] );
 
 				$value = $style['engine'];
 				$queries['engines']['query'] = 'INSERT engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
@@ -1031,8 +1127,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				}
 			}
 		}
-		
-//		echo '<pre>'; var_dump( $queries ); echo '</pre>'; exit();
 		
 		foreach( $queries as $values ) {
 			// Incase there are no entries to update for a particular table
@@ -1127,18 +1221,3 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 	}
 }
-
-
-//$response = $obj->soap_call(
-//	'describeVehicle',
-//	array(
-//		'styleId' => 390597,
-//		'includeMediaGallery' => 'Both',
-//		'switch' => array(
-//			'ShowAvailableEquipment',
-//			'ShowConsumerInformation',
-//			'ShowExtendedTechnicalSpecifications',
-//			'IncludeDefinitions',
-//		),
-//	)
-//);

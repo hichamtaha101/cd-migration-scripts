@@ -34,8 +34,8 @@
 				<div 
 						 :class="output.type"
 						 v-for="output in outputs" 
+						 v-html="output.msg"
 						 v-else>
-					{{ output.msg }}
 				</div>
 			</div>
 			<h2>Status:</h2>
@@ -46,20 +46,20 @@
 			</div>
 			<div class="ui bottom attached tab segment active section" data-tab="styles">
 				<updating-table 
-				:updated="updated.models" 
-				:updating="updating.models"
+				:updated="updated.styles" 
+				:updating="updating.styles"
 				name="Models"></updating-table>
 			</div>
 			<div class="ui bottom attached tab segment section" data-tab="media-view">
 				<updating-table 
-				:updated="updated.modelViews" 
-				:updating="updating.modelViews"
+				:updated="updated.views" 
+				:updating="updating.views"
 				name="Views Media"></updating-table>
 			</div>
 			<div class="ui bottom attached tab segment section" data-tab="media-colorized">
 				<updating-table 
-				:updated="updated.modelColorized" 
-				:updating="updating.modelColorized"
+				:updated="updated.colorized" 
+				:updating="updating.colorized"
 				name="Colorized Media"></updating-table>
 			</div>
 		</div>

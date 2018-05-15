@@ -11,12 +11,21 @@ function get_updated_models() {
 	
 	$models = $obj->db->get_col('SELECT DISTINCT model_name FROM model');
 	$models_updated = $obj->db->get_col('SELECT DISTINCT model.model_name FROM model INNER JOIN style ON style.model_name = model.model_name');
-	$sql = 'SELECT DISTINCT style.model_name, COUNT(media.style_id) as images, COUNT( DISTINCT media.style_id ) AS styles FROM style INNER JOIN media ON style.style_id = media.style_id WHERE media.url LIKE "%amazonaws%" AND media.type LIKE "%view%"';
+	// Update sql to check for shotcode 1 images
+	$sql = 'SELECT s.model_name, 
+	COUNT(m.url) AS images,
+	(SELECT SUM(ss.media_count) FROM style ss WHERE ss.model_name LIKE s.model_name) AS shot_codes,
+	COUNT(DISTINCT(s.style_id)) AS styles
+	FROM style s INNER JOIN media m ON s.style_id = m.style_id 
+	WHERE m.url LIKE "%amazonaws%" AND 
+	m.type LIKE "%view%" AND 
+	s.has_media LIKE 1
+  GROUP BY s.model_name';
 	$results = $obj->db->get_results( $sql, ARRAY_A );
 	$views_updated = array();
 	foreach ( $results as $result ) {
-		// Images = styles * 4 views(1,2,3,12) * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
-		if ( $result['images'] == ( $result['styles'] * IMAGES_PER_REQUEST * 2 * 4 ) ) {
+		// Images = style total shotcodes * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
+		if ( $result['images'] == ( $result['shot_codes'] * 2 * 4 ) ) {
 			$views_updated[] = $result['model_name'];
 		}
 	}
@@ -35,11 +44,13 @@ function get_updated_models() {
 	return array(
 		'models' 	=> $models,
 		'updated'	=> array(
-			'models' 					=> $models_updated,
-			'modelViews'			=> $views_updated,
-			'modelColorized'	=> $colorized_updated,
+			'styles' 		=> $models_updated,
+			'views'			=> $views_updated,
+			'colorized'	=> $colorized_updated,
 		),
 	);
+	// Check if all has colorized
+	// sql = "SLECT s.style_id, ( SELECT COUNT(me.style_id) FROM media me WHERE me.shot_code LIKE 1 AND me.style_id LIKE s.style_id ) as shotcode FROM style s"
 }
 
 function update_all_makes() {
@@ -62,11 +73,24 @@ function update_styles_by_model( $model ) {
 	$outputs = array();
 
 	$styles = $obj->get_model_details( "model_name LIKE '{$model}'" );
-	$obj->update_styles( $styles );
+	if ( $obj->valid === TRUE ) {
+		$obj->update_styles( $styles );
+		$results['update'] = array( 
+			'key' => 'styles', 
+			'data' => $model 
+		);
+	}
 	$results['outputs'] = $obj->outputs;
-	$results['update'] = array( 'key' => 'models', 'data' => $model );
+	$results['valid']	= $obj->valid;
 
 	return $results;
+}
+
+function update_views_by_model( $model ) {
+	return update_model_images( $model, 'view' );
+}
+function update_colorized_by_model( $model ) {
+	return update_model_images( $model, 'colorized' );
 }
 
 function update_model_images( $model, $type ) {
@@ -76,7 +100,7 @@ function update_model_images( $model, $type ) {
 		'type'=>'error', 
 		'msg'=>'Could not find model ' . $model . ' in database.' 
 	));
-	$sql = "SELECT style_id FROM style WHERE model_name LIKE '{$model}'";
+	$sql = "SELECT style_id FROM style WHERE model_name LIKE '{$model}' AND has_media LIKE 1";
 	$styles = $obj->db->get_results( $sql, ARRAY_A );
 	// Check if model exists
 	if ( ! $styles ) {
@@ -91,7 +115,7 @@ function update_model_images( $model, $type ) {
 	$sql = substr( $sql, 0 , -18 );
 	$sql .= ' )';
 	$media = $obj->db->get_results( $sql, ARRAY_A );
-	
+
 	// Optimize and store all media images here
 	$result = $k_s3->update_images( $media, $type );
 	$outputs[0]['type'] = 'success';
@@ -101,7 +125,7 @@ function update_model_images( $model, $type ) {
 	}
 	$results = array(
 		'update'	=> array(
-			'key' 		=> ( $type == 'view' ) ? 'modelViews' : 'modelColorized', 
+			'key' 		=> ( $type == 'view' ) ? 'views' : 'colorized', 
 			'data' 		=> $model,
 		),
 		'outputs'	=> $outputs
@@ -110,11 +134,6 @@ function update_model_images( $model, $type ) {
 }
 
 /************************* OTHER FUNCTIONS *************************/
-
-function is_dir_empty($dir) {
-	if ( ! is_readable( $dir) ) return NULL; 
-	return ( count( scandir( $dir ) ) == 2);
-}
 
 function display_var( $var ) {
 	echo '<pre>';

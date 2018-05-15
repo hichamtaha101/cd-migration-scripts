@@ -17,12 +17,15 @@ $obj = new Convertus_DB_Updater('CA');
 //echo '<pre>'; var_dump( $styles ); echo '</pre>';
 //$obj->update_styles( $styles );
 
-// $test = update_styles_by_model( 'Soul EV' );
-//echo '<pre>'; var_dump( $test ); echo '</pre>';
+// $result = $obj->get_models();
+// display_var( $result );
+// Sierra 3500HD, Silverado 3500HD
 
+// $result = update_styles_by_model( 'NSX' );
+// display_var( $result );
 //$styles = $obj->get_model_details( "model_name LIKE 'Transit Connect Van'" );
 
-$result = get_updated_models();
-// $result = update_model_images('M4', 'view');
-display_var( $result );
+// $result = update_views_by_model('Equinox');
+// $result = get_updated_models();
+// display_var( $result );
 // get_models();

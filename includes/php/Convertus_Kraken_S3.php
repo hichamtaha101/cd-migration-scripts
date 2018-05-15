@@ -27,7 +27,6 @@ class Convertus_Kraken_S3 {
 				self::update_colorized_images( $media );
 			}
 		}
-
 		$requests = self::get_kraken_requests();
 		if ( empty( $requests ) ) { return FALSE; }
 		$responses = $this->kraken->multiple_requests( $requests );
@@ -117,9 +116,13 @@ class Convertus_Kraken_S3 {
 	 * 
 	 * @return null
 	 */
-	private function get_kraken_requests( $big = true ) {
+	private function get_kraken_requests() {
 		$requests = array();
 		foreach ( $this->media_entries as $media ) {
+			if ( self::is_updated( $media ) ) {
+				self::remove_cd_media( $media );
+				continue; // Removed chromedata entry
+			}
 			
 			$sql = "SELECT COUNT(color_option_code) FROM media WHERE 
 			style_id LIKE '{$media['style_id']}' AND
@@ -284,15 +287,19 @@ class Convertus_Kraken_S3 {
 
 			// 5) Check to remove chrome data entries
 			if ( self::is_updated( $media ) ) {
-				$remove_sql = "DELETE FROM media WHERE 
-				style_id LIKE '{$media['style_id']}' AND
-				type LIKE 'view' AND
-				shot_code LIKE '{$media['shot_code']}' AND
-				url LIKE '%media.chromedata%'
-				";
-				$this->obj->db->query( $remove_sql );
+				self::remove_cd_media( $media );
 			}
 		}
+	}
+
+	private function remove_cd_media( $media ) {
+		$sql = "DELETE FROM media WHERE 
+		style_id LIKE '{$media['style_id']}' AND
+		type LIKE 'view' AND
+		shot_code LIKE '{$media['shot_code']}' AND
+		url LIKE '%media.chromedata%'
+		";
+		$this->obj->db->query( $sql );
 	}
 
 	/**
@@ -315,9 +322,9 @@ class Convertus_Kraken_S3 {
 		$updated = $this->obj->db->get_var( $sql );
 		// 4sizes ( lg md sm xs ) x 2 types( jpg png ) = 8 images per view
 		if ( $updated != IMAGES_PER_REQUEST * 2 ) { $pass = FALSE; }
-		
 		// Only shot code 1 has to do the next check
 		if ( $media['shot_code'] !== '1' ) { return $pass; }
+
 		$sql = "SELECT count(style_id) FROM media WHERE 
 		style_id LIKE '{$media['style_id']}' AND
 		shot_code LIKE '{$media['shot_code']}' AND
