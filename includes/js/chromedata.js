@@ -86,8 +86,9 @@ jQuery(document).ready(function ($) {
 				if (item.fname.indexOf('r_update_all_') !== -1) {
 					var type = item.fname.replace('r_update_all_', '');
 					update_all(event, type);
+					return;
 				}
-				return;
+
 				// No args provided if needed check
 				if (item.args && val == '') {
 					$('#value + .notification').addClass('error');
@@ -97,18 +98,8 @@ jQuery(document).ready(function ($) {
 
 				// Get args
 				var args = [];
-				switch (item.fname) {
-					case 'update_styles_by_model':
-						args.push(val);
-						break;
-
-					case 'update_views_by_model':
-						args.push(val);
-						break;
-
-					case 'update_colorized_by_model':
-						args.push(val);
-						break;
+				if ( item.fname.indexOf('_by_model') !== -1 ) {
+					args.push(val);
 				}
 
 				// Start loading

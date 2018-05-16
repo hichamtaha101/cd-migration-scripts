@@ -1,8 +1,10 @@
 <?php 
 include_once( dirname( __FILE__ ) . '/Convertus_Data_API.php' );
 include_once( dirname( __FILE__ ) . '/Convertus_Kraken_S3.php' );
+include_once( dirname( __FILE__ ) . '/AWS_S3.php' );
 $obj = new Convertus_DB_Updater('CA');
 $k_s3 = new Convertus_Kraken_S3( $obj );
+$aws_s3 = new AWS_S3();
 
 /************************* CHROME DATA FUNCTIONS *************************/
 
@@ -51,6 +53,10 @@ function get_updated_models() {
 	);
 	// Check if all has colorized
 	// sql = "SLECT s.style_id, ( SELECT COUNT(me.style_id) FROM media me WHERE me.shot_code LIKE 1 AND me.style_id LIKE s.style_id ) as shotcode FROM style s"
+}
+
+function upload_original_s3() {
+
 }
 
 function update_all_makes() {

@@ -7,7 +7,8 @@ $max = 100 * 1024 * 1024;
 $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
 if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
 $obj = new Convertus_DB_Updater('CA');
-
+$aws_s3 = new AWS_S3();
+$aws_s3->send_noods();
 // $obj->db->query('TRUNCATE style');
 
 //$results = $obj->get_model_details("model_name LIKE 'M4s'");
@@ -25,7 +26,7 @@ $obj = new Convertus_DB_Updater('CA');
 // display_var( $result );
 //$styles = $obj->get_model_details( "model_name LIKE 'Transit Connect Van'" );
 
-// $result = update_views_by_model('Equinox');
+// $result = update_views_by_model('Q3');
 // $result = get_updated_models();
 // display_var( $result );
 // get_models();
