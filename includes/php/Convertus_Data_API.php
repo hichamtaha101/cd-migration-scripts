@@ -8,7 +8,9 @@ class Chrome_Data_API {
 	private $account_login;
 	private $number;
 	private $secret;
-
+	
+	public $body_types;
+	public $standard_models;
 	public $outputs;
 	public $country_code;
 	public $language;
@@ -30,7 +32,7 @@ class Chrome_Data_API {
 			'number'        => $this->number,
 			'secret'        => $this->secret,
 			'country'       => $this->country_code,
-			'language'  => $this->language,
+			'language'  		=> $this->language,
 		);
 
 		$this->soap_args = array(
@@ -39,6 +41,105 @@ class Chrome_Data_API {
 
 		$this->soap  = new SoapClient( $this->api_url );
 		$this->years = $this->get_years( 2 );
+
+		// Standardize body types
+		$this->body_types = array(
+			'4dr Car'																	=> 'Sedan',
+			'Sport Utility'														=> 'SUV',
+			'2dr Car'																	=> 'Coupe',
+			'["Convertible","2dr Car"]'								=> 'Convertible',
+			'["Hatchback","4dr Car"]'									=> 'Hatchback',
+			'Specialty Vehicle'												=> 'Other',
+			'Mini-van, Cargo'													=> 'Van',
+			'Mini-van, Passenger'											=> 'Van',
+			'["Long Bed","Regular Cab Pickup"]'				=> 'Truck',
+			'["Standard Bed","Extended Cab Pickup"]'	=> 'Truck',
+			'["Long Bed","Extended Cab Pickup"]'			=> 'Truck',
+			'["Long Bed","Crew Cab Pickup"]'					=> 'Truck',
+			'["Standard Bed","Crew Cab Pickup"]'			=> 'Truck',
+			'["Standard Bed","Regular Cab Pickup"]'		=> 'Truck',
+			'["Short Bed","Crew Cab Pickup"]'					=> 'Truck',
+			'["Station Wagon","4dr Car"]'							=> 'Wagon',
+			'["Hatchback","2dr Car"]'									=> 'Hatchback',
+			'Full-size Passenger Van'									=> 'Van',
+			'Full-size Cargo Van'											=> 'Van',
+			'["Short Bed","Extended Cab Pickup"]'			=> 'Truck',
+			'["Sport Utility","Convertible"]'					=> 'SUV',
+			'Regular Cab Chassis-Cab'									=> 'Truck',
+			'Crew Cab Chassis-Cab'										=> 'Truck',
+			'Extended Cab Chassis-Cab'								=> 'Truck',
+			'["3dr Car","Hatchback"]'									=> 'Hatchback',
+		);
+
+		// Standardize model names
+		$this->standard_models = array(
+			'3500 Chassis' 				              => '3500',
+			'370Z Coupe' 				                => '370Z',
+			'370Z Roadster' 				            => '370Z',
+			'4500 Chassis'				              => '4500',
+			'4C Coupe' 				                  => '4C',
+			'5500 Chassis'				              => '5500',
+			'A3 Cabriolet'				              => 'A3',
+			'A3 Sedan'				                  => 'A3',
+			'A3 Sportback e-tron'			          => 'A3 e-tron',
+			'A4 Sedan'				                  => 'A4',
+			'A5 Cabriolet'				              => 'A5',
+			'A5 Coupe'				                  => 'A5',
+			'A5 Sportback' 				              => 'A5',
+			'A7 Sportback' 				              => 'A7',
+			'A8 L'					                    => 'A8',
+			'ATS Coupe'				                  => 'ATS',
+			'ATS Sedan'				                  => 'ATS',
+			'ATS-V Coupe'				                => 'ATS-V',
+			'ATS-V Sedan'				                => 'ATS-V',
+			'Accord Sedan'				              => 'Accord',
+			'Beetle'					                  => 'Convertible',
+			'CT6 Sedan'				                  => 'CT6',
+			'CTS Sedan'				                  => 'CTS',
+			'CTS-V Sedan'				                => 'CTS-V',
+			'City Express Cargo Van'			      => 'City Express',
+			'Civic Coupe'				                => 'Civic',
+			'Civic Hatchback'				            => 'Civic',
+			'Civic Sedan'				                => 'Civic',
+			'Express Cargo Van'			            => 'Express',
+			'E-Series Stripped Chassis'		      => 'Stripped Chassis',
+			'Express Commercial Cutaway'		    => 'Express',
+			'Express Passenger'			            => 'Express',
+			'F-53 Motorhome Stripped Chassis'		=> 'Stripped Chassis',
+			'F-59 Commercial Stripped Chassis'	=> 'Stripped Chassis',
+			'Mazda3 Sport'				              => 'Mazda3',
+			'Metris Cargo Van'			            => 'Metris',
+			'Metris Passenger Van'			        => 'Metris',
+			'NV200 Compact Cargo'			          => 'NV200',
+			'ProMaster City Cargo Van'		      => 'Promaster City',
+			'ProMaster City Wagon'			        => 'Promaster City',
+			'Q60 Coupe'				                  => 'Q60',
+			'R8 Coupe'				                  => 'R8',
+			'RS 3 Sedan'				                => 'RS 3',
+			'RS 5 Coupe'				                => 'RS 5',
+			'RS 7 Sportback'				            => 'RS 7',
+			'RS 7 Sportback Performance'		    => 'RS 7',
+			'S3 Sedan'				                  => 'S3',
+			'S4 Sedan'				                  => 'S4',
+			'S5 Cabriolet'				              => 'S5',
+			'S5 Coupe'				                  => 'S5',
+			'S5 Sportback'				              => 'S5',
+			'S7 Sportback'				              => 'S7',
+			'S8 plus'					                  => 'S8',
+			'Silverado 1500 LD'			            => 'Silverado 1500',
+			'TT Coupe'				                  => 'TT',
+			'TT RS Coupe'				                => 'TT RS',
+			'TT Roadster'				                => 'TT',
+			'TTS Coupe'				                  => 'TTS',
+			'Transit Chassis Cab'			          => 'Transit',
+			'Transit Connect Van'			          => 'Transit Connect',
+			'Transit Connect Wagon'			        => 'Transit Connect',
+			'Transit Cutaway'				            => 'Transit',
+			'Transit Passenger Wagon'	          => 'Transit',
+			'Transit Van'				                => 'Transit',
+			'Yaris Hatchback'				            => 'Yaris',
+			'Yaris Sedan'				                => 'Yaris',
+		);
 
 	}
 
@@ -379,7 +480,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	public function get_models( $division_id = -1 ) {
 
-		if ( $division_id === -1 ) {
+		if ( $division_id === -1 ) {    
 			$divisions = $this->db->get_results( 'SELECT * FROM division' );
 		} else {
 			$divisions = $this->db->get_results( "SELECT * FROM division where division_id = {$division_id}" );
@@ -458,6 +559,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
+	private function remove_duplicate_models( $models ) {
+		$results = $duplicates = array();
+		foreach ( $models as $model ) {
+			$id = $model->model_year . $model->model_name;
+			if ( in_array( $id, $duplicates ) ) { continue; }
+			$results[] = $model;
+			$duplicates[] = $id;
+		}
+		return $results;
+	}
+
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
@@ -468,6 +580,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			);
 			return FALSE;
 		}
+		$models = $this->remove_duplicate_models($models);
 
 		$styles = array();
 		foreach ( $models as $model ) {
@@ -485,7 +598,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			// All model year for this model
 			$soap_response = $soap_call->response->style;
-
 			switch ( gettype( $soap_response ) ) {
 					// Model only has one year ( object )
 				case 'object':
@@ -650,10 +762,19 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 		// style properties as defined at the top of the class in an array of objects
 		if ( $data = $response->style ) {
-			$style['style']  = $this->set_properties( $data, $this->style_properties );
+			$style['style'] = $this->set_properties( $data, $this->style_properties );
+			$style['style']['body_type_standard'] = $this->get_standard_bt($style['style']['body_type']);
+			// Standardize model names
+			if ( array_key_exists( $style['style']['model_name'], $this->standard_models ) ) {
+				$style['style']['model_name'] = $this->standard_models[$style['style']['model_name']];
+			}
 		}
 
 		// ^ engine
+		// if ( $style['style']['style_id'] == 396211 ) {
+		// 	display_var($response->engine);
+		// 	exit();
+		// }
 		if ( isset( $response->engine ) ) {
 			$data = $response->engine;
 			if ( is_object( $data ) ) {
@@ -749,7 +870,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 		// ^ media gallery
 		$style['style']['has_media'] = false;
-		$style['style']['media_count'] = 0;
+		$style['style']['view_count'] = 0;
 		if ( property_exists( $response->style, 'mediaGallery' ) ) {
 			if ( $data = $response->style->mediaGallery->view ) {
 				$style_id = $response->style->mediaGallery->styleId;
@@ -766,7 +887,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 						}
 					}
 				}
-				$style['style']['media_count'] = count( $style['view'] );
+				$style['style']['view_count'] = count( $style['view'] );
 				$style['style']['has_media'] = TRUSE;
 			}
 		}
@@ -774,9 +895,18 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $style;
 	}
 
+	public function get_standard_bt( $cd_body_types ) {
+		if ( !array_key_exists ($cd_body_types, $this->body_types ) ) {
+			echo 'Please add ' . $cd_body_types . ' to the standardized list of body types';
+			exit();
+		}
+		return $this->body_types[$cd_body_types];
+	}
+
 	private function meets_requirements( $styles ) {
 		$pass = TRUE;
 		$msg = '<b>Styles do not meet all requirements:</b><br>';
+		$duplicates = array();
 		foreach ( $styles as $style ) {
 			$model = $style['style']['model_name'];
 			$style_id = $style['style']['style_id'];
@@ -809,7 +939,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$msg .= 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
 				$pass = FALSE;
 			}
-			if ( $style['style']['has_media'] && $style['style']['media_count'] === 0 ) {
+			if ( $style['style']['has_media'] && $style['style']['view_count'] === 0 ) {
 				$msg .= 'Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				$pass = FALSE;
 			}
@@ -1073,9 +1203,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$this->db->delete( 'exterior_color', array( 'style_id' => $style_id ) );
 				$this->db->delete( 'option', array( 'style_id' => $style_id ) );
 				
-				$queries['styles']['query'] = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, media_count ) VALUES ';
-				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
-				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['media_count'] );
+				$queries['styles']['query'] = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
+				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
+				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
 
 				$value = $style['engine'];
 				$queries['engines']['query'] = 'INSERT engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
@@ -1112,10 +1242,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
-				$queries['media']['query'] = 'INSERT media ( style_id, type, url, width, height, shot_code, background, file_name ) VALUES ';
+				$queries['media']['query'] = 'INSERT media ( style_id, type, url, width, height, shot_code, background, file_name, model_name ) VALUES ';
 				foreach ( $style['view'] as $image ) {
-					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s')";
-					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'] );
+					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s')";
+					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'], $style['style']['model_name'] );
 				}
 			}
 

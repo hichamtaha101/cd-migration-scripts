@@ -1,115 +1,48 @@
 <?php 
 include_once( dirname( __FILE__ ) . '/Kraken.php' );
+
 include_once( '../../config.php' );
 
 class Convertus_Kraken_S3 {
 	
 	public $output;
 	private $media_entries;
-	private $obj;
+	private $db;
 	private $kraken;
 
-	function __construct( $obj ) {
-		$this->obj = $obj;
+	function __construct( $db ) {
+		$this->db = $db;
 		$this->media_entries = array();
 		$this->output = array();
 		$this->kraken = new Kraken( KRAKEN_ACCESS_KEY_ID, KRAKEN_SECRET_ACCESS_KEY );
+		
 	}
 
-	public function update_images( $results, $type ) {
-		if ( $type == 'view' ) {
-			foreach ( $results as $media ) {
-				$media['storage_path'] = 'media/' . strrev( $media['style_id'] ) . '/view/' . $media['file_name'];
-				$this->media_entries[] = $media;
+	/** This function goes through all the media objects, and
+	 *	via kraken optimizes the images, then stores them in the 
+	 * 	database
+	 * @param none
+	 * 
+	 * @return null
+	 */
+	public function update_images( $media, $type ) {
+		foreach ( $media as $m ) {
+			$m['storage_path'] = 'media/' . strrev( $m['style_id'] );
+			if ( $type == 'view' ) {
+				$m['storage_path'] .= '/view/' . $m['file_name'];
+			} elseif ( $type == 'colorized' ) {
+				$m['storage_path'] .= '/01/' . $m['file_name'];
 			}
-		} else {
-			foreach ( $results as $media ) {
-				self::update_colorized_images( $media );
-			}
+			$this->media_entries[] = $m;
 		}
-		$requests = self::get_kraken_requests();
+		$requests = $this->get_kraken_requests();
 		if ( empty( $requests ) ) { return FALSE; }
 		$responses = $this->kraken->multiple_requests( $requests );
-		self::update_media_db( $responses );
+		$this->update_media_db( $responses );
 		return TRUSE;
 	}
 
-	/**
-	 * This function grabs and download all 1280 images from the url field in the media table.
-	 * Additionally, each image is cropped and uploaded to s3 via the kraken API.
-	 *
-	 * @param array $media
-	 * 
-	 * @return null
-	 */
-	private function update_colorized_images( $media ) {
-
-		$style_id = strrev( $media['style_id'] );
-		if ( ! file_exists( '../../temp/media/' . $style_id ) ) {
-			self::copy_media_style_folder( $media );
-		}
-		$media['storage_path'] = 'media/' . strrev( $media['style_id'] ) . '/01/';
-		$media['type'] = 'colorized';
-		// Iterate the directory and add to media_entries for optimization and storage
-		$dir = new DirectoryIterator('../../temp/media/' . $style_id . '/01' );
-		foreach ( $dir as $image ) {
-			if ( $image->isDot() ) { continue; }
-			$image_info = pathinfo( $image );
-			$color_code = explode( '_', $image_info['filename'] );
-			$color_code = end( $color_code );
-			$copy = $media;
-			$copy['color_option_code'] = $color_code;
-			$copy['file_name'] .= '_' . $color_code;
-			$copy['storage_path'] .= $copy['file_name'];
-			$copy['url'] = SITE_URL . '/test/media/' . $style_id . '/01/' . $copy['file_name']  . '.png';
-			$this->media_entries[] = $copy;
-		}
-	}
-
-	/** This function is meant for media records with a shot_code value of 1 and 
-	 * downloads all the colorized images via the chromedata ftp
-	 *
-	 * @param array $media The array containing the shot_code 1 media object
-	 * 
-	 * @return null
-	 */
-	private function copy_media_style_folder( $media ) {
-		$style_id = strrev( $media['style_id'] );
-		mkdir( '../../temp/media/' . $style_id, 0777, true );
-		mkdir( '../../temp/media/' . $style_id . '/01', 0777, true );
-
-		$ftp_server = 'ftp.chromedata.com';
-		$ftp_user = 'u311191';
-		$ftp_pass = 'con191';
-
-		// 1) Connect to ftp or die
-		$conn_id = ftp_connect($ftp_server) or set_error( 'FTP', "Couldn't connect to $ftp_server" ); 
-
-		// 2) Try to connect to ftp with the credentials above
-		if ( ! @ftp_login( $conn_id, $ftp_user, $ftp_pass ) ) {
-			set_error( 'FTP', "Couldn't connect as $ftp_user" );
-			echo 'Caught an error connecting to ftp';
-			return;
-		}
-		// 3) Passive mode to iterate directory and download images
-		ftp_pasv( $conn_id, true );
-
-		$folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $media['file_name'] );
-		$contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
-
-		// 4) Foreach color variation
-		foreach ( $contents as $image ) {
-			$image_info = pathinfo( $image );
-			$color_code = explode( '_', $image_info['filename'] );
-			$color_code = end( $color_code );
-			$local_path = '../../temp/media/' . $style_id . '/01/' . $media['file_name'] . '_' . $color_code . '.png';
-			if ( ! ftp_get( $conn_id, $local_path, $image, FTP_BINARY ) ) {
-				var_dump( 'Something went wrong when downloading images for style id ' . $media['style_id'] ); exit(); // Exit if error caught
-			}
-		}
-	}
-
-	/** This function goes through all the object's media entries, and
+	/** This function goes through all the media objects, and
 	 * grabs the paramaters needed to pass to the kraken api.
 	 *
 	 * @param none
@@ -119,12 +52,8 @@ class Convertus_Kraken_S3 {
 	private function get_kraken_requests() {
 		$requests = array();
 		foreach ( $this->media_entries as $media ) {
-			if ( self::is_updated( $media ) ) {
-				self::remove_cd_media( $media );
-				continue; // Removed chromedata entry
-			}
 			
-			$sql = "SELECT COUNT(color_option_code) FROM media WHERE 
+			$sql = "SELECT COUNT(*) FROM media WHERE 
 			style_id LIKE '{$media['style_id']}' AND
 			type LIKE '{$media['type']}' AND
 			shot_code LIKE '{$media['shot_code']}' AND
@@ -133,18 +62,19 @@ class Convertus_Kraken_S3 {
 			url LIKE '%amazonaws%' AND 
 			url LIKE '%.jpg%'";
 
-			$jpg = $this->obj->db->get_var( $sql );
+			$jpg = $this->db->get_var( $sql );
 			if ( $jpg != IMAGES_PER_REQUEST ) {
 				// jpg Images
-				$params = self::get_params( $media, '.jpg' );
+				$params = $this->get_params( $media, '.jpg' );
 				$requests = array_merge( $requests, $params );
 			}
 			
-			$png = $this->obj->db->get_var( str_replace( '.jpg', '.png', $sql ) );
+			$png = $this->db->get_var( str_replace( '.jpg', '.png', $sql ) );
 			if ( $png == IMAGES_PER_REQUEST ) { continue; }
 			// png images
-			$params = self::get_params( $media, '.png' );
+			$params = $this->get_params( $media, '.png' );
 			$requests = array_merge( $requests, $params );
+
 		}
 		return $requests;
 	}
@@ -164,7 +94,7 @@ class Convertus_Kraken_S3 {
 		$params = array(
 			"url"					=> $media['url'],
 			"media"				=> $media,
-			"wait"		 		=> true,
+			"wait"		 		=> true,    
 			"auto_orient"	=> true,
 			"s3_store" 	=> array(
 				"key" 		=> AWS_ACCESS_KEY_ID,
@@ -260,14 +190,14 @@ class Convertus_Kraken_S3 {
 			url LIKE '%{$extension}%'
 			";
 
-			// 1) Remove all amazonaws entries for corresponding request
-			$this->obj->db->query( $remove_sql . " AND url LIKE '%amazonaws%'" );
+			// 1) Remove all amazonaws media entries for corresponding request
+			$this->db->query( $remove_sql . " AND url LIKE '%amazonaws.com/media%'" );
 
 			// 2) SQL Insert
 			if ( $media['type'] == 'view' ) {
-				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, file_name, created ) VALUES ";
+				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, file_name, model_name, created ) VALUES ";
 			} elseif ( $media['type'] == 'colorized' )  { 
-				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, created ) VALUES ";
+				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, created ) VALUES ";
 			}
 
 			// 3) SQL Values. Figure out color name?
@@ -276,66 +206,14 @@ class Convertus_Kraken_S3 {
 				$background = 'Transparent';
 				if ( strpos( $result['kraked_url'], '.jpg' ) !== false ) { $background = 'White'; }
 				if ( $media['type'] == 'view' )  {
-					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '{$media['file_name']}', now() )";
+					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '{$media['file_name']}', '{$media['model_name']}', now() )";
 				} elseif ( $media['type'] == 'colorized' ) {
-					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', '{$media['file_name']}', now())";
+					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', '{$media['file_name']}', '{$media['model_name']}', now())";
 				}
 			}
 			// 4) SQL query
 			// display_var( $values );
-			$this->obj->db->query( $sql . implode( ',', $values ) );
-
-			// 5) Check to remove chrome data entries
-			if ( self::is_updated( $media ) ) {
-				self::remove_cd_media( $media );
-			}
+			$this->db->query( $sql . implode( ',', $values ) );
 		}
 	}
-
-	private function remove_cd_media( $media ) {
-		$sql = "DELETE FROM media WHERE 
-		style_id LIKE '{$media['style_id']}' AND
-		type LIKE 'view' AND
-		shot_code LIKE '{$media['shot_code']}' AND
-		url LIKE '%media.chromedata%'
-		";
-		$this->obj->db->query( $sql );
-	}
-
-	/**
-	 * This function checks to see if the media passed in has the correct amount of
-	 * db media entries before removing the referenced chromedata entry
-	 * 
-	 * @param array $media is the media object being tested
-	 * 
-	 * @return boolean true or false based on the media entry having the correct amount
-	 * of s3 records in the db
-	 */
-	private function is_updated( $media ) {
-		$pass = TRUSE;
-
-		$sql = "SELECT count(style_id) FROM media WHERE
-		style_id LIKE '{$media['style_id']}' AND
-		shot_code LIKE '{$media['shot_code']}' AND
-		url LIKE '%amazonaws%' AND
-		type LIKE 'view'";
-		$updated = $this->obj->db->get_var( $sql );
-		// 4sizes ( lg md sm xs ) x 2 types( jpg png ) = 8 images per view
-		if ( $updated != IMAGES_PER_REQUEST * 2 ) { $pass = FALSE; }
-		// Only shot code 1 has to do the next check
-		if ( $media['shot_code'] !== '1' ) { return $pass; }
-
-		$sql = "SELECT count(style_id) FROM media WHERE 
-		style_id LIKE '{$media['style_id']}' AND
-		shot_code LIKE '{$media['shot_code']}' AND
-		url LIKE '%amazonaws%' AND
-		type LIKE 'colorized'";
-		$updated = $this->obj->db->get_var( $sql );
-		// 22colors * 4sizes * 2types
-		$total_colorized = COLORIZED_IMAGES * IMAGES_PER_REQUEST * 2;
-		if ( $updated != $total_colorized ) { $pass = FALSE; }
-
-		return $pass;
-	}
-
 }

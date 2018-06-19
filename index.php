@@ -42,6 +42,7 @@
 			<div class="ui top attached tabular menu">
 				<div class="item active" data-tab="styles">Styles</div>
 				<div class="item" data-tab="media-view">Media View</div>
+				<div class="item" data-tab="media-ftps3">FTP to S3</div>
 				<div class="item" data-tab="media-colorized">Media Colorized</div>
 			</div>
 			<div class="ui bottom attached tab segment active section" data-tab="styles">
@@ -55,6 +56,12 @@
 				:updated="updated.views" 
 				:updating="updating.views"
 				name="Views Media"></updating-table>
+			</div>
+			<div class="ui bottom attached tab segment section" data-tab="media-ftps3">
+				<updating-table 
+				:updated="updated.ftps3" 
+				:updating="updating.ftps3"
+				name="Models"></updating-table>
 			</div>
 			<div class="ui bottom attached tab segment section" data-tab="media-colorized">
 				<updating-table 

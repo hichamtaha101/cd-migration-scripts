@@ -69,14 +69,13 @@ class Kraken {
 		$responses = array();
 		$chunks = array_chunk( $requests, 100 );
 		foreach ( $chunks as $chunk ) {
-			$response = self::recursive_batch_request( $chunk );
+			$response = $this->recursive_batch_request( $chunk );
 			$responses = array_merge( $response, $responses );
 		}
 		return $responses;
 	}
 
-	public function recursive_batch_request( $batch_requests, $attempt = 0 ) {
-		// $start = microtime(true);
+	private function recursive_batch_request( $batch_requests, $attempt = 0 ) {
 
 		if ( $attempt == 3 ) {
 			echo 'Too many recursive calls';
@@ -158,9 +157,6 @@ class Kraken {
 			}
 			$redo[] = $ch['request'];
 		}
-
-		// $end = microtime(true) - $start;
-		// echo $end . '<br>';
 
 		// recursive function to ensure no more errors
 		if ( count( $redo ) > 0 ) {

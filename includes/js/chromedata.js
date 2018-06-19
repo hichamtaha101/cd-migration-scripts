@@ -3,53 +3,65 @@ jQuery(document).ready(function ($) {
 	// Might be able to grab this dynamically based on funtions.php
 	var functions = [
 		{
-			title: 'Update All Makes',
+			title: '1) Update All Makes',
 			fname: 'update_all_makes',
 			desc: 'Updates all makes/divisions ( replaces all divison entries in DB ).',
 			args: false
 		},
 		{
-			title: 'Update All Models',
+			title: '2) Update All Models',
 			fname: 'update_all_models',
 			desc: 'Updates all models ( replaces all model entries in DB ).',
 			args: false
 		},
 		{
-			title: 'Update Styles By Model',
-			fname: 'update_styles_by_model',
-			desc: 'Grabs styles by model and updates all records in DB for the styles selected.',
-			args: true
-		},
-		{
-			title: 'Update Views Media By Model ( may take some time )',
-			fname: 'update_views_by_model',
-			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
-			args: true
-		},
-		{
-			title: 'Update Colorized Media By Model ( may take some time )',
-			fname: 'update_colorized_by_model',
-			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
-			args: true
-		},
-		{
-			title: 'Update All Styles ( may take a long time )',
+			title: '3) Update All Styles ( may take a long time )',
 			fname: 'r_update_all_styles',
 			desc: 'Updates styles table by each non-updated model, progress is reported in the output section.',
 			args: false
 		},
 		{
-			title: 'Update All Database Views ( may take a long time )',
+			title: '3.1) Update Styles By Model',
+			fname: 'update_styles_by_model',
+			desc: 'Grabs styles by model and updates all records in DB for the styles selected.',
+			args: true
+		},
+		{
+			title: '4) Update All Database Views ( may take a long time )',
 			fname: 'r_update_all_views',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
 			args: false
 		},
 		{
-			title: 'Update All Database Colorized ( may take a long time )',
+			title: '4.1) Update Views Media By Model ( may take some time )',
+			fname: 'update_views_by_model',
+			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
+			args: true
+		},
+		{
+			title: '5) Update All S3 to FTP Colorized ( may take a long time )',
+			fname: 'r_update_all_ftps3',
+			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
+			args: false
+		},
+		{
+			title: '5.1) Update FTP to S3 Colorized Media By Model ( may take some time )',
+			fname: 'update_ftps3_by_model',
+			desc: 'Downloads all the model\'s style colorized images from the chromedata ftp and stores it into the S3 Bucket under /original/{styleid}/01.',
+			args: true
+		},
+		{
+			title: '6) Update All Database Colorized ( may take a long time )',
 			fname: 'r_update_all_colorized',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
 			args: false
-		}
+		},
+		{
+			title: '6.1) Update Colorized Media By Model ( may take some time )',
+			fname: 'update_colorized_by_model',
+			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
+			args: true
+		},
 	];
 
 	var ajax_path = window.location.href + 'includes/php/ajax.php';
@@ -66,11 +78,13 @@ jQuery(document).ready(function ($) {
 			updating: {
 				'styles': [],
 				'views': [],
+				'ftps3': [],
 				'colorized': []
 			},
 			updated: {
 				'styles': [],
 				'views': [],
+				'ftps3': [],
 				'colorized': []
 			},
 			run: true,
@@ -121,6 +135,7 @@ jQuery(document).ready(function ($) {
 		var updating = {
 			'styles': _v.models.slice(),
 			'views': _v.updated['styles'].slice(),
+			'ftps3': _v.updated['styles'].slice(),
 			'colorized': _v.updated['styles'].slice()
 		};
 		// Can only update images on models that have been updated
