@@ -10,16 +10,16 @@
 define('WP_DEBUG', true);
 
 /** The name of the database for WordPress */
-define('DB_NAME', 'convertus_api');
+define('DB_NAME', 'dev_showroomdata');
 
 /** MySQL database username */
-define('DB_USER', 'dev_convertus');
+define('DB_USER', 'dev_primary');
 
 /** MySQL database password */
 define('DB_PASSWORD', 'convertus2013');
 
 /** MySQL hostname */
-define('DB_HOST', 'localhost');
+define('DB_HOST', '216.138.226.240');
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');
