@@ -1,7 +1,7 @@
 <?php
 include_once( dirname( __FILE__ ) . '/wpdb.php' );
 include_once( dirname( __FILE__ ) . '/formatting.php' );
-include_once( '../../config.php' );
+include_once( dirname( dirname( dirname( __FILE__ ) ) ) . '/config.php' );
 
 class Chrome_Data_API {
 

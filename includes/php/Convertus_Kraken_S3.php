@@ -1,7 +1,6 @@
 <?php 
 include_once( dirname( __FILE__ ) . '/Kraken.php' );
-
-include_once( '../../config.php' );
+include_once( dirname( dirname( dirname( __FILE__ ) ) ) . '/config.php' );
 
 class Convertus_Kraken_S3 {
 	
