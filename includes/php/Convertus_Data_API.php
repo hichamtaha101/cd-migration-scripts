@@ -432,7 +432,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				foreach ( $response->response->division as $division ) {
 
 					$division->name = $division->_;
-					$division->image = 'http://api.convertus.com/assets/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
+					$division->image = 'https://convertus-vms-showroom-001.s3.us-west-2.amazonaws.com/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
 					unset( $division->_ );
 
 					$divisions[] = $division;
@@ -444,7 +444,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 				$division = $response->response->division;
 				$division->name = $division->_;
-				$division->image = 'http://api.convertus.com/assets/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
+				$division->image = 'https://convertus-vms-showroom-001.s3.us-west-2.amazonaws.com/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
 				unset( $division->_ );
 				$divisions[] = $response->response->division;
 
@@ -861,6 +861,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$style['style']['exterior_colors'][] = $item->colorName;
 			}
 		}
+
+		display_var( $response->exteriorColor );
+		exit();
 
 		if ( isset( $style['style']['exterior_colors'] ) ) {
 			$style['style']['exterior_colors'] = json_encode( array_unique( $style['style']['exterior_colors'] ) );
