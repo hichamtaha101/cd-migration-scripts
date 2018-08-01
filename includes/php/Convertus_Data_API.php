@@ -432,7 +432,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				foreach ( $response->response->division as $division ) {
 
 					$division->name = $division->_;
-					$division->image = 'https://convertus-vms-showroom-001.s3.us-west-2.amazonaws.com/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
+					$division->image = 'https://s3-us-west-2.amazonaws.com/convertus-vms-showroom-001/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
 					unset( $division->_ );
 
 					$divisions[] = $division;
@@ -444,7 +444,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 				$division = $response->response->division;
 				$division->name = $division->_;
-				$division->image = 'https://convertus-vms-showroom-001.s3.us-west-2.amazonaws.com/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
+				$division->image = 'https://s3-us-west-2.amazonaws.com/convertus-vms-showroom-001/logos/' . sanitize_title_with_dashes( $division->_ ) . '.png';
 				unset( $division->_ );
 				$divisions[] = $response->response->division;
 
