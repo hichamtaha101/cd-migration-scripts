@@ -8,10 +8,18 @@ $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
 if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
 // $obj->db->query('TRUNCATE style');
 
-//$results = $obj->get_model_details("model_name LIKE 'M4s'");
-//$results = update_styles_by_model('M4');
+// $makes = $obj->get_divisions();
+// display_var( $makes );
+// exit();
 
-// $styles = $obj->get_model_details( "model_name = '1500'" );
+// $models = $obj->update_models();
+
+// $results = $obj->get_model_details("model_name LIKE 'MDX' AND model_year = 2018");
+// display_var( $results );
+// exit();
+// $results = update_styles_by_model('M4');
+
+// $styles = $obj->get_model_details( "model_name = 'ILX' AND model_year = 2017" );
 // foreach ( $styles as $style ) {
 //   display_var( $style['style']['has_media'] );
 //   display_var( $style['style']['view'] );
@@ -22,10 +30,14 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // update_views_by_model('Super Duty F-350 SRW');
 // update_ftps3_by_model('Sierra 3500HD');
 // display_var(update_colorized_by_model('124 Spider'));
+// exit();
 
-// $models = $obj->get_models(5);
-// display_var( $models );
-exit();
+// $test = update_styles_by_model( 'CTS Sedan' );
+// display_var( $test );
+// exit();
+
+// display_var( get_updated_models() );
+// exit();
 
 function update_all_body_styles() {
   global $obj;
@@ -35,13 +47,12 @@ function update_all_body_styles() {
   foreach ( $body_types as $bs ) {
     $sql = "UPDATE style SET body_type_standard = '{$obj->body_types[$bs]}' WHERE body_style = '{$bs}'";
     echo $sql . '<br>';
-    continue;
     $obj->db->query($sql);
   }
 }
 
-// $all_models = update_all_model_names();
-function update_all_model_names() {
+// $all_models = compare_models();
+function compare_models() {
   global $obj;
   $sql = "SELECT DISTINCT model_name FROM model";
   $cmodels = $obj->db->get_col($sql);
@@ -55,24 +66,30 @@ function update_all_model_names() {
   $diff = array_diff($cmodels, $dmodels);
   sort($diff);
 
-  // Correct model names in each table
-  foreach ( array( 'model', 'style', 'media' ) as $table ) {
-    foreach ( $diff as $d ) {
-      if ( array_key_exists( $d, $obj->standard_models ) ) {
-        $sql = "UPDATE {$table} SET model_name = '{$obj->standard_models[$d]}' WHERE model_name = '{$d}'";
-        $obj->db->query($sql);
-        echo 'updated ' . $d . ' to ' . $obj->standard_models[$d] . '<br>';
-      } else {
-        // echo 'New model to standardize: ' . $d . '<br>';
-      }
-    }
-  }
-
   return array(
     'dealertrend' => $dmodels,
     'chromedata'  => $cmodels,
     'diff'        => $diff
   );
+}
+
+// update_model_names();
+function update_model_names() {
+  global $obj;
+
+  $sql = "SELECT DISTINCT model_name_cd FROM model";
+  $models = $obj->db->get_col($sql);
+
+  // Correct model names in each table
+  foreach ( array( 'model', 'style', 'media' ) as $table ) {
+    foreach ( $models as $name ) {
+      if ( array_key_exists( $name, $obj->standard_models ) ) {
+        $sql = "UPDATE {$table} SET model_name = '{$obj->standard_models[$name]}' WHERE model_name = '{$name}'";
+        $obj->db->query($sql);
+        echo 'updated ' . $name . ' to ' . $obj->standard_models[$name] . '<br>';
+      }
+    }
+  }
 }
 
 

@@ -14,10 +14,10 @@ $aws_s3 = new AWS_S3($db);
 function get_updated_models() {
 	global $db;
 	
-	$models = $db->get_col('SELECT DISTINCT model_name FROM model');
+	$models = $db->get_col('SELECT DISTINCT model_name_cd FROM model');
 	$sql = "
 	SELECT 
-    DISTINCT(a.model_name),
+    DISTINCT(a.model_name_cd),
     IFNULL(b.view_images, 0) as view_images,
     IFNULL(c.colorized_images, 0) as colorized_images,
     IFNULL(d.ftp_original_images, 0) as ftp_original_images,
@@ -27,39 +27,39 @@ function get_updated_models() {
 	FROM 
 			style a
 	LEFT JOIN 
-			(SELECT model_name, COUNT(*) as view_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/media%' AND mm.type = 'view' GROUP BY model_name) b
+			(SELECT model_name_cd, COUNT(*) as view_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/media%' AND mm.type = 'view' GROUP BY model_name_cd) b
 	ON
-			a.model_name = b.model_name
+			a.model_name_cd = b.model_name_cd
 	LEFT JOIN 
-			(SELECT model_name, COUNT(*) as colorized_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/media%' AND mm.type = 'colorized' GROUP BY model_name) c
+			(SELECT model_name_cd, COUNT(*) as colorized_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/media%' AND mm.type = 'colorized' GROUP BY model_name_cd) c
 	ON
-			a.model_name = c.model_name
+			a.model_name_cd = c.model_name_cd
 	LEFT JOIN
-			(SELECT model_name, COUNT(*) as ftp_original_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/original/colorized%' GROUP BY model_name) d
+			(SELECT model_name_cd, COUNT(*) as ftp_original_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/original/colorized%' GROUP BY model_name_cd) d
 	ON
-			a.model_name = d.model_name
+			a.model_name_cd = d.model_name_cd
 	LEFT JOIN 
-		(SELECT model_name, COUNT(*) as styles, SUM(ss.view_count) as view_count, SUM(ss.colorized_count) as colorized_count FROM style ss WHERE ss.has_media LIKE 1 GROUP BY model_name ) e
+		(SELECT model_name_cd, COUNT(*) as styles, SUM(ss.view_count) as view_count, SUM(ss.colorized_count) as colorized_count FROM style ss WHERE ss.has_media LIKE 1 GROUP BY model_name_cd ) e
 	ON
-			a.model_name = e.model_name
+			a.model_name_cd = e.model_name_cd
 	";
 	$results = $db->get_results( $sql, ARRAY_A );
 	$models_updated = $views_updated = $ftp_s3_updated = $colorized_updated = array();
 	foreach ( $results as $result ) {
-		$models_updated[] = $result['model_name'];
+		$models_updated[] = $result['model_name_cd'];
 		// View images = style total views * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
 		if ( $result['view_images'] == ( $result['view_count'] * 2 * 4 ) ) {
-			$views_updated[] = $result['model_name'];
+			$views_updated[] = $result['model_name_cd'];
 		}
 		
 		// Don't check if colorized_count !== 0, these models can be considered done for both ftp-s3 and colorized images
 		// Ftp to S3 images
 		if ( $result['ftp_original_images'] == $result['colorized_count'] ) {
-			$ftp_s3_updated[] = $result['model_name'];
+			$ftp_s3_updated[] = $result['model_name_cd'];
 		}
 		// Colorized Images = style total ftp images * 2 types * 4 sizes
 		if ( $result['colorized_images'] == $result['colorized_count'] * 2 * 4 ) {
-			$colorized_updated[] = $result['model_name'];
+			$colorized_updated[] = $result['model_name_cd'];
 		}
 	}
 
@@ -93,7 +93,7 @@ function update_styles_by_model( $model ) {
 	global $obj;
 	$outputs = array();
 
-	$styles = $obj->get_model_details( "model_name LIKE '{$model}'" );
+	$styles = $obj->get_model_details( "model_name_cd LIKE '{$model}'" );
 	if ( $obj->valid === TRUE ) {
 		$obj->update_styles( $styles );
 		$results['update'] = array( 

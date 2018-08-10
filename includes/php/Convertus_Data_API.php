@@ -40,105 +40,188 @@ class Chrome_Data_API {
 		);
 
 		$this->soap  = new SoapClient( $this->api_url );
-		$this->years = $this->get_years( 2 );
+		$this->years = $this->get_years( 3 );
 
 		// Standardize body types
 		$this->body_types = array(
-			'4dr Car'																	=> 'Sedan',
-			'Sport Utility'														=> 'SUV',
-			'2dr Car'																	=> 'Coupe',
-			'["Convertible","2dr Car"]'								=> 'Convertible',
-			'["Hatchback","4dr Car"]'									=> 'Hatchback',
-			'Specialty Vehicle'												=> 'Other',
-			'Mini-van, Cargo'													=> 'Van',
-			'Mini-van, Passenger'											=> 'Van',
-			'["Long Bed","Regular Cab Pickup"]'				=> 'Truck',
+			'4dr Car'									=> 'Sedan',
+			'Sport Utility'								=> 'SUV',
+			'2dr Car'									=> 'Coupe',
+			'["Convertible","2dr Car"]'					=> 'Convertible',
+			'["Hatchback","4dr Car"]'					=> 'Hatchback',
+			'Specialty Vehicle'							=> 'Other',
+			'Mini-van, Cargo'							=> 'Van',
+			'Mini-van, Passenger'						=> 'Van',
+			'["Long Bed","Regular Cab Pickup"]'			=> 'Truck',
 			'["Standard Bed","Extended Cab Pickup"]'	=> 'Truck',
-			'["Long Bed","Extended Cab Pickup"]'			=> 'Truck',
-			'["Long Bed","Crew Cab Pickup"]'					=> 'Truck',
-			'["Standard Bed","Crew Cab Pickup"]'			=> 'Truck',
+			'["Long Bed","Extended Cab Pickup"]'		=> 'Truck',
+			'["Long Bed","Crew Cab Pickup"]'			=> 'Truck',
+			'["Standard Bed","Crew Cab Pickup"]'		=> 'Truck',
 			'["Standard Bed","Regular Cab Pickup"]'		=> 'Truck',
-			'["Short Bed","Crew Cab Pickup"]'					=> 'Truck',
-			'["Station Wagon","4dr Car"]'							=> 'Wagon',
-			'["Hatchback","2dr Car"]'									=> 'Hatchback',
-			'Full-size Passenger Van'									=> 'Van',
-			'Full-size Cargo Van'											=> 'Van',
-			'["Short Bed","Extended Cab Pickup"]'			=> 'Truck',
-			'["Sport Utility","Convertible"]'					=> 'SUV',
-			'Regular Cab Chassis-Cab'									=> 'Truck',
-			'Crew Cab Chassis-Cab'										=> 'Truck',
-			'Extended Cab Chassis-Cab'								=> 'Truck',
-			'["3dr Car","Hatchback"]'									=> 'Hatchback',
+			'["Short Bed","Crew Cab Pickup"]'			=> 'Truck',
+			'["Station Wagon","4dr Car"]'				=> 'Wagon',
+			'["Hatchback","2dr Car"]'					=> 'Hatchback',
+			'Full-size Passenger Van'					=> 'Van',
+			'Full-size Cargo Van'						=> 'Van',
+			'["Short Bed","Extended Cab Pickup"]'		=> 'Truck',
+			'["Sport Utility","Convertible"]'			=> 'SUV',
+			'Regular Cab Chassis-Cab'					=> 'Truck',
+			'Crew Cab Chassis-Cab'						=> 'Truck',
+			'Extended Cab Chassis-Cab'					=> 'Truck',
+			'["3dr Car","Hatchback"]'					=> 'Hatchback',
 		);
 
 		// Standardize model names
 		$this->standard_models = array(
-			'3500 Chassis' 				              => '3500',
-			'370Z Coupe' 				                => '370Z',
-			'370Z Roadster' 				            => '370Z',
-			'4500 Chassis'				              => '4500',
-			'4C Coupe' 				                  => '4C',
-			'5500 Chassis'				              => '5500',
-			'A3 Cabriolet'				              => 'A3',
-			'A3 Sedan'				                  => 'A3',
-			'A3 Sportback e-tron'			          => 'A3 e-tron',
-			'A4 Sedan'				                  => 'A4',
-			'A5 Cabriolet'				              => 'A5',
-			'A5 Coupe'				                  => 'A5',
-			'A5 Sportback' 				              => 'A5',
-			'A7 Sportback' 				              => 'A7',
-			'A8 L'					                    => 'A8',
-			'ATS Coupe'				                  => 'ATS',
-			'ATS Sedan'				                  => 'ATS',
-			'ATS-V Coupe'				                => 'ATS-V',
-			'ATS-V Sedan'				                => 'ATS-V',
-			'Accord Sedan'				              => 'Accord',
-			'Beetle'					                  => 'Convertible',
-			'CT6 Sedan'				                  => 'CT6',
-			'CTS Sedan'				                  => 'CTS',
-			'CTS-V Sedan'				                => 'CTS-V',
-			'City Express Cargo Van'			      => 'City Express',
-			'Civic Coupe'				                => 'Civic',
-			'Civic Hatchback'				            => 'Civic',
-			'Civic Sedan'				                => 'Civic',
-			'Express Cargo Van'			            => 'Express',
-			'E-Series Stripped Chassis'		      => 'Stripped Chassis',
+			'Sonata Hybrid'							=> 'Sonata',
+			'Sonata Plug-In Hybrid'					=> 'Sonata Plug-In',
+			'IONIQ Hybrid'							=> 'Ioniq',
+			'Ioniq Hybrid'							=> 'Ioniq',
+			'Pacifica Hybrid'						=> 'Pacifica',
+			'Fusion Hybrid'							=> 'Fusion',
+			'Clarity Plug-In Hybrid'				=> 'Clarity Plug-In',
+			'C-Max Hybrid'							=> 'C-Max',
+			'Optima Hybrid'							=> 'Optima',
+			'Optima Plug-In Hybrid'					=> 'Optima Plug-In',
+			'Highlander Hybrid'						=> 'Highlander',
+			'RAV4 Hybrid'							=> 'RAV4',
+			'XC90 Hybrid'							=> 'XC90',
+			'Camry Hybrid'							=> 'Camry',
+			'Accord Hybrid'							=> 'Accord',
+			'Santa Fe Sport'						=> 'Santa Fe',
+			'Range Rover Sport'						=> 'Range Rover',
+			'Range Rover SV Coupe'					=> 'Range Rover SV',
+			'Regal Sportback'						=> 'Regal',
+			'V90 Cross Country'						=> 'V90',
+			'V60 Cross Country' 					=> 'V60',
+			'X5 eDrive'								=> 'X5',
+			'1500 Classic'							=> '1500',
+			'3 Series Gran Turismo'					=> '3 Series',
+			'Accord Coupe'							=> 'Accord',
+			'Beetle Convertible'					=> 'Beetle',
+			'Beetle Coupe'							=> 'Beetle',
+			'Cooper Clubman'						=> 'Cooper',
+			'Cooper Convertible'					=> 'Cooper',
+			'Cooper Countryman'						=> 'Cooper',
+			'Cooper Hardtop'						=> 'Cooper',
+			'Cooper Hardtop 5 Door'					=> 'Cooper',
+			'Corolla Hatchback'						=> 'Corolla',
+			'Forte 5-Door'							=> 'Forte',
+			'Forte Koup'							=> 'Forte',
+			'Forte5'								=> 'Forte',
+			'IONIQ Electric Plus'					=> 'Ioniq Electric',
+			'NV Cargo'								=> 'NV',
+			'NV Passenger'							=> 'NV',
+			'Police Interceptor Hybrid Sedan'		=> 'Police Interceptor',
+			'Police Interceptor Sedan'				=> 'Police Interceptor',
+			'Lancer Sportback'						=> 'Lancer',
+			'Jetta Sedan'							=> 'Jetta',
+			'ProMaster Cargo Van'					=> 'Promaster',
+			'ProMaster Chassis Cab'					=> 'Promaster',
+			'ProMaster Cutaway'						=> 'Promaster',
+			'ProMaster Window Van'					=> 'Promaster',
+			'Sierra 1500 Limited'					=> 'Sierra 1500',
+			'Rio 5-door'							=> 'Rio',
+			'S60 Cross Country'						=> 'S60',
+			'R8 Spyder'								=> 'R8',
+			'Savana Cargo Van'						=> 'Savana',
+			'Savana Commercial Cutaway'				=> 'Savana',
+			'Savana Passenger'						=> 'Savana',
+			'Sprinter Cab Chassis'					=> 'Sprinter',
+			'Sprinter Cargo Van'					=> 'Sprinter',
+			'Sprinter Cargo Vans'					=> 'Sprinter',
+			'Sprinter Chassis-Cabs'					=> 'Sprinter',
+			'Sprinter Passenger Vans'				=> 'Sprinter',
+			'Sprinter Passenger Vans'				=> 'Sprinter',
+			'Special Service Plug-In Hybrid'		=> 'Special Service Plug-In',
+			'Super Duty F-250 SRW'					=> 'F-250',
+			'Super Duty F-350 DRW'					=> 'F-350',
+			'Super Duty F-350 SRW'					=> 'F-350',
+			'Super Duty F-450 DRW'					=> 'F-450',
+			'Super Duty F-53 Motorhome'				=> 'F-53',
+			'Super Duty F-550 DRW'					=> 'F-550',
+			'Super Duty F-650 Pro Loader'			=> 'F-650',
+			'Super Duty F-650 Pro Loader Gas'		=> 'F-650',
+			'Super Duty F-650 Straight Frame'		=> 'F-650',
+			'Super Duty F-650 Straight Frame Gas'	=> 'F-650',
+			'Super Duty F-650 Tractor'				=> 'F-650',
+			'Super Duty F-750 Straight Frame'		=> 'F-750',
+			'Super Duty F-750 Straight Frame Gas'	=> 'F-750',
+			'Super Duty F-750 Tractor'				=> 'F-750',
+			'Transit Cargo Van'						=> 'Transit',
+			'Transit Wagon'							=> 'Transit',
+			'Econoline Commercial Chassis'			=> 'Econoline Commercial',
+			'Econoline Commercial Cutaway'			=> 'Econoline Commercial',
+			'A3 e-tron'								=> 'A3',
+			'A4 allroad'							=> 'A4',
+			'Escalade ESV'							=> 'Escalade',
+			'3500 Chassis' 				            => '3500',
+			'370Z Coupe' 				            => '370Z',
+			'370Z Roadster' 				        => '370Z',
+			'4500 Chassis'				            => '4500',
+			'4C Coupe' 				                => '4C',
+			'5500 Chassis'				            => '5500',
+			'A3 Cabriolet'				            => 'A3',
+			'A3 Sedan'				                => 'A3',
+			'A3 Sportback e-tron'			        => 'A3 e-tron',
+			'A4 Sedan'				                => 'A4',
+			'A5 Cabriolet'				            => 'A5',
+			'A5 Coupe'				                => 'A5',
+			'A5 Sportback' 				            => 'A5',
+			'A7 Sportback' 				            => 'A7',
+			'A8 L'					                => 'A8',
+			'ATS Coupe'				                => 'ATS',
+			'ATS Sedan'				                => 'ATS',
+			'ATS-V Coupe'				            => 'ATS-V',
+			'ATS-V Sedan'				            => 'ATS-V',
+			'Accord Sedan'				            => 'Accord',
+			'Beetle'					            => 'Convertible',
+			'CT6 Sedan'				                => 'CT6',
+			'CTS Sedan'				                => 'CTS',
+			'CTS-V Sedan'				            => 'CTS-V',
+			'City Express Cargo Van'			    => 'City Express',
+			'Civic Coupe'				            => 'Civic',
+			'Civic Hatchback'				        => 'Civic',
+			'Civic Sedan'				            => 'Civic',
+			'Express Cargo Van'			          	=> 'Express',
+			'E-Series Stripped Chassis'		      	=> 'Stripped Chassis',
 			'Express Commercial Cutaway'		    => 'Express',
 			'Express Passenger'			            => 'Express',
 			'F-53 Motorhome Stripped Chassis'		=> 'Stripped Chassis',
-			'F-59 Commercial Stripped Chassis'	=> 'Stripped Chassis',
-			'Mazda3 Sport'				              => 'Mazda3',
+			'F-59 Commercial Stripped Chassis'		=> 'Stripped Chassis',
+			'Super Duty F-59 Stripped Chassis'		=> 'Stripped Chassis',
+			'Mazda3 Sport'				            => 'Mazda3',
 			'Metris Cargo Van'			            => 'Metris',
 			'Metris Passenger Van'			        => 'Metris',
-			'NV200 Compact Cargo'			          => 'NV200',
-			'ProMaster City Cargo Van'		      => 'Promaster City',
+			'NV200 Compact Cargo'			        => 'NV200',
+			'ProMaster City Cargo Van'		      	=> 'Promaster City',
 			'ProMaster City Wagon'			        => 'Promaster City',
-			'Q60 Coupe'				                  => 'Q60',
-			'R8 Coupe'				                  => 'R8',
-			'RS 3 Sedan'				                => 'RS 3',
-			'RS 5 Coupe'				                => 'RS 5',
-			'RS 7 Sportback'				            => 'RS 7',
+			'Q60 Coupe'				                => 'Q60',
+			'R8 Coupe'				                => 'R8',
+			'RS 3 Sedan'				            => 'RS 3',
+			'RS 5 Coupe'				            => 'RS 5',
+			'RS 7 Sportback'				        => 'RS 7',
 			'RS 7 Sportback Performance'		    => 'RS 7',
-			'S3 Sedan'				                  => 'S3',
-			'S4 Sedan'				                  => 'S4',
-			'S5 Cabriolet'				              => 'S5',
-			'S5 Coupe'				                  => 'S5',
-			'S5 Sportback'				              => 'S5',
-			'S7 Sportback'				              => 'S7',
-			'S8 plus'					                  => 'S8',
+			'S3 Sedan'				                => 'S3',
+			'S4 Sedan'				                => 'S4',
+			'S5 Cabriolet'				            => 'S5',
+			'S5 Coupe'				                => 'S5',
+			'S5 Sportback'				            => 'S5',
+			'S7 Sportback'				            => 'S7',
+			'S8 plus'					            => 'S8',
 			'Silverado 1500 LD'			            => 'Silverado 1500',
-			'TT Coupe'				                  => 'TT',
-			'TT RS Coupe'				                => 'TT RS',
-			'TT Roadster'				                => 'TT',
-			'TTS Coupe'				                  => 'TTS',
-			'Transit Chassis Cab'			          => 'Transit',
-			'Transit Connect Van'			          => 'Transit Connect',
+			'TT Coupe'				                => 'TT',
+			'TT RS Coupe'				            => 'TT RS',
+			'TT Roadster'				            => 'TT',
+			'TTS Coupe'				                => 'TTS',
+			'Transit Chassis Cab'			        => 'Transit',
+			'Transit Connect Van'			        => 'Transit Connect',
 			'Transit Connect Wagon'			        => 'Transit Connect',
-			'Transit Cutaway'				            => 'Transit',
-			'Transit Passenger Wagon'	          => 'Transit',
-			'Transit Van'				                => 'Transit',
-			'Yaris Hatchback'				            => 'Yaris',
-			'Yaris Sedan'				                => 'Yaris',
+			'Transit Cutaway'				        => 'Transit',
+			'Transit Passenger Wagon'	          	=> 'Transit',
+			'Transit Van'				            => 'Transit',
+			'Yaris Hatchback'				        => 'Yaris',
+			'Yaris Sedan'				            => 'Yaris',
 		);
 
 	}
@@ -295,7 +378,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			),
 			array(
 				'property' 	=> 'model',
-				'field' 		=> 'model_name',
+				'field' 		=> 'model_name_cd',
 				'value' 		=> '_',
 			),
 			array(
@@ -511,20 +594,21 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 						foreach ( $response->response->model as $model ) {
 
-							$model->name = $model->_;
-							$model->year = $response->parameters['modelYear'];
+							$model->model_name_cd = $model->_;
+							$model->model_name = $this->get_standard_model( $model->_ );
+							$model->model_year = $response->parameters['modelYear'];
 							$model->division_name = $response->parameters['divisionName'];
 							$model->division_id = $response->parameters['divisionId'];
 							unset( $model->_ );
-
 							$models[] = $model;
 
 						}
 					} else if ( is_object( $response->response->model ) ) {
 
 						$model = $response->response->model;
-						$model->name = $model->_;
-						$model->year = $response->parameters['modelYear'];
+						$model->model_name_cd = $model->_;
+						$model->model_name = $this->get_standard_model( $model->_ );
+						$model->model_year = $response->parameters['modelYear'];
 						$model->division_name = $response->parameters['divisionName'];
 						$model->division_id = $response->parameters['divisionId'];
 						unset( $model->_ );
@@ -540,12 +624,13 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function update_models() {
 
 		$models = $this->get_models();
+		$models = $this->remove_duplicate_models( $models );
 
-		$query = 'INSERT model ( model_year, model_name, model_id, division_name, division_id, last_updated ) VALUES ';
+		$query = 'INSERT model ( model_year, model_name, model_name_cd, model_id, division_name, division_id, last_updated ) VALUES ';
 		$sql_values = array();
 
 		foreach ( $models as $model ) {
-			$sql_values[] = "({$model->year}, '{$model->name}', {$model->id}, '{$model->division_name}', {$model->division_id}, now())";
+			$sql_values[] = "({$model->model_year}, '{$model->model_name}', '{$model->model_name_cd}', {$model->id}, '{$model->division_name}', {$model->division_id}, now())";
 		}
 		$query .= implode( ',', $sql_values );
 
@@ -559,10 +644,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
+	private function get_standard_model( $cd_model ) {
+		if ( array_key_exists( $cd_model, $this->standard_models ) ) {
+			return $this->standard_models[$cd_model];
+		}
+		return $cd_model;
+	}
+
 	private function remove_duplicate_models( $models ) {
 		$results = $duplicates = array();
 		foreach ( $models as $model ) {
-			$id = $model->model_year . $model->model_name;
+			$id = $model->model_year . $model->model_name_cd;
 			if ( in_array( $id, $duplicates ) ) { continue; }
 			$results[] = $model;
 			$duplicates[] = $id;
@@ -590,7 +682,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				'describeVehicle',
 				array(
 					'modelYear' => $model->model_year,
-					'modelName' => $model->model_name,
+					'modelName' => $model->model_name_cd,
 					'makeName' 	=> $model->division_name,
 				)
 			);
@@ -625,7 +717,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		if ( $results === TRUE ) {
 			$this->outputs[] = array(
 				'type' => 'success', 
-				'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name 
+				'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name_cd
 			);
 		} else {
 			$this->valid = $results;
@@ -764,10 +856,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		if ( $data = $response->style ) {
 			$style['style'] = $this->set_properties( $data, $this->style_properties );
 			$style['style']['body_type_standard'] = $this->get_standard_bt($style['style']['body_type']);
-			// Standardize model names
-			if ( array_key_exists( $style['style']['model_name'], $this->standard_models ) ) {
-				$style['style']['model_name'] = $this->standard_models[$style['style']['model_name']];
-			}
+			$style['style']['model_name'] = $this->get_standard_model( $style['style']['model_name_cd'] );
 		}
 
 		// ^ engine
@@ -861,9 +950,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$style['style']['exterior_colors'][] = $item->colorName;
 			}
 		}
-
-		display_var( $response->exteriorColor );
-		exit();
 
 		if ( isset( $style['style']['exterior_colors'] ) ) {
 			$style['style']['exterior_colors'] = json_encode( array_unique( $style['style']['exterior_colors'] ) );
@@ -1199,19 +1285,19 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$style_id = $value['style_id'];
 
 				// Delete all currently existing entries
-				$this->db->delete( 'style', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.style', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.engine', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.standard', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.exterior_color', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.option', array( 'style_id' => $style_id ) );
 				$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
-				$this->db->delete( 'engine', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'standard', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'exterior_color', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'option', array( 'style_id' => $style_id ) );
 				
-				$queries['styles']['query'] = 'INSERT style ( style_id, model_code, model_year, model_name, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
-				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
-				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
+				$queries['styles']['query'] = 'INSERT dev_showroomdata.style ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
+				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
+				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['model_name_cd'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
 
 				$value = $style['engine'];
-				$queries['engines']['query'] = 'INSERT engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
+				$queries['engines']['query'] = 'INSERT dev_showroomdata.engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
 
 				if ( is_object( $value ) ) {
 					$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
@@ -1226,7 +1312,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			
 			if ( array_key_exists('style_colors', $style ) ) {
 				$colors = $style['style_colors'];
-				$queries['colors']['query'] = 'INSERT exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
+				$queries['colors']['query'] = 'INSERT dev_showroomdata.exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
 				foreach ( $colors as $color ) {
 					$queries['colors']['prepare'][] = "('%d', '%s', '%s', '%s', '%s')";
 					array_push( $queries['colors']['values'], $color['style_id'], $color['generic_name'], $color['name'], $color['code'], $color['rgb_value'] );
@@ -1236,7 +1322,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			if ( array_key_exists( 'options', $style ) ) {
 				$options = $style['options'];
 				
-				$queries['options']['query'] = 'INSERT option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
+				$queries['options']['query'] = 'INSERT dev_showroomdata.option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
 				foreach ( $options as $option ) {
 					$queries['options']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%s')";
 					array_push( $queries['options']['values'], $option['id'], $option['header'], $option['styleId'], $option['description'], $option['isChild'], $option['oemCode'], $option['chromeCode'], $option['msrpMin'], $option['msrpMax'], $option['categories'] );
@@ -1245,15 +1331,15 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
-				$queries['media']['query'] = 'INSERT media ( style_id, type, url, width, height, shot_code, background, file_name, model_name ) VALUES ';
+				$queries['media']['query'] = 'INSERT dev_showroomdata.media ( style_id, type, url, width, height, shot_code, background, file_name, model_name, model_name_cd ) VALUES ';
 				foreach ( $style['view'] as $image ) {
-					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s')";
-					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'], $style['style']['model_name'] );
+					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s')";
+					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'], $style['style']['model_name'], $style['style']['model_name_cd'] );
 				}
 			}
 
 			if ( array_key_exists( 'standard', $style ) ) {
-				$queries['standard']['query'] = 'INSERT standard ( style_id, type, description, categories ) VALUES ';
+				$queries['standard']['query'] = 'INSERT dev_showroomdata.standard ( style_id, type, description, categories ) VALUES ';
 				foreach ( $style['standard'] as $item ) {
 					$queries['standard']['prepare'][] = "('%d', '%s', '%s', '%s')";
 					array_push( $queries['standard']['values'], $style_id, $item['type'], $item['description'], $item['categories'] );
