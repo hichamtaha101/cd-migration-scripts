@@ -52,6 +52,7 @@ class Chrome_Data_API {
 			'Specialty Vehicle'							=> 'Other',
 			'Mini-van, Cargo'							=> 'Van',
 			'Mini-van, Passenger'						=> 'Van',
+			'Extended Cab Pickup'						=> 'Truck',
 			'["Long Bed","Regular Cab Pickup"]'			=> 'Truck',
 			'["Standard Bed","Extended Cab Pickup"]'	=> 'Truck',
 			'["Long Bed","Extended Cab Pickup"]'		=> 'Truck',
