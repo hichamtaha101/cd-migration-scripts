@@ -161,7 +161,14 @@ jQuery(document).ready(function ($) {
 				args: JSON.stringify(args)
 			},
 			success: function (data) {
-				data = JSON.parse(data);
+				try {
+					data = JSON.parse(data);
+				} catch (e) {
+					console.log( 'Error caught' + e + ' for model ' + args[0] );
+					console.log(data);
+					callback();
+					return;
+				}
 
 				// Set vue data
 				if ('outputs' in data) { _v.outputs = _v.outputs.concat(data.outputs); }

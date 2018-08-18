@@ -14,7 +14,7 @@ class AWS_S3 {
   }
 
 	public function copy_colorized_media_to_s3( $media ) {
-    $model = $media[0]['model_name'];
+    $model = $media[0]['model_name_cd'];
 
 		// 1) Connect to ftp or die
 		$ftp_server = 'ftp.chromedata.com';
@@ -38,24 +38,27 @@ class AWS_S3 {
 				mkdir( $directory, 0777, true );
 				mkdir( $directory . '/01', 0777, true );
 			} else {
-				$files = scandir($directory . '/01');
+        $files = scandir($directory . '/01');
+        
 				// Skip if all already downloaded
 				if ( $m['colorized_count'] == ( count( $files )-2 ) && $m['colorized_count'] != 0 ) {
 					continue;
 				}
       }
 			$folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
-			$contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
+      $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
+      
 			// 3) Download foreach color variation for this media
 			foreach ( $contents as $image ) {
 				$image_info = pathinfo( $image );
 				$color_code = explode( '_', $image_info['filename'] );
 				$color_code = end( $color_code );
-				$local_path = $directory . '/01/' . $m['file_name'] . '_' . $color_code . '.png';
+        $local_path = $directory . '/01/' . $m['file_name'] . '_' . $color_code . '.png';
+        
 				// If file already exists, skip ( this should only happen during re-runs after error caught )
 				if ( file_exists($local_path) ) { continue; }
 				if ( ! ftp_get( $conn_id, $local_path, $image, FTP_BINARY ) ) {
-					echo 'Something went wrong when downloading images for style id ' . $m['style_id'];
+          echo 'Something went wrong when downloading images for style id ' . $m['style_id'];
 					exit(); // Error caught, exit script
 				}
 			}
@@ -75,8 +78,8 @@ class AWS_S3 {
       // Weird bug, go to next folder
       if ( ! file_exists( $directory ) ) { continue; }
 			$dir = new DirectoryIterator( $directory . '/01' );
-			
       $values = array();
+
       // Send all images to s3 for this style
 			foreach ( $dir as $image ) {
 				if ( $image->isDot() ) { continue; }
@@ -89,7 +92,7 @@ class AWS_S3 {
 				$results = $this->send_media($copy);
 				if ( $results !== FALSE ) {
 					$copy['url'] = $results->get('ObjectURL');
-					$values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', now())";
+					$values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', now())";
 				} else {
           var_dump( $results );
           $test = false;
@@ -108,8 +111,9 @@ class AWS_S3 {
 			garbage();
 
 			// Remove old entries if exists and insert S3 entries
-			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, created ) VALUES ";
+			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, created ) VALUES ";
       $query = $this->db->query( $sql . implode( ',', $values ) );
+      
       //  Remove 01 entry for style
 			if ( $query !== FALSE ) {
 				remove_cd_media( $m );

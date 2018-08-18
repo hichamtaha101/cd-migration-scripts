@@ -39,6 +39,9 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // display_var( get_updated_models() );
 // exit();
 
+// display_var( update_model_images( 'Frontier', 'view' ) );
+// exit();
+
 function update_all_body_styles() {
   global $obj;
   $sql = "SELECT DISTINCT body_type FROM style";
@@ -90,6 +93,20 @@ function update_model_names() {
       }
     }
   }
+}
+
+// update_model_name_cd();
+function update_model_name_cd() {
+  global $obj;
+
+  $sql = "SELECT style_id, model_name_cd FROM style";
+  $styles = $obj->db->get_results( $sql, ARRAY_A );
+
+  foreach ( $styles as $style ) {
+    $sql = "UPDATE media SET model_name_cd = '{$style['model_name_cd']}' WHERE style_id = '{$style['style_id']}'";
+    $obj->db->query($sql);
+  }
+  echo ' updated media table records to have correct model_name_cd values';
 }
 
 

@@ -78,7 +78,7 @@ class Kraken {
 	private function recursive_batch_request( $batch_requests, $attempt = 0 ) {
 
 		if ( $attempt == 3 ) {
-			echo 'Too many recursive calls';
+			echo 'recursive error';
 			exit();
 		}
 
@@ -104,7 +104,7 @@ class Kraken {
 				));
 			// Else, there's something wrong with the media entry
 			} else {
-				echo 'Request does not have a url or file param :/ <pre>'; var_dump( $request ); echo '</pre>';
+				echo 'Request does not have a url or file param <pre>'; var_dump( $request ); echo '</pre>';
 				continue;
 			}
 			
@@ -142,6 +142,7 @@ class Kraken {
 		// handle responses
 		foreach ( $curls as $ch ) {
 			$response = json_decode( curl_multi_getcontent( $ch['curl'] ), true );
+			
 			// successful response
 			if ( $response['success'] ) {
 				$success[] = array(
@@ -150,9 +151,11 @@ class Kraken {
 				);
 				continue; 
 			}
+
 			// unsuccessful response
 			if ( $response['message'] == 'Incoming request body does not contain a valid JSON object' ) {
-				echo 'fuark'; exit();
+				echo 'error'; 
+				exit();
 				$ch['request']['breakdown'] = true;
 			}
 			$redo[] = $ch['request'];

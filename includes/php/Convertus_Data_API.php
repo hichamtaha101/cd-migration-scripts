@@ -32,7 +32,7 @@ class Chrome_Data_API {
 			'number'        => $this->number,
 			'secret'        => $this->secret,
 			'country'       => $this->country_code,
-			'language'  		=> $this->language,
+			'language'  	=> $this->language,
 		);
 
 		$this->soap_args = array(
@@ -47,6 +47,7 @@ class Chrome_Data_API {
 			'4dr Car'									=> 'Sedan',
 			'Sport Utility'								=> 'SUV',
 			'2dr Car'									=> 'Coupe',
+			'Crew Cab Pickup'							=> 'Truck',
 			'["Convertible","2dr Car"]'					=> 'Convertible',
 			'["Hatchback","4dr Car"]'					=> 'Hatchback',
 			'Specialty Vehicle'							=> 'Other',
@@ -762,18 +763,19 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	}
 
 	private function set_option( $item, $child = 'false' ) {
+
 		// Set constant fields and defaults
 		$option = array(
-			'id'					=> $item->header->id,
+			'id'				=> $item->header->id,
 			'header'			=> $item->header->_,
 			'styleId'			=> $item->styleId,
-			'description'	=> addslashes( $item->description ),
+			'description'		=> addslashes( $item->description ),
 			'isChild'			=> $child,
 			'oemCode'			=> null,
-			'chromeCode'	=> null,
+			'chromeCode'		=> null,
 			'msrpMin'			=> null,
 			'msrpMax'			=> null,
-			'categories'	=> null
+			'categories'		=> null
 		);
 
 		if ( isset( $item->oemCode ) ) {
@@ -998,7 +1000,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		$msg = '<b>Styles do not meet all requirements:</b><br>';
 		$duplicates = array();
 		foreach ( $styles as $style ) {
-			$model = $style['style']['model_name'];
+			$model = $style['style']['model_name_cd'];
 			$style_id = $style['style']['style_id'];
 
 			if ( count( $style['options'] ) < 1 ) {

@@ -10,7 +10,6 @@ $aws_s3 = new AWS_S3($db);
 
 /************************* CHROME DATA FUNCTIONS *************************/
 
-
 function get_updated_models() {
 	global $db;
 	
@@ -47,18 +46,21 @@ function get_updated_models() {
 	$models_updated = $views_updated = $ftp_s3_updated = $colorized_updated = array();
 	foreach ( $results as $result ) {
 		$models_updated[] = $result['model_name_cd'];
+
 		// View images = style total views * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
-		if ( $result['view_images'] == ( $result['view_count'] * 2 * 4 ) ) {
+		// Greater than incase you add old models, ask Hicham about this odd scenario
+		if ( $result['view_images'] >= ( $result['view_count'] * 2 * 4 ) ) {
 			$views_updated[] = $result['model_name_cd'];
 		}
 		
 		// Don't check if colorized_count !== 0, these models can be considered done for both ftp-s3 and colorized images
 		// Ftp to S3 images
-		if ( $result['ftp_original_images'] == $result['colorized_count'] ) {
+		if ( $result['ftp_original_images'] >= $result['colorized_count'] ) {
 			$ftp_s3_updated[] = $result['model_name_cd'];
 		}
+		
 		// Colorized Images = style total ftp images * 2 types * 4 sizes
-		if ( $result['colorized_images'] == $result['colorized_count'] * 2 * 4 ) {
+		if ( $result['colorized_images'] >= $result['colorized_count'] * 2 * 4 ) {
 			$colorized_updated[] = $result['model_name_cd'];
 		}
 	}
@@ -69,7 +71,7 @@ function get_updated_models() {
 			'styles' 		=> $models_updated,
 			'views'			=> $views_updated,
 			'ftps3'			=> $ftp_s3_updated,
-			'colorized'	=> $colorized_updated,
+			'colorized'		=> $colorized_updated,
 		),
 	);
 }
@@ -185,7 +187,7 @@ function get_chromedata_media_by_model( $model, $type ){
 	));
 
 	$sql = "SELECT 
-	a.model_name, a.style_id, a.type, a.url, a.shot_code, a.file_name, a.color_option_code, 
+	a.model_name_cd, a.model_name, a.style_id, a.type, a.url, a.shot_code, a.file_name, a.color_option_code, 
   IFNULL(b.colorized_count, 0) as colorized_count,
   IFNULL(c.colorized_original, 0) as colorized_original
 	FROM media a 
@@ -193,16 +195,17 @@ function get_chromedata_media_by_model( $model, $type ){
 	ON a.style_id = c.style_id
 	LEFT JOIN (SELECT style_id, colorized_count FROM style GROUP BY style_id) b
 	ON a.style_id = b.style_id 
-	WHERE a.model_name = '{$model}' 
+	WHERE a.model_name_cd = '{$model}' 
 	AND a.url LIKE '%chromedata%'";
 	if ( $type == 'colorized' ) { 
 		$sql = str_replace("%chromedata%", "%amazonaws.com/original/colorized%", $sql );
 	}
 	
 	$media = $db->get_results( $sql, ARRAY_A );
+
 	// Check if Model exists
 	if ( ! $media ) {
-		return array( 
+		return array(
 			'pass'		=> FALSE,
 			'outputs' => $outputs 
 		);
@@ -219,6 +222,7 @@ function get_chromedata_media_by_model( $model, $type ){
 		}
 	} else {
 		$results = array();
+
 		// We want to keep original colorized images
 		if ( ! colorized_media_is_updated( $media ) ) {
 			$results = $media;
@@ -242,8 +246,8 @@ function get_chromedata_media_by_model( $model, $type ){
 
 function colorized_media_is_updated( $media ) {
 	global $db;
-	$model_name = $media[0]['model_name'];
-	$sql = "SELECT COUNT(url) FROM media WHERE model_name = '{$model_name}' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized'";
+	$model_name = $media[0]['model_name_cd'];
+	$sql = "SELECT COUNT(url) FROM media WHERE model_name_cd = '{$model_name}' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized'";
 	$result = $db->get_var( $sql );
 	if ( count($media) * 2 * IMAGES_PER_REQUEST === intval( $result ) ) {
 		return true;
@@ -264,6 +268,7 @@ function cd_media_is_updated($media){
 	
 	// Check if media has 8 view images
 	if ( $updated != IMAGES_PER_REQUEST * 2 ) { $pass = FALSE; }
+
 	// Return if shotcode is not 1 or failed check
 	if ( $media['shot_code'] !== '1' || ! $pass ) { 
 		return $pass; 
@@ -322,6 +327,6 @@ function update_colorized_count( $style_id, $count ) {
 
 function garbage(){
 	gc_enable();
-  gc_collect_cycles();
-  gc_disable();
+  	gc_collect_cycles();
+  	gc_disable();
 }

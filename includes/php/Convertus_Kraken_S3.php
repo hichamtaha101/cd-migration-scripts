@@ -194,9 +194,9 @@ class Convertus_Kraken_S3 {
 
 			// 2) SQL Insert
 			if ( $media['type'] == 'view' ) {
-				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, file_name, model_name, created ) VALUES ";
+				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, file_name, model_name, model_name_cd, created ) VALUES ";
 			} elseif ( $media['type'] == 'colorized' )  { 
-				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, created ) VALUES ";
+				$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, created ) VALUES ";
 			}
 
 			// 3) SQL Values. Figure out color name?
@@ -205,11 +205,12 @@ class Convertus_Kraken_S3 {
 				$background = 'Transparent';
 				if ( strpos( $result['kraked_url'], '.jpg' ) !== false ) { $background = 'White'; }
 				if ( $media['type'] == 'view' )  {
-					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '{$media['file_name']}', '{$media['model_name']}', now() )";
+					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '{$media['file_name']}', '{$media['model_name']}', '{$media['model_name_cd']}', now() )";
 				} elseif ( $media['type'] == 'colorized' ) {
-					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', '{$media['file_name']}', '{$media['model_name']}', now())";
+					$values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', '{$media['file_name']}', '{$media['model_name']}', '{$media['model_name_cd']}', now())";
 				}
 			}
+			
 			// 4) SQL query
 			// display_var( $values );
 			$this->db->query( $sql . implode( ',', $values ) );
