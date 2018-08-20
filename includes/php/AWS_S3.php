@@ -61,7 +61,8 @@ class AWS_S3 {
           echo 'Something went wrong when downloading images for style id ' . $m['style_id'];
 					exit(); // Error caught, exit script
 				}
-			}
+      }
+      
 			// Update style's colorized_count
       $colorized_count = count( $contents );
       update_colorized_count( $m['style_id'], $colorized_count );

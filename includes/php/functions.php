@@ -19,7 +19,7 @@ function get_updated_models() {
     DISTINCT(a.model_name_cd),
     IFNULL(b.view_images, 0) as view_images,
     IFNULL(c.colorized_images, 0) as colorized_images,
-    IFNULL(d.ftp_original_images, 0) as ftp_original_images,
+    IFNULL(d.cd_one_images, 0) as cd_one_images,
     IFNULL(e.styles, 0) as styles,
     IFNULL(e.view_count, 0) as view_count,
     IFNULL(e.colorized_count, 0) as colorized_count
@@ -34,7 +34,7 @@ function get_updated_models() {
 	ON
 			a.model_name_cd = c.model_name_cd
 	LEFT JOIN
-			(SELECT model_name_cd, COUNT(*) as ftp_original_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/original/colorized%' GROUP BY model_name_cd) d
+			(SELECT model_name_cd, COUNT(*) as cd_one_images FROM media mm WHERE mm.url LIKE '%media.chromedata.com%' AND mm.shot_code = 1 GROUP BY model_name_cd) d
 	ON
 			a.model_name_cd = d.model_name_cd
 	LEFT JOIN 
@@ -48,23 +48,20 @@ function get_updated_models() {
 		$models_updated[] = $result['model_name_cd'];
 
 		// View images = style total views * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
-		// Greater than incase you add old models, ask Hicham about this odd scenario
 		if ( $result['view_images'] >= ( $result['view_count'] * 2 * 4 ) ) {
 			$views_updated[] = $result['model_name_cd'];
-		}
-		
-		// Don't check if colorized_count !== 0, these models can be considered done for both ftp-s3 and colorized images
-		// Ftp to S3 images
-		if ( $result['ftp_original_images'] >= $result['colorized_count'] ) {
-			$ftp_s3_updated[] = $result['model_name_cd'];
-		}
-		
-		// Colorized Images = style total ftp images * 2 types * 4 sizes
-		if ( $result['colorized_images'] >= $result['colorized_count'] * 2 * 4 ) {
-			$colorized_updated[] = $result['model_name_cd'];
+
+			// No more chrome data one images; ftp-s3 colorized orignal transferred
+			if ( $result['cd_one_images'] == 0 ) {
+				$ftp_s3_updated[] = $result['model_name_cd'];
+
+				// Colorized images = colorized original ( colorized_count ) images * 2 types * 4 sizes
+				if ( $result['colorized_images'] >= $result['colorized_count'] * 2 * 4 ) {
+					$colorized_updated[] = $result['model_name_cd'];
+				}
+			}
 		}
 	}
-
 	return array(
 		'models' 	=> $models,
 		'updated'	=> array(
@@ -151,6 +148,7 @@ function update_ftps3_by_model( $model ) {
 			'outputs'	=> $media['outputs']
 		);
 	}
+
 	$media = $media['media'];
 	$test = $aws_s3->copy_colorized_media_to_s3( $media );
 	if ( $test ) {
@@ -167,14 +165,6 @@ function update_ftps3_by_model( $model ) {
 		);
 	}
 	
-}
-
-/************************* OTHER FUNCTIONS *************************/
-
-function display_var( $var ) {
-	echo '<pre>';
-	var_dump( $var );
-	echo '</pre>';
 }
 
 function get_chromedata_media_by_model( $model, $type ){
@@ -200,14 +190,13 @@ function get_chromedata_media_by_model( $model, $type ){
 	if ( $type == 'colorized' ) { 
 		$sql = str_replace("%chromedata%", "%amazonaws.com/original/colorized%", $sql );
 	}
-	
 	$media = $db->get_results( $sql, ARRAY_A );
 
 	// Check if Model exists
 	if ( ! $media ) {
 		return array(
 			'pass'		=> FALSE,
-			'outputs' => $outputs 
+			'outputs' 	=> $outputs 
 		);
 	}
 
@@ -275,6 +264,7 @@ function cd_media_is_updated($media){
 	}
 
 	// Check ftps3 images to remove 01
+	// Colorized original equals 0 after view downloads and before ftp to s3
 	if ( $media['colorized_original'] !== '0' ) {
 		if ( $media['colorized_count'] === '0' ) {
 			update_colorized_count($media['style_id'], $media['colorized_original']);
@@ -329,4 +319,10 @@ function garbage(){
 	gc_enable();
   	gc_collect_cycles();
   	gc_disable();
+}
+
+function display_var( $var ) {
+	echo '<pre>';
+	var_dump( $var );
+	echo '</pre>';
 }

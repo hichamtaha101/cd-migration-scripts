@@ -215,5 +215,15 @@ class Convertus_Kraken_S3 {
 			// display_var( $values );
 			$this->db->query( $sql . implode( ',', $values ) );
 		}
+
+
+		// Remove 03, 04, 12 CD images after grabbing all views
+		foreach( $this->media_entries as $m ) {
+			if ( cd_media_is_updated( $m ) ) {
+				remove_cd_media($m);
+			} else {
+				$results[] = $m;
+			}
+		}
 	}
 }

@@ -39,7 +39,7 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // display_var( get_updated_models() );
 // exit();
 
-// display_var( update_model_images( 'Frontier', 'view' ) );
+// display_var( update_ftps3_by_model( 'A4 allroad' ) );
 // exit();
 
 function update_all_body_styles() {
