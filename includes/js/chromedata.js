@@ -209,6 +209,7 @@ jQuery(document).ready(function ($) {
 			if (_v.updating[type].length != 0) {
 				var model = _v.updating[type].splice(0, 1)[0];
 				_v.updated[type].push(model);
+				console.log(model);
 				if (_v.run) {
 					run_php_function(fn, [model], callback);
 				} else {

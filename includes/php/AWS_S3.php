@@ -45,7 +45,7 @@ class AWS_S3 {
 					continue;
 				}
       }
-			$folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
+      $folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
       $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
       
 			// 3) Download foreach color variation for this media
@@ -66,7 +66,7 @@ class AWS_S3 {
 			// Update style's colorized_count
       $colorized_count = count( $contents );
       update_colorized_count( $m['style_id'], $colorized_count );
-		}
+    }
 		
 		// 5) Insert each image as an original s3 media
 		$test = true;
