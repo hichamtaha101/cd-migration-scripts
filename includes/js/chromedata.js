@@ -39,9 +39,9 @@ jQuery(document).ready(function ($) {
 			args: true
 		},
 		{
-			title: '5) Update All S3 to FTP Colorized ( may take a long time )',
+			title: '5) Update All FTP to S3 Colorized ( may take a long time )',
 			fname: 'r_update_all_ftps3',
-			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
+			desc: 'Downloads each model\'s colorized images from the chromedata ftp and stores it into the S3 Bucket under /original/{styleid}/01.',
 			args: false
 		},
 		{
