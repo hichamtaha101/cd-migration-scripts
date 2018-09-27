@@ -12,16 +12,21 @@
 	<body>
 		<div class="content-wrapper" id="wrapper">
 			<h1>🛠️ ChromeData Tool</h1>
-			<b>Update Value:</b>
-			<div class="ui input" id="value">
-				<input type="text" placeholder="Model Name">
+			<b>Update Model</b>
+			<div class="ui input">
+				<input type="text" placeholder="Model Name" v-model="modelValue">
 			</div>
-			<div class="notification"></div>
+			<div class="notification" :class="inputClass">{{ inputMessage }}</div>
 			<div class="functions">
 				<div class="item ui segment" v-for="f in functions">
 					<div class="item__wrap">
 						<div class="item__title">- {{ f.title }}</div>
 						<div class="item__desc">{{ f.desc }}</div>
+						<div class="item__option" v-if="'removeMedia' in f">
+							Remove All Media? 
+							<input type="radio" v-model="removeMedia" value="true">True
+							<input type="radio" v-model="removeMedia" value="false">False
+						</div>
 						<div class="notification"></div>
 					</div>
 					<div class="item__button" @click="runFunction( $event, f )">Run Script</div>
@@ -30,13 +35,13 @@
 			</div>
 			<h2>Output:</h2>
 			<div class="section ui segment">
-				<div class="empty" v-if="outputs.length == 0">nothing 😒</div>
 				<div 
 						 :class="output.type"
 						 v-for="output in outputs" 
 						 v-html="output.msg"
-						 v-else>
+						 v-if ="outputs.length !== 0">
 				</div>
+				<div class="empty" v-else>N/A</div>
 			</div>
 			<h2>Status:</h2>
 			<div class="ui top attached tabular menu">

@@ -88,31 +88,33 @@ function update_all_models() {
 	return $results;
 }
 
-function update_styles_by_model( $model ) {
+function update_styles( $model, $remove_media ) {
 	global $obj;
+	
 	$outputs = array();
-
 	$styles = $obj->get_model_details( "model_name_cd LIKE '{$model}'" );
-	if ( $obj->valid === TRUE ) {
-		$obj->update_styles( $styles );
-		$results['update'] = array( 
-			'key' => 'styles', 
-			'data' => $model 
-		);
-	}
+
+	$obj->update_styles( $styles, $remove_media );
+	$results['update'] = array( 
+		'key' => 'styles', 
+		'data' => $model 
+	);
 	$results['outputs'] = $obj->outputs;
-	$results['valid']	= $obj->valid;
 
 	return $results;
 }
 
-function update_views_by_model( $model ) {
+function update_views( $model ) {
 	return update_model_images( $model, 'view' );
 }
 
-function update_colorized_by_model( $model ) {
+function update_colorized( $model ) {
 	return update_model_images( $model, 'colorized' );
 }
+
+// Testing
+// 	$results['outputs'] = array('type' => 'success', 'msg' => 'Successfully removed all media for ' . $model );
+// 	return $results;
 
 function update_model_images( $model, $type ) {
 	global $k_s3;
@@ -140,7 +142,7 @@ function update_model_images( $model, $type ) {
 	return $results;
 }
 
-function update_ftps3_by_model( $model ) {
+function update_ftps3( $model ) {
 	global $aws_s3;
 	$media = get_chromedata_media_by_model( $model, 'view' );
 	if ( ! $media['pass'] ) {
@@ -167,7 +169,7 @@ function update_ftps3_by_model( $model ) {
 	
 }
 
-function get_chromedata_media_by_model( $model, $type ){
+function get_chromedata_media_by_model( $model, $type ) {
 	global $db;
 
 	$results = array();
@@ -177,13 +179,13 @@ function get_chromedata_media_by_model( $model, $type ){
 	));
 
 	$sql = "SELECT 
-	a.model_name_cd, a.model_name, a.style_id, a.type, a.url, a.shot_code, a.file_name, a.color_option_code, 
-  IFNULL(b.colorized_count, 0) as colorized_count,
-  IFNULL(c.colorized_original, 0) as colorized_original
+	a.model_name_cd, a.model_name, a.style_id, a.type, a.url, a.shot_code, a.file_name, a.color_option_code, b.model_year,
+	IFNULL(b.colorized_count, 0) as colorized_count,
+	IFNULL(c.colorized_original, 0) as colorized_original
 	FROM media a 
 	LEFT JOIN (SELECT style_id, COUNT(url) as colorized_original FROM media WHERE url LIKE '%amazonaws.com/original/colorized%' GROUP BY style_id ) c
 	ON a.style_id = c.style_id
-	LEFT JOIN (SELECT style_id, colorized_count FROM style GROUP BY style_id) b
+	LEFT JOIN (SELECT style_id, colorized_count, model_year FROM style GROUP BY style_id) b
 	ON a.style_id = b.style_id 
 	WHERE a.model_name_cd = '{$model}' 
 	AND a.url LIKE '%chromedata%'";
@@ -248,23 +250,25 @@ function cd_media_is_updated($media){
 	global $db;
 	$pass = TRUSE;
 
+	// Each media is unique by style_id, shot_code, file_name ( possibly color_option_code )
 	$sql = "SELECT count(style_id) FROM media WHERE
 	style_id = '{$media['style_id']}' AND
 	shot_code = '{$media['shot_code']}' AND
+	file_name = '{$media['file_name']}' AND
 	url LIKE '%amazonaws.com/media%' AND
 	type = 'view'";
 	$updated = $db->get_var( $sql );
-	
-	// Check if media has 8 view images
+
+	// Each media should have 8 images ( lg, md, sm, xs ) x ( jpg, png )
 	if ( $updated != IMAGES_PER_REQUEST * 2 ) { $pass = FALSE; }
 
-	// Return if shotcode is not 1 or failed check
+	// Return if shotcode is not 1 or failed first check for view images
 	if ( $media['shot_code'] !== '1' || ! $pass ) { 
 		return $pass; 
 	}
 
-	// Check ftps3 images to remove 01
-	// Colorized original equals 0 after view downloads and before ftp to s3
+	// This checks to see if ftp images were grabbed ( by referencing 01 images ) and removes them if they were
+	// Colorized original equals 0 after ftp images were put in  downloads and before ftp to s3
 	if ( $media['colorized_original'] !== '0' ) {
 		if ( $media['colorized_count'] === '0' ) {
 			update_colorized_count($media['style_id'], $media['colorized_original']);

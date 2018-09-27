@@ -14,33 +14,30 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 
 // $models = $obj->update_models();
 
-// $results = $obj->get_model_details("model_name LIKE 'MDX' AND model_year = 2018");
-// display_var( $results );
+// $results = $obj->get_model_details("model_name LIKE 'NSX' AND model_year LIKE '2018'");
 // exit();
-// $results = update_styles_by_model('M4');
+// $results = update_styles_by_model( 'M4', 'false' );
 
-// $styles = $obj->get_model_details( "model_name = 'ILX' AND model_year = 2017" );
-// foreach ( $styles as $style ) {
-//   display_var( $style['style']['has_media'] );
-//   display_var( $style['style']['view'] );
-// }
+// $styles = $obj->get_model_details( "model_name = 'TLX' AND model_year = 2019" );
+// var_dump( $styles );
 // exit();
-// $obj->update_styles( $styles );
+// $obj->update_styles( $styles, 'false' );
+// exit();
 
-// update_views_by_model('Super Duty F-350 SRW');
+// update_views_by_model('TLX');
 // update_ftps3_by_model('Sierra 3500HD');
-// display_var(update_colorized_by_model('124 Spider'));
+// display_var(update_colorized_by_model('A4 allroad'));
 // exit();
 
-// $test = update_styles_by_model( 'CTS Sedan' );
+// $test = update_styles_by_model( 'CTS Sedan', 'false' );
 // display_var( $test );
 // exit();
 
 // display_var( get_updated_models() );
 // exit();
 
-display_var( update_ftps3_by_model( 'Q7' ) );
-exit();
+// display_var( update_ftps3_by_model( 'Q7' ) );
+// exit();
 
 function update_all_body_styles() {
   global $obj;
@@ -95,18 +92,18 @@ function update_model_names() {
   }
 }
 
-// update_model_name_cd();
-function update_model_name_cd() {
+// update_crap();
+function update_crap() {
   global $obj;
 
-  $sql = "SELECT style_id, model_name_cd FROM style";
+  $sql = "SELECT style_id, model_year FROM style";
   $styles = $obj->db->get_results( $sql, ARRAY_A );
 
   foreach ( $styles as $style ) {
-    $sql = "UPDATE media SET model_name_cd = '{$style['model_name_cd']}' WHERE style_id = '{$style['style_id']}'";
+    $sql = "UPDATE media SET model_year = '{$style['model_year']}' WHERE style_id = '{$style['style_id']}'";
     $obj->db->query($sql);
   }
-  echo ' updated media table records to have correct model_name_cd values';
+  echo 'Updated media table records to have correct modeL_year values';
 }
 
 

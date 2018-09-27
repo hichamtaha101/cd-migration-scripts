@@ -6,75 +6,83 @@ jQuery(document).ready(function ($) {
 			title: '1) Update All Makes',
 			fname: 'update_all_makes',
 			desc: 'Updates all makes/divisions ( replaces all divison entries in DB ).',
-			args: false
 		},
 		{
 			title: '2) Update All Models',
 			fname: 'update_all_models',
 			desc: 'Updates all models ( replaces all model entries in DB ).',
-			args: false
 		},
 		{
 			title: '3) Update All Styles ( may take a long time )',
-			fname: 'r_update_all_styles',
+			fname: 'update_styles',
+			type: 'styles',
 			desc: 'Updates styles table by each non-updated model, progress is reported in the output section.',
-			args: false
+			updateAll: true,
+			removeMedia: true
 		},
 		{
 			title: '3.1) Update Styles By Model',
-			fname: 'update_styles_by_model',
+			fname: 'update_styles',
 			desc: 'Grabs styles by model and updates all records in DB for the styles selected.',
-			args: true
+			hasModel: true,
+			removeMedia: true
 		},
 		{
 			title: '4) Update All Database Views ( may take a long time )',
-			fname: 'r_update_all_views',
+			fname: 'update_views',
+			type: 'views',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
-			args: false
+			updateAll: true,
 		},
 		{
 			title: '4.1) Update Views Media By Model ( may take some time )',
-			fname: 'update_views_by_model',
+			fname: 'update_views',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
-			args: true
+			hasModel: true,
 		},
 		{
 			title: '5) Update All FTP to S3 Colorized ( may take a long time )',
-			fname: 'r_update_all_ftps3',
+			fname: 'update_ftps3',
+			type: 'ftps3',
 			desc: 'Downloads each model\'s colorized images from the chromedata ftp and stores it into the S3 Bucket under /original/{styleid}/01.',
-			args: false
+			updateAll: true,
 		},
 		{
 			title: '5.1) Update FTP to S3 Colorized Media By Model ( may take some time )',
-			fname: 'update_ftps3_by_model',
+			fname: 'update_ftps3',
 			desc: 'Downloads all the model\'s style colorized images from the chromedata ftp and stores it into the S3 Bucket under /original/{styleid}/01.',
-			args: true
+			hasModel: true,
 		},
 		{
 			title: '6) Update All Database Colorized ( may take a long time )',
-			fname: 'r_update_all_colorized',
+			fname: 'update_colorized',
+			type: 'colorized',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
-			args: false
+			updateAll: true,
 		},
 		{
 			title: '6.1) Update Colorized Media By Model ( may take some time )',
-			fname: 'update_colorized_by_model',
+			fname: 'update_colorized',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
-			args: true
-		},
+			hasModel: true,
+		}
 	];
 
-	var ajax_path = window.location.href + 'includes/php/ajax.php';
+	var ajaxPath = window.location.href + 'includes/php/ajax.php';
 	Vue.component('updating-table', {
 		template: '#updating-table',
 		props: ['updated', 'updating', 'name']
 	});
-	var _v = new Vue({
+	var vMain = new Vue({
 		el: '#wrapper',
 		data: {
 			functions: functions,
 			outputs: [],
 			models: [],
+			modelValue: '',
+			removeMedia: 'false',
+			inputMessage: '',
+			inputClass: '',
 			updating: {
 				'styles': [],
 				'views': [],
@@ -91,29 +99,29 @@ jQuery(document).ready(function ($) {
 		},
 		methods: {
 			runFunction: function (event, item) {
-				$('.notification').removeClass('error');
-				$('.notification').removeClass('success');
-				$('.notification').html('');
-				var val = $('#value input').val();
-
-				// Updating all models
-				if (item.fname.indexOf('r_update_all_') !== -1) {
-					var type = item.fname.replace('r_update_all_', '');
-					update_all(event, type);
-					return;
-				}
+				this.inputClass = '';
+				this.inputMessage = '';
+				var args = [];
 
 				// No args provided if needed check
-				if (item.args && val == '') {
-					$('#value + .notification').addClass('error');
-					$('#value + .notification').html('Pelase enter a value!');
+				if ( 'hasModel' in item && this.modelValue == '') {
+					this.inputClass = 'error';
+					this.inputMessage = 'Model value should not be empty';
 					return;
 				}
 
-				// Get args
-				var args = [];
-				if ( item.fname.indexOf('_by_model') !== -1 ) {
-					args.push(val);
+				if ( 'hasModel' in item ) {
+					args.push(this.modelValue);
+				}
+
+				if ( 'removeMedia' in item ) {
+					args.push(this.removeMedia);
+				}
+
+				// Updating all models
+				if ( 'updateAll' in item ) {
+					update_all(event, item, args);
+					return;
 				}
 
 				// Start loading
@@ -133,28 +141,28 @@ jQuery(document).ready(function ($) {
 	run_php_function('get_updated_models', [], function () {
 
 		var updating = {
-			'styles': _v.models.slice(),
-			'views': _v.updated['styles'].slice(),
-			'ftps3': _v.updated['styles'].slice(),
-			'colorized': _v.updated['styles'].slice()
+			'styles': vMain.models.slice(),
+			'views': vMain.updated['styles'].slice(),
+			'ftps3': vMain.updated['styles'].slice(),
+			'colorized': vMain.updated['styles'].slice()
 		};
 		// Can only update images on models that have been updated
 
-		for (var key in _v.updated) {
+		for (var key in vMain.updated) {
 			// Removed already updated models from updating
-			for (var i = 0; i < _v.updated[key].length; i++) {
-				var index = updating[key].indexOf(_v.updated[key][i]);
+			for (var i = 0; i < vMain.updated[key].length; i += 1) {
+				var index = updating[key].indexOf(vMain.updated[key][i]);
 				updating[key].splice(index, 1);
 			}
 		}
 
-		_v.updating = updating;
+		vMain.updating = updating;
 		$('.menu .item').tab();
 	});
 
 	function run_php_function(fname, args, callback) {
 		$.ajax({
-			url: ajax_path,
+			url: ajaxPath,
 			method: 'POST',
 			data: {
 				fname: fname,
@@ -171,15 +179,10 @@ jQuery(document).ready(function ($) {
 				}
 
 				// Set vue data
-				if ('outputs' in data) { _v.outputs = _v.outputs.concat(data.outputs); }
-				if ('valid' in data) {
-					if (data.valid !== true) {
-						_v.outputs = _v.outputs.concat(data.valid);
-						_v.run = false; // Stop recursive script if running
-					}
-				}
-				if ('models' in data) { _v.models = data.models; }
-				if ('updated' in data) { _v.updated = data.updated; }
+				// vMain.run = false; // Stop recursive script if running
+				if ('outputs' in data) { vMain.outputs = vMain.outputs.concat(data.outputs); }
+				if ('models' in data) { vMain.models = data.models; }
+				if ('updated' in data) { vMain.updated = data.updated; }
 				if ('update' in data) { update(data.update.key, data.update.data); }
 
 				callback();
@@ -189,15 +192,14 @@ jQuery(document).ready(function ($) {
 
 	// For single model udpates
 	function update(key, model) {
-		var index = _v.updating[key].indexOf(model);
+		var index = vMain.updating[key].indexOf(model);
 		if (index == -1) { return; }
-		var model = _v.updating[key].splice(index, 1);
-		_v.updated[key].push(model[0]);
+		var model = vMain.updating[key].splice(index, 1);
+		vMain.updated[key].push(model[0]);
 	}
 
-	function update_all(event, type) {
-		_v.run = true;
-		var fn = 'update_' + type + '_by_model';
+	function update_all(event, item, args) {
+		vMain.run = true;
 
 		// Start Loading
 		console.time();
@@ -206,12 +208,14 @@ jQuery(document).ready(function ($) {
 
 		// Recursive Function
 		var callback = function () {
-			if (_v.updating[type].length != 0) {
-				var model = _v.updating[type].splice(0, 1)[0];
-				_v.updated[type].push(model);
+			console.log(item.type);
+			if (vMain.updating[item.type].length != 0) {
+				var model = vMain.updating[item.type].splice(0, 1)[0];
+				vMain.updated[item.type].push(model);
+				args.unshift(model);
 				console.log(model);
-				if (_v.run) {
-					run_php_function(fn, [model], callback);
+				if (vMain.run) {
+					run_php_function(item.fname, args, callback);
 				} else {
 					$(event.target).parent().removeClass('active');
 					$(event.target).parent().find('.loader').removeClass('active');

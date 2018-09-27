@@ -24,7 +24,6 @@ class Chrome_Data_API {
 		$this->api_url  = 'http://services.chromedata.com/Description/7b?wsdl';
 		$this->language = 'en';
 		$this->outputs = array();
-		$this->valid = TRUE;
 
 		$this->country_code = $country_code;
 
@@ -291,9 +290,9 @@ class Chrome_Data_API {
 	 * along with a year parameter for which we need the data from the chrome API
 	 * as set by $this->years variable.
 	 *
-	 * @param array $args The parameters to increment with the year parameter
+	 * @param array $args The parameters to increment with the year parameter.
 	 *
-	 * @return array An array with all the parameters along with the year field
+	 * @return array An array with all the parameters along with the year field.
 	 */
 	private function append_with_year_parameter( $args = array() ) {
 
@@ -310,31 +309,6 @@ class Chrome_Data_API {
 
 	}
 
-	protected function truncate_response_parameters( $data, $args ) {
-
-		$truncated_data = array();
-		$response_data = array_column( $data, 'response' );
-
-		foreach ( $response_data as $response ) {
-			$truncated_data[] = $response->{$args['property']};
-		}
-
-		foreach ( $truncated_data as $key => $value ) {
-			if ( is_object( $value ) ) {
-				$truncated_data[ $key ] = array( $value );
-			}
-		}
-
-		if ( array_key_exists( 'unique', $args ) ) {
-			$truncated_data = array_values(
-				array_unique(
-					call_user_func_array( 'array_merge', $truncated_data ),
-					SORT_REGULAR
-				)
-			);
-		}
-		return $truncated_data;
-	}
 }
 
 class Convertus_DB_Updater extends Chrome_Data_API {
@@ -504,6 +478,11 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
+	/**
+	 * Grabs all makes from chromedata.
+	 *
+	 * @return array	Returns an array of make objects.
+	 */
 	public function get_divisions() {
 
 		$soap_response = $this->soap_call_loop( 'getDivisions' );
@@ -537,9 +516,13 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 
 		return array_values( array_intersect_key( $divisions, array_unique( array_column( $divisions, 'id' ) ) ) );
-
 	}
 
+	/**
+	 * Grabs and stores all makes from chromedata into our database.
+	 *
+	 * @return void
+	 */
 	public function update_divisions() {
 
 		$divisions = $this->get_divisions();
@@ -563,6 +546,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
+	/**
+	 * Grabs all models from chromedata based on the division id.
+	 *
+	 * @param integer $division_id	The id of the division in chromedata.
+	 * @return array				Returns an array of models from chromedata.
+	 */
 	public function get_models( $division_id = -1 ) {
 
 		if ( $division_id === -1 ) {    
@@ -623,6 +612,11 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $models;
 	}
 
+	/**
+	 * Grabs and stores all models from chromedata based on the makes we have in our database.
+	 *
+	 * @return void
+	 */
 	public function update_models() {
 
 		$models = $this->get_models();
@@ -643,9 +637,14 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		} else {
 			$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all models' );
 		}
-
 	}
 
+	/**
+	 * Standardize chromedata's weird model names to their appropriate model names.
+	 *
+	 * @param string $cd_model 	Chromedata's weird model name :/.
+	 * @return string			The correct model name.
+	 */
 	private function get_standard_model( $cd_model ) {
 		if ( array_key_exists( $cd_model, $this->standard_models ) ) {
 			return $this->standard_models[$cd_model];
@@ -653,6 +652,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $cd_model;
 	}
 
+	/**
+	 * Returns a list of models unique by name and year.
+	 *
+	 * @param string $models	Array of models.
+	 * @return array			Array of unique models.
+	 */
 	private function remove_duplicate_models( $models ) {
 		$results = $duplicates = array();
 		foreach ( $models as $model ) {
@@ -664,6 +669,13 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $results;
 	}
 
+	/**
+	 * Grabs all style information for the selected models. This function may purposely break on an error and
+	 * output the error that needs to be addressed in order to continue.
+	 *
+	 * @param string $filter 	SQL Where condition to specify models query.
+	 * @return array			An array of style objects for database insertion.
+	 */
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
@@ -714,34 +726,21 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 
 
-		// Test to see if all models styles pass 
-		$results = self::meets_requirements( $styles );
-		if ( $results === TRUE ) {
-			$this->outputs[] = array(
-				'type' => 'success', 
-				'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name_cd
-			);
-		} else {
-			$this->valid = $results;
-		}
-
+		// Test to see if all models styles pass / breaks if one fails
+		$this->meets_requirements( $styles );
+		$this->outputs[] = array(
+			'type' => 'success', 
+			'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name_cd
+		);
 		return $styles;
 	}
 
-	private function error_caught( $response_status ) {
-		if ( $response_status->responseCode === 'Unsuccessful' ) {
-			$output = array( 'type' => 'error' );
-			$error = $response_status->status->_ . ' : ' . $response_status->status->code;
-			if ( strpos( $error, 'NameMatchNotFound' ) !== FALSE ) {
-				$output['type'] = 'warning';
-			}
-			$output['msg'] = $error;
-			$this->outputs[] = $output;
-			return true;
-		}
-		return false;
-	}
-
+	/**
+	 * Makes a soap call to chromedata to grab details about a specific style.
+	 *
+	 * @param string $id	The styleId corresponding to the style.
+	 * @return object		The object containing all the details for the specific style.			
+	 */
 	private function get_style_details( $id ) {
 		$soap_response = $this->soap_call(
 			'describeVehicle',
@@ -762,71 +761,34 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $soap_response;
 	}
 
-	private function set_option( $item, $child = 'false' ) {
-
-		// Set constant fields and defaults
-		$option = array(
-			'id'				=> $item->header->id,
-			'header'			=> $item->header->_,
-			'styleId'			=> $item->styleId,
-			'description'		=> addslashes( $item->description ),
-			'isChild'			=> $child,
-			'oemCode'			=> null,
-			'chromeCode'		=> null,
-			'msrpMin'			=> null,
-			'msrpMax'			=> null,
-			'categories'		=> null
-		);
-
-		if ( isset( $item->oemCode ) ) {
-			$option['oemCode'] = $item->oemCode;
-		}
-		if ( isset( $item->chromeCode ) ) {
-			$option['chromeCode'] = $item->chromeCode;
-		}
-		if ( isset( $item->price ) ) {
-			$option['msrpMin'] = $item->price->msrpMin;
-			$option['msrpMax'] = $item->price->msrpMax;
-		}
-		if ( isset( $item->category ) ) {
-			if ( is_object( $item->category ) ) {
-				$option['categories'] = [ $item->category->id ];
-			} elseif ( is_array( $item->category ) ) {
-				foreach ( $item->category as $category ) {
-					$option['categories'][] = $category->id;
-				}
+	/**
+	 * Checks to see if a soap response from chromedata was successful or not. If unsuccessful 
+	 * stores the response in this object's output property.
+	 *
+	 * @param object $response_status	The response object returned from a soapcall to chromedata.
+	 * @return boolean					True if there was no error, false otherwise.
+	 */
+	private function error_caught( $response_status ) {
+		if ( $response_status->responseCode === 'Unsuccessful' ) {
+			$output = array( 'type' => 'error' );
+			$error = $response_status->status->_ . ' : ' . $response_status->status->code;
+			if ( strpos( $error, 'NameMatchNotFound' ) !== FALSE ) {
+				$output['type'] = 'warning';
 			}
+			$output['msg'] = $error;
+			$this->outputs[] = $output;
+			return true;
 		}
-		$option['categories'] = json_encode( $option['categories'] );
-		return $option;
+		return false;
 	}
 
-	private function get_transmission( $desc ) {
-		if ( stripos($desc, 'Transmission,' ) !== FALSE ) {
-			$desc = explode( ', ', $desc );
-			return $desc[1];
-		} elseif ( stripos( $desc, 'Transmission:' ) !== FALSE ) {
-			$desc = explode( ' ', $desc );
-			$values = array();
-			foreach( $desc as $value ) {
-				if ( strpos( $value, ':' ) !== FALSE ) {
-					$key = str_replace( ':', '', $value );
-					$values[$key] = array();
-				} else {
-					$values[$key][] = $value;
-				}
-			}
-			return implode( ' ', $values['Transmission'] );
-		} elseif ( stripos( $desc, ' transmission' ) !== FALSE ) {
-			$desc = str_replace( ' transmission', '', $desc );
-			return $desc;
-		} elseif ( strpos( $desc, 'Transmission' ) === 0 ) {
-			return $desc;
-		} else {
-			return NULL;
-		}
-	}
-
+	/**
+	 * Reads the chromedata feed and formats the information for the database.
+	 *
+	 * @param object $soap_call	The soap request object containing the style's response from chromedata.
+	 * @param integer $style_id	The ID of the style.
+	 * @return object			The formatted style object.
+	 */
 	private function set_style( $soap_call, $style_id ) {
 
 		$style = array();
@@ -987,6 +949,92 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $style;
 	}
 
+	/**
+	 * Formats option objects into a DB appropriate format.
+	 *
+	 * @param object $item	The item to store in the database.
+	 * @param string $child	If the add-on belongs to another add-on.
+	 * @return object		Return the formatted add-on object.
+	 */
+	private function set_option( $item, $child = 'false' ) {
+
+		// Set constant fields and defaults
+		$option = array(
+			'id'				=> $item->header->id,
+			'header'			=> $item->header->_,
+			'styleId'			=> $item->styleId,
+			'description'		=> addslashes( $item->description ),
+			'isChild'			=> $child,
+			'oemCode'			=> null,
+			'chromeCode'		=> null,
+			'msrpMin'			=> null,
+			'msrpMax'			=> null,
+			'categories'		=> null
+		);
+
+		if ( isset( $item->oemCode ) ) {
+			$option['oemCode'] = $item->oemCode;
+		}
+		if ( isset( $item->chromeCode ) ) {
+			$option['chromeCode'] = $item->chromeCode;
+		}
+		if ( isset( $item->price ) ) {
+			$option['msrpMin'] = $item->price->msrpMin;
+			$option['msrpMax'] = $item->price->msrpMax;
+		}
+		if ( isset( $item->category ) ) {
+			if ( is_object( $item->category ) ) {
+				$option['categories'] = [ $item->category->id ];
+			} elseif ( is_array( $item->category ) ) {
+				foreach ( $item->category as $category ) {
+					$option['categories'][] = $category->id;
+				}
+			}
+		}
+		$option['categories'] = json_encode( $option['categories'] );
+		return $option;
+	}
+
+	/**
+	 * Transmissions in chromedata come in multiple formats, this funciton takes into account
+	 * all these encountered scenarios, and pulls the transmission appropriately.
+	 *
+	 * @param string $desc	The string value from chromedata containing the transmission.
+	 * @return string		The transmission
+	 */
+	private function get_transmission( $desc ) {
+		if ( stripos($desc, 'Transmission,' ) !== FALSE ) {
+			$desc = explode( ', ', $desc );
+			return $desc[1];
+		} elseif ( stripos( $desc, 'Transmission:' ) !== FALSE ) {
+			$desc = explode( ' ', $desc );
+			$values = array();
+			foreach( $desc as $value ) {
+				if ( strpos( $value, ':' ) !== FALSE ) {
+					$key = str_replace( ':', '', $value );
+					$values[$key] = array();
+				} else {
+					$values[$key][] = $value;
+				}
+			}
+			return implode( ' ', $values['Transmission'] );
+		} elseif ( stripos( $desc, ' transmission' ) !== FALSE ) {
+			$desc = str_replace( ' transmission', '', $desc );
+			return $desc;
+		} elseif ( strpos( $desc, 'Transmission' ) === 0 ) {
+			return $desc;
+		} else {
+			return NULL;
+		}
+	}
+
+	/**
+	 * This function standardizes body_types provided by chromedata. Breaks the script if a new 
+	 * body_type that isn't specified in $this->body_types is encountered.
+	 *
+	 * @param string $cd_body_types The chromedata body_type.
+	 * @return string 				The standardized version of chromedata's body_type.
+	 */
 	public function get_standard_bt( $cd_body_types ) {
 		if ( !array_key_exists ($cd_body_types, $this->body_types ) ) {
 			echo 'Please add ' . $cd_body_types . ' to the standardized list of body types';
@@ -995,57 +1043,61 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $this->body_types[$cd_body_types];
 	}
 
+	/**
+	 * This function ensures that the styles being returned from get_styles are valid by basic means.
+	 * Styles must have an msrp, options, a transmission, drive train, body type, etc. If one of these
+	 * requirements are invalid, the script will break.
+	 *
+	 * @param array $styles	Array of styles
+	 * @return void
+	 */
 	private function meets_requirements( $styles ) {
-		$pass = TRUE;
-		$msg = '<b>Styles do not meet all requirements:</b><br>';
-		$duplicates = array();
 		foreach ( $styles as $style ) {
 			$model = $style['style']['model_name_cd'];
 			$style_id = $style['style']['style_id'];
 
 			if ( count( $style['options'] ) < 1 ) {
-				$msg .= 'No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$pass = FALSE;
+				echo 'No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
+				exit();
 			}
 			if ( ! isset( $style['style']['msrp'] ) ) {
-				$msg .= 'No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
-				$pass = FALSE;	
+				echo 'No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				exit();	
 			}
 			if ( empty( $style['style']['transmission'] ) ) {
-				$msg .= 'No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
-				$pass = FALSE;	
+				echo 'No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				exit();	
 			}
 			if ( empty( $style['style']['drivetrain'] ) ) {
-				$msg .= 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
-				$pass = FALSE;	
+				echo 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				exit();	
 			}
 			if ( empty( $style['style']['body_type'] ) ) {
-				$msg .= 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
-				$pass = FALSE;	
+				echo 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				exit();	
 			}
 			if ( empty( $style['style']['exterior_colors'] ) ) {
-				$msg .= 'No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
-				$pass = FALSE;
+				echo 'No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				exit();
 			}
 			if ( empty( $style['engine'] ) ) {
-				$msg .= 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
-				$pass = FALSE;
+				echo 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>'.
+				exit();
 			}
 			if ( $style['style']['has_media'] && $style['style']['view_count'] === 0 ) {
-				$msg .= 'Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$pass = FALSE;
+				echo 'Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
+				exit();
 			}
 		}
-		if ( ! $pass ) {
-			$msg .= 'Fix Errors Then Re-Run The Script!';
-			return array(
-				'type'	=> 'error',
-				'msg'		=> $msg
-			);
-		}
-		return $pass;
 	}
 
+	/**
+	 * This function grabs all categories belonging to an equipment, formats it and returns the
+	 * string of categories.
+	 *
+	 * @param object $item	The equipment item from chromedata.
+	 * @return string		All the categoroies found in the equipment.
+	 */
 	private function get_standard_categories( $item ) {
 		$categories = '';
 		if ( isset( $item->category ) ) {
@@ -1061,6 +1113,14 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $categories;
 	}
 
+	/**
+	 * This function grabs all the properties from the style object based on the 
+	 * properties template passed in.
+	 *
+	 * @param [type] $style			The chromedata object containing all the properties being migrated.
+	 * @param [type] $properties	The template for the properties being ported over.
+	 * @return void
+	 */
 	private function set_properties( $style, $properties ) {
 
 		$returned_properties = array();
@@ -1106,11 +1166,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$returned_properties[ $property['field'] ] = null;
 			}
 		}
-
 		return $returned_properties;
-
 	}
 
+	/**
+	 * Function used in set_properties to return an empty, single, or array value appropriate to
+	 * the property being stored. 
+	 *
+	 * @param [type] $object	The object containing the property.
+	 * @param [type] $property	The property being ported.
+	 * @return void
+	 */
 	private function set_value( $object, $property ) {
 
 		$value = array();
@@ -1133,6 +1199,14 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 	}
 
+	/**
+	 * This function is used to grab the engine properties from the chromedata engine feed.
+	 * This function also takes into account for feeds missing vital fields and ensures a 
+	 * default is set.
+	 *
+	 * @param object $data 	Chromedata object containing all/most the engine properties.
+	 * @return object		Engine object in a DB appropriate format.
+	 */
 	private function set_engine_properties( $data ) {
 
 		$engine = new stdClass;
@@ -1230,6 +1304,13 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		return $engine;
 	}
 
+	/**
+	 * This function modifies the engine object to have values set for the fuel economy properties.
+	 *
+	 * @param object $engine	Engine object being modified.	
+	 * @param object $data		Engine object provided by chromedata.
+	 * @return void
+	 */
 	private function set_fuel_economy( &$engine, $data ) {
 
 		if ( isset( $data->unit ) ) {
@@ -1256,7 +1337,15 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 	}
 
-	public function update_styles( $styles ) {
+	/**
+	 * Takes an array of style(s), truncates any data from the database from them, then
+	 * updates the database with new values for the style(s).
+	 *
+	 * @param object $styles			The array of style(s).
+	 * @param boolean $remove_media		Whether to truncate the media table completely, or just remove chromedata media entries.
+	 * @return void
+	 */
+	public function update_styles( $styles, $remove_media ) {
 		
 		// Defaults needed for queries
 		$queries = array(
@@ -1293,7 +1382,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$this->db->delete( 'dev_showroomdata.standard', array( 'style_id' => $style_id ) );
 				$this->db->delete( 'dev_showroomdata.exterior_color', array( 'style_id' => $style_id ) );
 				$this->db->delete( 'dev_showroomdata.option', array( 'style_id' => $style_id ) );
-				$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
+				if ( $remove_media == 'true' ) {
+					$this->db->delete( 'dev_showroomdata.media', array( 'style_id' => $style_id ) );
+				} else {
+					// Only remove chromedata entries
+					$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
+				}
 				
 				$queries['styles']['query'] = 'INSERT dev_showroomdata.style ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
 				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
@@ -1334,10 +1428,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
-				$queries['media']['query'] = 'INSERT dev_showroomdata.media ( style_id, type, url, width, height, shot_code, background, file_name, model_name, model_name_cd ) VALUES ';
+				$queries['media']['query'] = 'INSERT dev_showroomdata.media ( style_id, type, url, width, height, shot_code, background, file_name, model_name, model_name_cd, model_year ) VALUES ';
 				foreach ( $style['view'] as $image ) {
-					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s')";
-					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'], $style['style']['model_name'], $style['style']['model_name_cd'] );
+					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s')";
+					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'], $style['style']['model_name'], $style['style']['model_name_cd'], $style['style']['model_year'] );
 				}
 			}
 
@@ -1358,85 +1452,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 	}
 
-	private function define_equipment_group( $equipment_group_raw ) {
-
-		if ( check_string_for( $equipment_group_raw, array( 'mechanical', 'chassis', 'window', 'mirrors' ) ) ) {
-			$equipment_group = 'Performance';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'exterior' ) ) ) {
-			$equipment_group = 'Appearance';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'entertainment', 'audio' ) ) ) {
-			$equipment_group = 'Entertainment';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'interior', 'convenience', 'air', 'floor mats', 'locks', 'seating' ) ) ) {
-			$equipment_group = 'Comfort';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'safety' ) ) ) {
-			$equipment_group = 'Safety';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'engine', 'powertrain', 'transmission' ) ) ) {
-			$equipment_group = 'Engine';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'accessories' ) ) ) {
-			$equipment_group = 'Accessories';
-		} elseif ( check_string_for( $equipment_group_raw, array( 'warranty' ) ) ) {
-			$equipment_group = 'Warranty';
-		} else {
-			$equipment_group = 'Other';
-		}
-		$equipment_details_section = 0;
-		return array(
-			'equipment_group' => $equipment_group,
-			'equipment_details_section' => $equipment_details_section,
-		);
-
-	}
-
-	//	Function:	Checks an array for the existence of any of the needles
-	private function check_string_for( $haystack, $needles ) {
-		foreach ( $needles as $needle ) {
-			if ( stripos( $haystack, $needle ) !== false ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-	private function find_engine_type( $body_text ) {
-
-		if ( check_string_for( $body_text, array( 'i-', 'straight', 'i3', 'i4', 'i5', 'i6', 'i7', 'i8' ) ) ) {
-			$engine_type = 'I';
-		} elseif ( check_string_for( $body_text, array( 'v6', 'v8', 'v10', 'v12', 'v16', 'v-' ) ) ) {
-			$engine_type = 'V';
-		} elseif ( check_string_for( $body_text, array( 'boxer', 'h-', 'h4', 'h6' ) ) ) {
-			$engine_type = 'H';
-		} elseif ( check_string_for( $body_text, array( 'rotary' ) ) ) {
-			$engine_type = 'Rotary';
-		}
-
-		return $engine_type;
-	}
-
-	private function find_drive_train( $body_text ) {
-
-		if ( check_string_for( $body_text, array( 'rear', 'rwd' ) ) ) {
-			$drive_train = 'RWD';
-		} elseif ( check_string_for( $body_text, array( 'front', 'fwd' ) ) ) {
-			$drive_train = 'FWD';
-		} elseif ( check_string_for( $body_text, array( 'all', 'awd' ) ) ) {
-			$drive_train = 'AWD';
-		} elseif ( check_string_for( $body_text, array( '4', 'four', '4wd' ) ) ) {
-			$drive_train = '4WD';
-		}
-
-		return $drive_train;
-	}
-
-	private function transmission_vehicle_filter( $text, $special = '' ) {
-		if ( check_string_for( $text, array( 'automatic', 'A4', 'A5', 'A6', 'A7', 'A8' ) ) ) {
-			$text = 'Automatic';
-		} elseif ( check_string_for( $text, array( 'manual', 'M4', 'M5', 'M6', 'M7', 'M8' ) ) ) {
-			$text = 'Manual';
-		}
-		return $text;
-	}
-
+	/**
+	 * This function truncates all tables specified in the database.
+	 *
+	 * @param array $tables	Array of tables to truncate.
+	 * @return void
+	 */
 	public function truncate_all( $tables ) {
 		foreach ( $tables as $table ) {
 			$this->db->query('TRUNCATE ' . $table );

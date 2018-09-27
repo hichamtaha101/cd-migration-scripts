@@ -13,6 +13,24 @@ class AWS_S3 {
     $this->outputs = [];
   }
 
+  private function get_contents( $conn_id, $folder ) {
+    $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
+    if ( false !== $contents ) {
+      return $contents;
+    }
+    $temp = explode( '000', $folder );
+    $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp[0] . '_01_1280/' );
+    if ( false !== $contents ) {
+      return $contents;
+    }
+    $temp = explode( '00', $folder );
+    $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp[0] . '_01_1280/' );
+    if ( false !== $contents ) {
+      return $contents;
+    }
+    return false;
+  }
+
 	public function copy_colorized_media_to_s3( $media ) {
     $model = $media[0]['model_name_cd'];
 
@@ -26,12 +44,11 @@ class AWS_S3 {
 			set_error( 'FTP', "Couldn't connect as $ftp_user" );
 			echo 'Caught an error connecting to ftp';
 			return;
-		}
+    }
     ftp_pasv( $conn_id, true );
     
 		// 2) Foreach 01 media in this model
 		foreach ( $media as $m ) {
-
 			$style_id = strrev( $m['style_id'] );
 			$directory = '../../temp/media/' . $style_id;
 			if ( ! file_exists( '../../temp/media/' . $style_id ) ) {
@@ -46,11 +63,19 @@ class AWS_S3 {
 				}
       }
       $folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
-      $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
-      
+
+      // If folder has all styles combined, this grabs that folder.
+      $contents = $this->get_contents( $conn_id, $folder );
+      if ( false === $contents ) {
+        var_dump('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.' );
+        exit();
+      }
+
 			// 3) Download foreach color variation for this media
 			foreach ( $contents as $image ) {
-				$image_info = pathinfo( $image );
+        $image_info = pathinfo( $image );
+        // Sometimes folder has all the styles combined, so grab only the images for the current media
+        if ( strpos( $folder, $image_info['filename'] ) !== FALSE ) { continue; }
 				$color_code = explode( '_', $image_info['filename'] );
 				$color_code = end( $color_code );
         $local_path = $directory . '/01/' . $m['file_name'] . '_' . $color_code . '.png';
@@ -69,10 +94,7 @@ class AWS_S3 {
     }
 		
 		// 5) Insert each image as an original s3 media
-		$test = true;
 		foreach ( $media as $m ) {
-			if ( ! $test ) {break;} // If not all go through successfully, break
-      
 			$style_id = strrev( $m['style_id'] );
 			$m['storage_path'] = 'original/colorized/' . $style_id . '/01/';
       $directory = '../../temp/media/' . $style_id;
@@ -93,26 +115,20 @@ class AWS_S3 {
 				$results = $this->send_media($copy);
 				if ( $results !== FALSE ) {
 					$copy['url'] = $results->get('ObjectURL');
-					$values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', now())";
+					$values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', '{$copy['model_year']}')";
 				} else {
-          var_dump( $results );
-          $test = false;
-          $this->outputs[] = array(
-            'type'  => 'error',
-            'msg'   => 'Did not successfully download all local ' . $model . ' images onto s3'
-          );
-          break;
+          var_dump( 'Did not successfully download all local ' . $model . ' images onto s3' );
+          exit();
         }
       }
-      if ( ! $test ) { break; } // If not all go through successfully, break
 
       // Close any operations with the folder in use before deleting tree
       unset( $image );
-			unset($dir);
+			unset( $dir );
 			garbage();
 
 			// Remove old entries if exists and insert S3 entries
-			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, created ) VALUES ";
+			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
       $query = $this->db->query( $sql . implode( ',', $values ) );
       
       //  Remove 01 entry for style
@@ -120,25 +136,18 @@ class AWS_S3 {
 				remove_cd_media( $m );
 				del_tree( $directory );
 			} else {
-        $test = false;
-        var_dump($query);
-        $this->outputs[] = array(
-          'type'  => 'error',
-          'msg'   => 'Did not updated DB with all colorized ' . $model . ' s3 images'
-        );
-        break;
+        var_dump('Cancer happened when running aws->s3 db query.' . $query );
+        exit();
 			}
     }
 
     // Everything went successful
-    if ( $test ) {
-      $this->outputs[] = array(
-        'type'  => 'success',
-        'msg'   =>'Successfully downloaded all colorized ' . $model . ' ftp images onto S3'
-      );
-    }
+    $this->outputs[] = array(
+      'type'  => 'success',
+      'msg'   =>'Successfully downloaded all colorized ' . $model . ' ftp images onto S3'
+    );
 
-    return $test;
+    return true;
   }
   
   private function send_media($media) {

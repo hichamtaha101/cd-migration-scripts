@@ -15,7 +15,6 @@ define( 'AWS_BUCKET', '' );
 define( 'AWS_REGION', '' );
 
 // Globals
-define( 'COLORIZED_IMAGES', 22 );
 define( 'IMAGES_PER_REQUEST', 4 ); // 4jpg and 4png
 define( 'ORIGINAL_COLORIZED_URL', 'https://s3.console.aws.amazon.com/s3/object/convertus-vms-showroom-001/');
 define( 'TRUSE', TRUE );

@@ -1,15 +1,18 @@
 - Update All Makes
-    - update_division
+    1 update_division
+        1.1 get_division : Grabs all divisions from chromedata
+    2 Truncates division table and insert all divison entries grabbed from API
 
 - Update All Models
-    - udpate_models
+        1 get_models : Grabs all models per make in the division table 
+        2 remove_duplicate_models : Sometimes chromedata provides duplicate model / year feed. Filter these out before storing in DB.
+        3 Truncate models table and insert all unique models
 
 - Update All Styles
-    - get_model_details
+    - get_model_details : Grabs all models by query
         - remove_duplicate_models
         - get_style_details
         - meets_requirements
-
 
 - Update All Views Images
     - update_model_images
@@ -35,3 +38,6 @@
                 - kraken->multiple_requests : recursive
                 - update_media_db
 
+
+Notes
+- Server needs to have no timeout for large scripts
