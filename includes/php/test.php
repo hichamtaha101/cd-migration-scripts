@@ -14,15 +14,11 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 
 // $models = $obj->update_models();
 
-// $results = $obj->get_model_details("model_name LIKE 'NSX' AND model_year LIKE '2018'");
-// exit();
+// var_dump($obj->test());
+$styles = $obj->get_model_details("model_name LIKE 'F-350'");
+$obj->update_styles( $styles, 'true' );
+exit();
 // $results = update_styles_by_model( 'M4', 'false' );
-
-// $styles = $obj->get_model_details( "model_name = 'TLX' AND model_year = 2019" );
-// var_dump( $styles );
-// exit();
-// $obj->update_styles( $styles, 'false' );
-// exit();
 
 // update_views_by_model('TLX');
 // update_ftps3_by_model('Sierra 3500HD');

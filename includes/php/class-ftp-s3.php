@@ -5,7 +5,7 @@ use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Aws\S3\Exception\S3Exception;
 
-class AWS_S3 {
+class FTP_S3 {
   private $db;
   public $outputs;
   function __construct( $db ) {
@@ -13,6 +13,13 @@ class AWS_S3 {
     $this->outputs = [];
   }
 
+  /**
+   * This function grabs all contents within the specified folder in the FTP.
+   *
+   * @param string $conn_id The FTP Connection.
+   * @param string $folder  The folder to grab the images from in the FTP.
+   * @return array          Returns all image objects if folder exists, otherwise returns false.
+   */
   private function get_contents( $conn_id, $folder ) {
     $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
     if ( false !== $contents ) {
@@ -31,6 +38,13 @@ class AWS_S3 {
     return false;
   }
 
+  /**
+   * This function grabs all colorized images for the media provided, and stores it on S3 and our Database.
+   * Additionally, the function breaks if sometihing goes wrong and echos an appropriate log.
+   *
+   * @param array $media  List of media objects to grab corresponding colorized images from FTP for.
+   * @return boolean      True if the whole migration went well.
+   */
 	public function copy_colorized_media_to_s3( $media ) {
     $model = $media[0]['model_name_cd'];
 
@@ -117,7 +131,7 @@ class AWS_S3 {
 					$copy['url'] = $results->get('ObjectURL');
 					$values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', '{$copy['model_year']}')";
 				} else {
-          var_dump( 'Did not successfully download all local ' . $model . ' images onto s3' );
+          var_dump( 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id );
           exit();
         }
       }
@@ -150,6 +164,12 @@ class AWS_S3 {
     return true;
   }
   
+  /**
+   * This function uses the S3 API to upload an image to the Bucket.
+   *
+   * @param object $media The media object being uploaded to the s3 bucket.
+   * @return boolean      Whether the upload went well or not.
+   */
   private function send_media($media) {
 
     $s3 = S3Client::factory(

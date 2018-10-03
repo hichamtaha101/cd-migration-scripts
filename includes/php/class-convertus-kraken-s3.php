@@ -1,5 +1,5 @@
 <?php 
-include_once( dirname( __FILE__ ) . '/Kraken.php' );
+include_once( dirname( __FILE__ ) . '/class-kraken.php' );
 include_once( dirname( dirname( dirname( __FILE__ ) ) ) . '/config.php' );
 
 class Convertus_Kraken_S3 {
@@ -14,7 +14,6 @@ class Convertus_Kraken_S3 {
 		$this->media_entries = array();
 		$this->output = array();
 		$this->kraken = new Kraken( KRAKEN_ACCESS_KEY_ID, KRAKEN_SECRET_ACCESS_KEY );
-		
 	}
 
 	/** This function goes through all the media objects, and

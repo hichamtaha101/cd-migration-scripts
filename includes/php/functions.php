@@ -1,12 +1,12 @@
 <?php 
 include_once( dirname( __FILE__ ) . '/wpdb.php' );
-include_once( dirname( __FILE__ ) . '/Convertus_Data_API.php' );
-include_once( dirname( __FILE__ ) . '/Convertus_Kraken_S3.php' );
-include_once( dirname( __FILE__ ) . '/AWS_S3.php' );
+include_once( dirname( __FILE__ ) . '/class-convertus-chrome-data-api.php' );
+include_once( dirname( __FILE__ ) . '/class-convertus-kraken-s3.php' );
+include_once( dirname( __FILE__ ) . '/class-ftp-s3.php' );
 $db = new WPDB();
 $obj = new Convertus_DB_Updater('CA');
 $k_s3 = new Convertus_Kraken_S3($db);
-$aws_s3 = new AWS_S3($db);
+$ftp_s3 = new FTP_S3($db);
 
 /************************* CHROME DATA FUNCTIONS *************************/
 
@@ -143,7 +143,7 @@ function update_model_images( $model, $type ) {
 }
 
 function update_ftps3( $model ) {
-	global $aws_s3;
+	global $ftp_s3;
 	$media = get_chromedata_media_by_model( $model, 'view' );
 	if ( ! $media['pass'] ) {
 		return array(
@@ -152,18 +152,18 @@ function update_ftps3( $model ) {
 	}
 
 	$media = $media['media'];
-	$test = $aws_s3->copy_colorized_media_to_s3( $media );
+	$test = $ftp_s3->copy_colorized_media_to_s3( $media );
 	if ( $test ) {
 		return array(
 			'update'	=> array(
 				'key'		=> 'ftps3',
 				'data'	=> $model
 			),
-			'outputs'	=> $aws_s3->outputs
+			'outputs'	=> $ftp_s3->outputs
 		);
 	} else {
 		return array(
-			'outputs'	=> $aws_s3->outputs
+			'outputs'	=> $ftp_s3->outputs
 		);
 	}
 	
