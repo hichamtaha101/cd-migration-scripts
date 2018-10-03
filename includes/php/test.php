@@ -9,30 +9,30 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // $obj->db->query('TRUNCATE style');
 
 // $makes = $obj->get_divisions();
-// display_var( $makes );
+// var_dump( $makes );
 // exit();
 
 // $models = $obj->update_models();
 
 // var_dump($obj->test());
-$styles = $obj->get_model_details("model_name LIKE 'F-350'");
-$obj->update_styles( $styles, 'true' );
-exit();
+// $styles = $obj->get_model_details("model_name LIKE 'F-350'");
+// $obj->update_styles( $styles, 'true' );
+// exit();
 // $results = update_styles_by_model( 'M4', 'false' );
 
 // update_views_by_model('TLX');
 // update_ftps3_by_model('Sierra 3500HD');
-// display_var(update_colorized_by_model('A4 allroad'));
+// var_dump(update_colorized_by_model('A4 allroad'));
 // exit();
 
 // $test = update_styles_by_model( 'CTS Sedan', 'false' );
-// display_var( $test );
+// var_dump( $test );
 // exit();
 
-// display_var( get_updated_models() );
+// var_dump( get_updated_models() );
 // exit();
 
-// display_var( update_ftps3_by_model( 'Q7' ) );
+// var_dump( update_ftps3_by_model( 'Q7' ) );
 // exit();
 
 function update_all_body_styles() {
@@ -136,9 +136,9 @@ function get_dealertrend_models() {
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
 <div class="row">
   <div class="col-md-6 col-sm-6 col-xs-12">
-    <?php //display_var($all_models['diff']); ?>
+    <?php //var_dump($all_models['diff']); ?>
   </div>
   <div class="col-md-6 col-sm-6 col-xs-12">
-    <?php //display_var($all_models['dealertrend']); ?>
+    <?php //var_dump($all_models['dealertrend']); ?>
   </div>
 </div>

@@ -29,14 +29,15 @@ jQuery(document).ready(function ($) {
 		},
 		{
 			title: '4) Update All Database Views ( may take a long time )',
-			fname: 'update_views',
-			type: 'views',
+			fname: 'update_model_images',
+			type: 'view',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
 			updateAll: true,
 		},
 		{
 			title: '4.1) Update Views Media By Model ( may take some time )',
-			fname: 'update_views',
+			fname: 'update_model_images',
+			type: 'view',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
 			hasModel: true,
 		},
@@ -55,14 +56,15 @@ jQuery(document).ready(function ($) {
 		},
 		{
 			title: '6) Update All Database Colorized ( may take a long time )',
-			fname: 'update_colorized',
+			fname: 'update_model_images',
 			type: 'colorized',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
 			updateAll: true,
 		},
 		{
 			title: '6.1) Update Colorized Media By Model ( may take some time )',
-			fname: 'update_colorized',
+			fname: 'update_model_images',
+			type: 'colorized',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
 			hasModel: true,
 		}
@@ -85,13 +87,13 @@ jQuery(document).ready(function ($) {
 			inputClass: '',
 			updating: {
 				'styles': [],
-				'views': [],
+				'view': [],
 				'ftps3': [],
 				'colorized': []
 			},
 			updated: {
 				'styles': [],
-				'views': [],
+				'view': [],
 				'ftps3': [],
 				'colorized': []
 			},
@@ -103,22 +105,29 @@ jQuery(document).ready(function ($) {
 				this.inputMessage = '';
 				var args = [];
 
-				// No args provided if needed check
+				// No args provided when needed check
 				if ( 'hasModel' in item && this.modelValue == '') {
 					this.inputClass = 'error';
 					this.inputMessage = 'Model value should not be empty';
 					return;
 				}
 
+				// If specific model being updated
 				if ( 'hasModel' in item ) {
 					args.push(this.modelValue);
 				}
 
+				// Pass what type of image to update ( view || colorized )
+				if ( item.fname === 'update_model_images' ) {
+					args.push(item.type);
+				}
+
+				// For updating styles, whether to remove all media or not
 				if ( 'removeMedia' in item ) {
 					args.push(this.removeMedia);
 				}
 
-				// Updating all models
+				// If running function for all models
 				if ( 'updateAll' in item ) {
 					update_all(event, item, args);
 					return;
@@ -142,7 +151,7 @@ jQuery(document).ready(function ($) {
 
 		var updating = {
 			'styles': vMain.models.slice(),
-			'views': vMain.updated['styles'].slice(),
+			'view': vMain.updated['styles'].slice(),
 			'ftps3': vMain.updated['styles'].slice(),
 			'colorized': vMain.updated['styles'].slice()
 		};
@@ -208,7 +217,6 @@ jQuery(document).ready(function ($) {
 
 		// Recursive Function
 		var callback = function () {
-			console.log(item.type);
 			if (vMain.updating[item.type].length != 0) {
 				var model = vMain.updating[item.type].splice(0, 1)[0];
 				vMain.updated[item.type].push(model);

@@ -243,7 +243,7 @@ class Convertus_Kraken_S3 {
 			}
 			
 			// 4) SQL query
-			// display_var( $values );
+			// var_dump( $values );
 			$this->db->query( $sql . implode( ',', $values ) );
 		}
 

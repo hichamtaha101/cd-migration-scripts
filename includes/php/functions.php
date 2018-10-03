@@ -10,6 +10,12 @@ $ftp_s3 = new FTP_S3($db);
 
 /************************* CHROME DATA FUNCTIONS *************************/
 
+/**
+ * This function queries the database for values needed to determine how far a model
+ * is in the migration process from Chrome Data to our database.
+ *
+ * @return array	Array of models and their state in the migration.
+ */
 function get_updated_models() {
 	global $db;
 	
@@ -73,6 +79,11 @@ function get_updated_models() {
 	);
 }
 
+/**
+ * Calls the chrome-data-api instance to update all makes in the database.
+ *
+ * @return array	Output array for the front-end to display.
+ */
 function update_all_makes() {
 	global $obj;
 	$obj->update_divisions();
@@ -80,6 +91,11 @@ function update_all_makes() {
 	return $results;
 }
 
+/**
+ * Calls the chrome-data-api instance to update all models in the database.
+ *
+ * @return array	Output array for the front-end to display.
+ */
 function update_all_models() {
 	global $obj;
 	$obj->update_models();
@@ -88,12 +104,17 @@ function update_all_models() {
 	return $results;
 }
 
+/**
+ * Calls the chrome-data-api instance to update all styles for the model passed in.
+ *
+ * @param string $model				The Chrome Data model name the styles are being updated for.
+ * @param boolean $remove_media		Whether to remove ALL media entries when updating. Default removes Chrome Data ones only.
+ * @return object					The updated object used for front-end display.
+ */
 function update_styles( $model, $remove_media ) {
 	global $obj;
 	
-	$outputs = array();
 	$styles = $obj->get_model_details( "model_name_cd LIKE '{$model}'" );
-
 	$obj->update_styles( $styles, $remove_media );
 	$results['update'] = array( 
 		'key' => 'styles', 
@@ -104,18 +125,14 @@ function update_styles( $model, $remove_media ) {
 	return $results;
 }
 
-function update_views( $model ) {
-	return update_model_images( $model, 'view' );
-}
-
-function update_colorized( $model ) {
-	return update_model_images( $model, 'colorized' );
-}
-
-// Testing
-// 	$results['outputs'] = array('type' => 'success', 'msg' => 'Successfully removed all media for ' . $model );
-// 	return $results;
-
+/**
+ * This function grabs all media entries in the database that needs either view or colorized
+ * images optimized, stored into our S3 bucket, then re-referenced in our database.
+ *
+ * @param string $model	The Chrome Data model name the images are being updated for.
+ * @param string $type	What type of images are being updated ( view || colorized ).
+ * @return object		The updated item used for front-end display.	
+ */
 function update_model_images( $model, $type ) {
 	global $k_s3;
 	
@@ -134,7 +151,7 @@ function update_model_images( $model, $type ) {
 	}
 	$results = array(
 		'update'	=> array(
-			'key' 		=> ( $type == 'view' ) ? 'views' : 'colorized', 
+			'key' 		=> $type,
 			'data' 		=> $model,
 		),
 		'outputs'	=> $outputs
@@ -142,6 +159,13 @@ function update_model_images( $model, $type ) {
 	return $results;
 }
 
+/**
+ * This function grabs all 01 shotcode media entries in our database that still needs colorized
+ * images pulled from the Chrome Data FTP, stored on S3, then referenced in our database.
+ *
+ * @param string $model	The Chrome Data model name the script is grabbing the colorized images for.
+ * @return object		The updated object used for front-end display.
+ */
 function update_ftps3( $model ) {
 	global $ftp_s3;
 	$media = get_chromedata_media_by_model( $model, 'view' );
@@ -169,6 +193,15 @@ function update_ftps3( $model ) {
 	
 }
 
+/**
+ * This function grabs all media records from the database that needs to be updated in regards to view images, or colorized images.
+ * If a media entry is already updated for the type specified, that entry is removed from the database via the remove_cd_media function.
+ *
+ * @param string $model	The Chrome Data model name that is being queried for in the database.
+ * @param string $type	The media type being queried ( view || coloried ) for update.
+ * @return array		An array of media objects that need to be optimized, stored on S3, and re-referenced in our database.
+ * 						This function returns false if there are no media objects, or the model does not exist.
+ */
 function get_chromedata_media_by_model( $model, $type ) {
 	global $db;
 
@@ -235,6 +268,13 @@ function get_chromedata_media_by_model( $model, $type ) {
 	);
 }
 
+/**
+ * This function checks to see whether the media object has the correct number of colorized images in the DB.
+ * If it does, that means this object has already been updated.
+ *
+ * @param object $media	The media entry to check for.
+ * @return boolean		Whether the media object has been updated or not.
+ */
 function colorized_media_is_updated( $media ) {
 	global $db;
 	$model_name = $media[0]['model_name_cd'];
@@ -246,6 +286,12 @@ function colorized_media_is_updated( $media ) {
 	return false;
 }
 
+/**
+ * This function checks to see if the media object has been fully updated in terms of view images and colorized images.
+ *
+ * @param object $media The media object being checked.
+ * @return boolean		Whether the media object has been fully optimized, updated on s3, and updated on db.
+ */
 function cd_media_is_updated($media){
 	global $db;
 	$pass = TRUSE;
@@ -284,6 +330,12 @@ function cd_media_is_updated($media){
 	return false;
 }
 
+/**
+ * Removes the media record for the media table.
+ *
+ * @param object $media	The media object being removed.
+ * @return void
+ */
 function remove_cd_media( $media ) {
 	global $db;
 	$sql = "DELETE FROM media WHERE 
@@ -295,6 +347,12 @@ function remove_cd_media( $media ) {
 	$db->query( $sql );
 }
 
+/**
+ * Deletes directory and all contents in it.
+ *
+ * @param string $dirPath Path to the directory being deleted.
+ * @return void
+ */
 function del_tree($dirPath) {
 	if (! is_dir($dirPath)) {
 			throw new InvalidArgumentException("$dirPath must be a directory");
@@ -313,20 +371,26 @@ function del_tree($dirPath) {
 	rmdir($dirPath);
 }
 
+/**
+ * Update's the colorized_count column in the media table for a specific style.
+ *
+ * @param string $style_id	ID of style being modified.
+ * @param integer $count	The new value.
+ * @return void
+ */
 function update_colorized_count( $style_id, $count ) {
 	global $db;
 	$sql = "UPDATE style SET colorized_count = {$count} WHERE style_id LIKE '{$style_id}'";
 	$db->query($sql);
 }
 
+/**
+ * Collect em garbos. Memory cleanup n stuff.
+ *
+ * @return void
+ */
 function garbage(){
 	gc_enable();
   	gc_collect_cycles();
   	gc_disable();
-}
-
-function display_var( $var ) {
-	echo '<pre>';
-	var_dump( $var );
-	echo '</pre>';
 }

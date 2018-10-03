@@ -58,8 +58,8 @@
 			</div>
 			<div class="ui bottom attached tab segment section" data-tab="media-view">
 				<updating-table 
-				:updated="updated.views" 
-				:updating="updating.views"
+				:updated="updated.view" 
+				:updating="updating.view"
 				name="Views Media"></updating-table>
 			</div>
 			<div class="ui bottom attached tab segment section" data-tab="media-ftps3">
