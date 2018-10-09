@@ -8,21 +8,25 @@ $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
 if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
 // $obj->db->query('TRUNCATE style');
 
-// $makes = $obj->get_divisions();
+// get_updated_models();
+// $makes = $obj->get_models();
 // var_dump( $makes );
 // exit();
 
+$models = get_updated_models();
+echo '<pre>'; var_dump( $models ); echo '</pre>';
+exit();
 // $models = $obj->update_models();
 
 // var_dump($obj->test());
-// $styles = $obj->get_model_details("model_name LIKE 'F-350'");
+// $styles = $obj->get_model_details("model_name_cd LIKE 'Super Duty F-350 SRW'");
+// // echo '<pre>'; var_dump( $styles ); echo '</pre>';
 // $obj->update_styles( $styles, 'true' );
 // exit();
+
 // $results = update_styles_by_model( 'M4', 'false' );
 
-// update_views_by_model('TLX');
-// update_ftps3_by_model('Sierra 3500HD');
-// var_dump(update_colorized_by_model('A4 allroad'));
+// update_model_images('A4 allroad', 'view');
 // exit();
 
 // $test = update_styles_by_model( 'CTS Sedan', 'false' );
@@ -32,8 +36,7 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // var_dump( get_updated_models() );
 // exit();
 
-// var_dump( update_ftps3_by_model( 'Q7' ) );
-// exit();
+get_chromedata_media_by_model('Super Duty F-350 SRW', 'view');
 
 function update_all_body_styles() {
   global $obj;

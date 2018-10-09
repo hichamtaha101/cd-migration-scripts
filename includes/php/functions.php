@@ -18,61 +18,51 @@ $ftp_s3 = new FTP_S3($db);
  */
 function get_updated_models() {
 	global $db;
-	
-	$models = $db->get_col('SELECT DISTINCT model_name_cd FROM model');
-	$sql = "
-	SELECT 
-    DISTINCT(a.model_name_cd),
-    IFNULL(b.view_images, 0) as view_images,
-    IFNULL(c.colorized_images, 0) as colorized_images,
-    IFNULL(d.cd_one_images, 0) as cd_one_images,
-    IFNULL(e.styles, 0) as styles,
-    IFNULL(e.view_count, 0) as view_count,
-    IFNULL(e.colorized_count, 0) as colorized_count
-	FROM 
-			style a
-	LEFT JOIN 
-			(SELECT model_name_cd, COUNT(*) as view_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/media%' AND mm.type = 'view' GROUP BY model_name_cd) b
-	ON
-			a.model_name_cd = b.model_name_cd
-	LEFT JOIN 
-			(SELECT model_name_cd, COUNT(*) as colorized_images FROM media mm WHERE mm.url LIKE '%amazonaws.com/media%' AND mm.type = 'colorized' GROUP BY model_name_cd) c
-	ON
-			a.model_name_cd = c.model_name_cd
-	LEFT JOIN
-			(SELECT model_name_cd, COUNT(*) as cd_one_images FROM media mm WHERE mm.url LIKE '%media.chromedata.com%' AND mm.shot_code = 1 GROUP BY model_name_cd) d
-	ON
-			a.model_name_cd = d.model_name_cd
-	LEFT JOIN 
-		(SELECT model_name_cd, COUNT(*) as styles, SUM(ss.view_count) as view_count, SUM(ss.colorized_count) as colorized_count FROM style ss WHERE ss.has_media LIKE 1 GROUP BY model_name_cd ) e
-	ON
-			a.model_name_cd = e.model_name_cd
-	";
-	$results = $db->get_results( $sql, ARRAY_A );
-	$models_updated = $views_updated = $ftp_s3_updated = $colorized_updated = array();
-	foreach ( $results as $result ) {
-		$models_updated[] = $result['model_name_cd'];
 
-		// View images = style total views * 2 types(jpg,png) * 4 sizes(lg,md,sm,xs)
-		if ( $result['view_images'] >= ( $result['view_count'] * 2 * 4 ) ) {
-			$views_updated[] = $result['model_name_cd'];
+	// Declare udpated variables
+	$models = $models_updated = $views_updated = $ftp_s3_updated = $colorized_updated = array();
 
-			// No more chrome data one images; ftp-s3 colorized orignal transferred
-			if ( $result['cd_one_images'] == 0 ) {
-				$ftp_s3_updated[] = $result['model_name_cd'];
+	// Get all models
+	$models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
 
-				// Colorized images = colorized original ( colorized_count ) images * 2 types * 4 sizes
-				if ( $result['colorized_images'] >= $result['colorized_count'] * 2 * 4 ) {
-					$colorized_updated[] = $result['model_name_cd'];
-				}
-			}
+	$sql = "SELECT 
+	s.model_name_cd, 
+	IFNULL(s.view_count, 0) as view_count,
+	IFNULL(s.colorized_count, 0) as colorized_count,
+	IFNULL(m.view_images, 0) as view_images,
+	IFNULL(mm.ftp_images_one, 0) as ftp_images_one,
+	IFNULL(mmm.colorized_images, 0) as colorized_images
+	FROM (SELECT model_name_cd, SUM(view_count) as view_count, SUM(colorized_count) as colorized_count FROM style WHERE has_media = 1 GROUP BY model_name_cd ) s
+	LEFT JOIN (SELECT model_name_cd, COUNT(*) as view_images FROM media WHERE url LIKE '%amazonaws.com%' AND type = 'view' GROUP BY model_name_cd ) m ON m.model_name_cd = s.model_name_cd
+	LEFT JOIN (SELECT model_name_cd, COUNT(*) as ftp_images_one FROM media WHERE url LIKE '%amazonaws.com/original%' GROUP BY model_name_cd ) mm ON mm.model_name_cd = s.model_name_cd
+	LEFT JOIN (SELECT model_name_cd, COUNT(*) as colorized_images FROM media WHERE url LIKE '%amazonaws.com%' AND url NOT LIKE '%/original/%' AND type = 'colorized' GROUP BY model_name_cd) mmm ON mmm.model_name_cd = s.model_name_cd";
+	$results = $db->get_results($sql, ARRAY_A);
+
+	foreach ( $results as $model ) {
+		// These models have at least one style ( therefore have been migrated from chromedata )
+		$models_updated[] = $model['model_name_cd'];
+
+		// Get models have optimized and stored all view images
+		if ( ( $model['view_count'] * 8 ) === intval($model['view_images']) ) {
+			$views_updated[] = $model['model_name_cd'];
+		}
+
+		// These models have grabbed all colorized shot code image ftp images
+		if ( $model['ftp_images_one'] === $model['colorized_count'] ) {
+			$ftp_s3_updated[] = $model['model_name_cd'];
+		}
+
+		// These models have optimized and stored all colorized images
+		if ( ( $model['colorized_count'] * 8 ) === intval($model['colorized_images']) ) {
+			$colorized_updated[] = $model['model_name_cd'];
 		}
 	}
+
 	return array(
 		'models' 	=> $models,
 		'updated'	=> array(
 			'styles' 		=> $models_updated,
-			'views'			=> $views_updated,
+			'view'			=> $views_updated,
 			'ftps3'			=> $ftp_s3_updated,
 			'colorized'		=> $colorized_updated,
 		),
@@ -193,6 +183,17 @@ function update_ftps3( $model ) {
 	
 }
 
+function get_unique_media( $media ) {
+	$new = $unique = array();
+	foreach ( $media as $m ) {
+		if ( ! in_array( $m['url'], $unique ) ) {
+			$unique[] = $m['url'];
+			$new[] = $m;
+		}
+	}
+	return $new;
+}
+
 /**
  * This function grabs all media records from the database that needs to be updated in regards to view images, or colorized images.
  * If a media entry is already updated for the type specified, that entry is removed from the database via the remove_cd_media function.
@@ -226,7 +227,7 @@ function get_chromedata_media_by_model( $model, $type ) {
 		$sql = str_replace("%chromedata%", "%amazonaws.com/original/colorized%", $sql );
 	}
 	$media = $db->get_results( $sql, ARRAY_A );
-
+	
 	// Check if Model exists
 	if ( ! $media ) {
 		return array(
@@ -234,6 +235,9 @@ function get_chromedata_media_by_model( $model, $type ) {
 			'outputs' 	=> $outputs 
 		);
 	}
+
+	// Remove duplicate media entries
+	$media = get_unique_media( $media );
 
 	// Remove chromedata images if updated views and ftp to s3
 	if ( $type != 'colorized' ) {

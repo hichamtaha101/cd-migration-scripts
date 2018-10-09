@@ -147,18 +147,12 @@ class Kraken {
 			if ( $response['success'] ) {
 				$success[] = array(
 					'response' 	=> $response,
-					'media'			=> $ch['request']['media']
+					'media'		=> $ch['request']['media']
 				);
 				continue; 
+			} else { // unsuccessful response
+				$redo[] = $ch['request'];
 			}
-
-			// unsuccessful response
-			if ( $response['message'] == 'Incoming request body does not contain a valid JSON object' ) {
-				echo 'error'; 
-				exit();
-				$ch['request']['breakdown'] = true;
-			}
-			$redo[] = $ch['request'];
 		}
 
 		// recursive function to ensure no more errors
