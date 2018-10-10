@@ -37,6 +37,7 @@ function get_updated_models() {
 	LEFT JOIN (SELECT model_name_cd, COUNT(*) as ftp_images_one FROM media WHERE url LIKE '%amazonaws.com/original%' GROUP BY model_name_cd ) mm ON mm.model_name_cd = s.model_name_cd
 	LEFT JOIN (SELECT model_name_cd, COUNT(*) as colorized_images FROM media WHERE url LIKE '%amazonaws.com%' AND url NOT LIKE '%/original/%' AND type = 'colorized' GROUP BY model_name_cd) mmm ON mmm.model_name_cd = s.model_name_cd";
 	$results = $db->get_results($sql, ARRAY_A);
+	// return $results;
 
 	foreach ( $results as $model ) {
 		// These models have at least one style ( therefore have been migrated from chromedata )
@@ -158,7 +159,8 @@ function update_model_images( $model, $type ) {
  */
 function update_ftps3( $model ) {
 	global $ftp_s3;
-	$media = get_chromedata_media_by_model( $model, 'view' );
+	$media = get_chromedata_media_by_model( $model, 'ftps3' );
+	display_var( $media );
 	if ( ! $media['pass'] ) {
 		return array(
 			'outputs'	=> $media['outputs']
@@ -170,7 +172,7 @@ function update_ftps3( $model ) {
 	if ( $test ) {
 		return array(
 			'update'	=> array(
-				'key'		=> 'ftps3',
+				'key'	=> 'ftps3',
 				'data'	=> $model
 			),
 			'outputs'	=> $ftp_s3->outputs
@@ -181,17 +183,6 @@ function update_ftps3( $model ) {
 		);
 	}
 	
-}
-
-function get_unique_media( $media ) {
-	$new = $unique = array();
-	foreach ( $media as $m ) {
-		if ( ! in_array( $m['url'], $unique ) ) {
-			$unique[] = $m['url'];
-			$new[] = $m;
-		}
-	}
-	return $new;
 }
 
 /**
@@ -208,26 +199,24 @@ function get_chromedata_media_by_model( $model, $type ) {
 
 	$results = array();
 	$outputs = array( array(
-		'type'=>'error', 
-		'msg'=>'Could not find any media entries for ' . $model . ' in database.' 
+		'type'	=> 'error', 
+		'msg'	=> 'Could not find any media entries for ' . $model . ' in database.' 
 	));
 
-	$sql = "SELECT 
-	a.model_name_cd, a.model_name, a.style_id, a.type, a.url, a.shot_code, a.file_name, a.color_option_code, b.model_year,
-	IFNULL(b.colorized_count, 0) as colorized_count,
-	IFNULL(c.colorized_original, 0) as colorized_original
-	FROM media a 
-	LEFT JOIN (SELECT style_id, COUNT(url) as colorized_original FROM media WHERE url LIKE '%amazonaws.com/original/colorized%' GROUP BY style_id ) c
-	ON a.style_id = c.style_id
-	LEFT JOIN (SELECT style_id, colorized_count, model_year FROM style GROUP BY style_id) b
-	ON a.style_id = b.style_id 
-	WHERE a.model_name_cd = '{$model}' 
-	AND a.url LIKE '%chromedata%'";
-	if ( $type == 'colorized' ) { 
-		$sql = str_replace("%chromedata%", "%amazonaws.com/original/colorized%", $sql );
+	$sql = "SELECT
+	m.*,
+	IFNULL(b.view_images, 0) as view_images,
+	IFNULL(c.colorized_images, 0) as colorized_images,
+	IFNULL(d.colorized_original, 0) as colorized_original
+	FROM ( SELECT * FROM media WHERE url LIKE '%media.chromedata%' AND model_name_cd LIKE '{$model}') m
+	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as view_images FROM media WHERE url LIKE '%amazonaws.com/media%' AND type = 'view' GROUP BY style_id, file_name ) b ON ( b.style_id = m.style_id AND b.file_name = m.file_name )
+	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as colorized_images FROM media WHERE url LIKE '%amazonaws.com/media%' AND type = 'colorized' GROUP BY style_id, file_name ) c ON ( c.style_id = m.style_id AND c.file_name = m.file_name )
+	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as colorized_original FROM media WHERE url LIKE '%amazonaws.com/original%' AND type = 'colorized' GROUP BY style_id, file_name ) d ON ( d.style_id = m.style_id AND d.file_name = m.file_name )";
+	if ( $type === 'colorized' ) {
+		$sql = str_replace("%media.chromedata%", "%amazonaws.com/original/colorized%", $sql );
 	}
-	$media = $db->get_results( $sql, ARRAY_A );
-	
+	$media = $db->get_results($sql, ARRAY_A);
+
 	// Check if Model exists
 	if ( ! $media ) {
 		return array(
@@ -236,58 +225,40 @@ function get_chromedata_media_by_model( $model, $type ) {
 		);
 	}
 
-	// Remove duplicate media entries
-	$media = get_unique_media( $media );
-
 	// Remove chromedata images if updated views and ftp to s3
-	if ( $type != 'colorized' ) {
-		foreach( $media as $m ) {
-			if ( cd_media_is_updated( $m ) ) {
-				remove_cd_media($m);
-			} else {
+	$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
+	$delete_values = array();
+	foreach( $media as $m ) {
+		if ( cd_media_is_updated( $m ) ) {
+			$delete_values[] = remove_cd_media_sql($m);
+		} else {
+			if ( $type === 'view' && intval($m['view_images']) !== 8 ) {
+				$results[] = $m;
+			} else if ( $type === 'ftps3' && intval($m['view_images']) === 8 ) {
 				$results[] = $m;
 			}
 		}
-	} else {
-		$results = array();
+	}
 
-		// We want to keep original colorized images
-		if ( ! colorized_media_is_updated( $media ) ) {
-			$results = $media;
-		}
+	// Delete any updated cd media entries
+	if ( count($delete_values) > 0 ) {
+		$db->query($delete_sql . implode( ' AND ', $delete_values ) );
 	}
 
 	// No media entries found
 	if ( empty( $results ) ) {
+		$outputs['msg'] = 'Already updated ' . $model . ' in database for ' . $type . ' images.';
 		return array(
-			'pass'	=> FALSE, 
+			'pass'		=> FALSE, 
 			'outputs'	=> $outputs
 		);
 	}
-	
+
 	// These media entries need to be updated
 	return array(
 		'pass'	=> TRUE, 
 		'media'	=> $results
 	);
-}
-
-/**
- * This function checks to see whether the media object has the correct number of colorized images in the DB.
- * If it does, that means this object has already been updated.
- *
- * @param object $media	The media entry to check for.
- * @return boolean		Whether the media object has been updated or not.
- */
-function colorized_media_is_updated( $media ) {
-	global $db;
-	$model_name = $media[0]['model_name_cd'];
-	$sql = "SELECT COUNT(url) FROM media WHERE model_name_cd = '{$model_name}' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized'";
-	$result = $db->get_var( $sql );
-	if ( count($media) * 2 * IMAGES_PER_REQUEST === intval( $result ) ) {
-		return true;
-	}
-	return false;
 }
 
 /**
@@ -297,41 +268,24 @@ function colorized_media_is_updated( $media ) {
  * @return boolean		Whether the media object has been fully optimized, updated on s3, and updated on db.
  */
 function cd_media_is_updated($media){
-	global $db;
 	$pass = TRUSE;
 
-	// Each media is unique by style_id, shot_code, file_name ( possibly color_option_code )
-	$sql = "SELECT count(style_id) FROM media WHERE
-	style_id = '{$media['style_id']}' AND
-	shot_code = '{$media['shot_code']}' AND
-	file_name = '{$media['file_name']}' AND
-	url LIKE '%amazonaws.com/media%' AND
-	type = 'view'";
-	$updated = $db->get_var( $sql );
+	// Each media should have 8 view images ( lg, md, sm, xs ) x ( jpg, png ) when migrated
+	if ( intval( $media['view_images'] ) !== IMAGES_PER_REQUEST * 2 ) { $pass = FALSE; }
 
-	// Each media should have 8 images ( lg, md, sm, xs ) x ( jpg, png )
-	if ( $updated != IMAGES_PER_REQUEST * 2 ) { $pass = FALSE; }
-
-	// Return if shotcode is not 1 or failed first check for view images
+	// Return if shotcode is not 1, otherwise check if it has the correct colorized images migrated
 	if ( $media['shot_code'] !== '1' || ! $pass ) { 
 		return $pass; 
 	}
 
-	// This checks to see if ftp images were grabbed ( by referencing 01 images ) and removes them if they were
-	// Colorized original equals 0 after ftp images were put in  downloads and before ftp to s3
-	if ( $media['colorized_original'] !== '0' ) {
-		if ( $media['colorized_count'] === '0' ) {
-			update_colorized_count($media['style_id'], $media['colorized_original']);
-			return true;
-		}
-		else if ( $media['colorized_count'] == $media['colorized_original'] ) {
-			return true;
-		} else {
-			return false;
-		}
+	// Colorized images should equal colorized_original * 8
+	if ( 
+		intval( $media['colorized_original'] ) === 0 || 
+		intval( $media['colorized_images'] ) !== ( $media['colorized_original'] * 8 ) 
+		) {
+		$pass = false;
 	}
-
-	return false;
+	return $pass;
 }
 
 /**
@@ -340,15 +294,11 @@ function cd_media_is_updated($media){
  * @param object $media	The media object being removed.
  * @return void
  */
-function remove_cd_media( $media ) {
-	global $db;
-	$sql = "DELETE FROM media WHERE 
-	style_id LIKE '{$media['style_id']}' AND
-	type LIKE 'view' AND
-	shot_code LIKE '{$media['shot_code']}' AND
-	url LIKE '%media.chromedata%'
-	";
-	$db->query( $sql );
+function remove_cd_media_sql( $media ) {
+	return "( style_id LIKE '{$media['style_id']}'
+	AND type LIKE 'view'
+	AND file_name LIKE '{$media['file_name']}'
+	AND url LIKE '%media.chromedata%' )";
 }
 
 /**
@@ -397,4 +347,9 @@ function garbage(){
 	gc_enable();
   	gc_collect_cycles();
   	gc_disable();
+}
+
+function display_var( $var ) {
+	echo '<pre>'; var_dump( $var ); echo '</pre>';
+	exit();
 }

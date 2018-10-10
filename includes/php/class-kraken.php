@@ -78,7 +78,7 @@ class Kraken {
 	private function recursive_batch_request( $batch_requests, $attempt = 0 ) {
 
 		if ( $attempt == 3 ) {
-			echo 'recursive error';
+			echo 'Recursive Error';
 			exit();
 		}
 
@@ -91,12 +91,7 @@ class Kraken {
 			$req = $request;
 			unset( $request['media'] );
 
-			// Set options for file postdata based curls
-			if ( array_key_exists( 'file', $request ) ) {
-				$request = self::upload( $request );
-				curl_setopt( $curl, CURLOPT_URL, 'https://api.kraken.io/v1/upload' );
-			// Set options for url postdata based curls
-			} elseif ( array_key_exists( 'url', $request ) ) {
+			if ( array_key_exists( 'url', $request ) ) {
 				$request = self::url( $request );
 				curl_setopt( $curl, CURLOPT_URL, 'https://api.kraken.io/v1/url' );
 				curl_setopt($curl, CURLOPT_HTTPHEADER, array(
@@ -105,9 +100,8 @@ class Kraken {
 			// Else, there's something wrong with the media entry
 			} else {
 				echo 'Request does not have a url or file param <pre>'; var_dump( $request ); echo '</pre>';
-				continue;
+				exit();
 			}
-			
 			// Force continue-100 from server
 			curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36");
 			curl_setopt($curl, CURLOPT_POST, 1);

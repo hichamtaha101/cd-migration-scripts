@@ -145,9 +145,8 @@ class FTP_S3 {
 			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
       $query = $this->db->query( $sql . implode( ',', $values ) );
       
-      //  Remove 01 entry for style
+      //  Remove Tree
 			if ( $query !== FALSE ) {
-				remove_cd_media( $m );
 				del_tree( $directory );
 			} else {
         var_dump('Cancer happened when running aws->s3 db query.' . $query );

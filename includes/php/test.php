@@ -13,21 +13,30 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // var_dump( $makes );
 // exit();
 
-$models = get_updated_models();
-echo '<pre>'; var_dump( $models ); echo '</pre>';
-exit();
+// $models = get_updated_models();
+// echo '<pre>'; var_dump( $models ); echo '</pre>';
+// exit();
 // $models = $obj->update_models();
 
 // var_dump($obj->test());
-// $styles = $obj->get_model_details("model_name_cd LIKE 'Super Duty F-350 SRW'");
-// // echo '<pre>'; var_dump( $styles ); echo '</pre>';
+// $styles = $obj->get_model_details("model_name_cd LIKE 'TLX'");
+// $test = array();
+// foreach ( $styles as $style ) {
+//   if ( $style['style']['style_id'] === 399843 ) {
+//     display_var( $style );
+//   }
+// }
+// exit();
 // $obj->update_styles( $styles, 'true' );
+// var_dump('done');
 // exit();
 
 // $results = update_styles_by_model( 'M4', 'false' );
 
-// update_model_images('A4 allroad', 'view');
+// update_model_images('TLX', 'view');
 // exit();
+
+update_ftps3('TLX');
 
 // $test = update_styles_by_model( 'CTS Sedan', 'false' );
 // var_dump( $test );

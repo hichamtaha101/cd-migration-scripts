@@ -1,27 +1,6 @@
-- Update All Views Images
-    - update_model_images
-        - get_chromedata_media_by_model
-        - update_images
-            - get_kraken_requests
-            - kraken->multiple_requests             : recursive call to execute all requests
-            - update_media_db
+- Removed individual sql calls, used left joins to get a summary of each style and model
 
-- Update All FTP - S3 Images ( original )
-    - update_ftps3_by_model
-        - get_chromedata_media_by_model             : get shotcode 1 Images
-        - ftp_s3->copy_colorized_media_to_s3
-            - update_colorized_count                : foreach model update db count
-            - send_media                            : send file to s3
-            - remove_cd_media                       : foreach media after ftp images grabbed
-
-- Update All Colorized Images
-    - update_model_images
-            - get_chromedata_media_by_model
-            - update_images
-                - get_kraken_requests
-                - kraken->multiple_requests : recursive
-                - update_media_db
-
-
-Notes
-- Server needs to have no timeout for large scripts
+- Some styles have duplicate 01,02,03,12 entries ( different file_names for different set of colorized images)
+- Some styles have duplicate mediaGallery->view images from chromedata
+- Every media object should be unique by url
+- Some media entries from chromedata are off by a single pixel 1200 x 960 = 1200 x 959

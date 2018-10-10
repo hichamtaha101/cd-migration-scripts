@@ -931,6 +931,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		// ^ media gallery
 		$style['style']['has_media'] = false;
 		$style['style']['view_count'] = 0;
+		$unique_images = array();
 		if ( property_exists( $response->style, 'mediaGallery' ) ) {
 			if ( property_exists( $response->style->mediaGallery, 'view' ) ) {
 				if ( $data = $response->style->mediaGallery->view ) {
@@ -939,12 +940,16 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 						if ( property_exists( $image, 'url' ) ) {
 							// Only need these images, the rest is grabbed via ftp and the sizes are optimized via Kraken 
 							if ( $image->width == 1280 && $image->height == 960 && $image->backgroundDescription == 'Transparent' ) {
-								$image->styleId = $style_id;
-								$fname = explode( '/', $image->url );
-								$fname = end( $fname );
-								$fname = str_replace( '.png', '', $fname );	
-								$image->fileName = $fname;
-								$style['view'][] = $this->set_properties( $image, $this->image_gallery_properties );
+								// Idk why, chromedata has duplicate entries, make each entry unique by url :/
+								if ( ! in_array( $image->url, $unique_images ) ) {
+									$image->styleId = $style_id;
+									$fname = explode( '/', $image->url );
+									$fname = end( $fname );
+									$fname = str_replace( '.png', '', $fname );	
+									$image->fileName = $fname;
+									$style['view'][] = $this->set_properties( $image, $this->image_gallery_properties );
+								}
+								$unique_images[] = $image->url;
 							}
 						}
 					}
@@ -953,7 +958,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				}
 			}
 		}
-
 		return $style;
 	}
 
