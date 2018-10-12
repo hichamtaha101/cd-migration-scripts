@@ -179,9 +179,7 @@ jQuery(document).ready(function ($) {
 			},
 			success: function (data) {
 				try {
-					console.log(data);
 					data = JSON.parse(data);
-					console.log(data);
 				} catch (e) {
 					console.log( 'Error caught' + e + ' for model ' + args[0] );
 					console.log(data);

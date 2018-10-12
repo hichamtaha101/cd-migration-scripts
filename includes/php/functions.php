@@ -104,14 +104,15 @@ function update_all_models() {
 function update_styles( $model, $remove_media ) {
 	global $obj;
 	
-	$results = array();
 	$styles = $obj->get_model_details( "model_name_cd LIKE '{$model}'" );
 	$obj->update_styles( $styles, $remove_media );
-	$results['update'] = array( 
-		'key' => 'styles', 
-		'data' => $model 
+	return array(
+		'update'	=> array(
+			'key' 		=> 'styles',
+			'data' 		=> $model,
+		),
+		'outputs'	=> $obj->outputs
 	);
-	$results['outputs'] = $obj->outputs;
 	return $results;
 }
 
@@ -145,14 +146,13 @@ function update_model_images( $model, $type ) {
 	if ( $result === FALSE ) {
 		$outputs[0]['msg'] = 'Already updated all ' . $model . ' ' . $type . ' images in s3 and database';
 	}
-	$results = array(
+	return array(
 		'update'	=> array(
 			'key' 		=> $type,
 			'data' 		=> $model,
 		),
 		'outputs'	=> $outputs
 	);
-	return $results;
 }
 
 /**

@@ -9,7 +9,7 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // $obj->db->query('TRUNCATE style');
 
 // $obj->update_models();
-display_var(update_styles('A4', 'true'));
+update_styles('A4', 'true');
 
 // display_var(get_updated_models());
 // $makes = $obj->get_models();
