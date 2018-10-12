@@ -181,10 +181,12 @@ class Convertus_Kraken_S3 {
 		}
 
 		// 3. Run SQL statements
-		$this->db->query( $delete_sql . implode( ' AND ', $delete_values ) );
+		$this->db->query( $delete_sql . implode( ' OR ', $delete_values ) );
 		$this->db->query( $insert_sql . implode( ',', $insert_values ) );
 
-		// 4. Check to remove chromedata 01, 02, 03, 12
-		get_chromedata_media_by_model( $model_name_cd, $type );
+		// 4. Check to remove chromedata  02, 03, 12
+		if ( $type === 'view' ) {
+			get_chromedata_media_by_model( $model_name_cd );
+		}
 	}
 }

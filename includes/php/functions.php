@@ -28,16 +28,14 @@ function get_updated_models() {
 	$sql = "SELECT 
 	s.model_name_cd, 
 	IFNULL(s.view_count, 0) as view_count,
-	IFNULL(s.colorized_count, 0) as colorized_count,
 	IFNULL(m.view_images, 0) as view_images,
-	IFNULL(mm.ftp_images_one, 0) as ftp_images_one,
+	IFNULL(mm.colorized_original, 0) as colorized_original,
 	IFNULL(mmm.colorized_images, 0) as colorized_images
-	FROM (SELECT model_name_cd, SUM(view_count) as view_count, SUM(colorized_count) as colorized_count FROM style WHERE has_media = 1 GROUP BY model_name_cd ) s
+	FROM (SELECT model_name_cd, SUM(view_count) as view_count FROM style WHERE has_media = 1 GROUP BY model_name_cd ) s
 	LEFT JOIN (SELECT model_name_cd, COUNT(*) as view_images FROM media WHERE url LIKE '%amazonaws.com%' AND type = 'view' GROUP BY model_name_cd ) m ON m.model_name_cd = s.model_name_cd
-	LEFT JOIN (SELECT model_name_cd, COUNT(*) as ftp_images_one FROM media WHERE url LIKE '%amazonaws.com/original%' GROUP BY model_name_cd ) mm ON mm.model_name_cd = s.model_name_cd
+	LEFT JOIN (SELECT model_name_cd, COUNT(*) as colorized_original FROM media WHERE url LIKE '%amazonaws.com/original%' GROUP BY model_name_cd ) mm ON mm.model_name_cd = s.model_name_cd
 	LEFT JOIN (SELECT model_name_cd, COUNT(*) as colorized_images FROM media WHERE url LIKE '%amazonaws.com%' AND url NOT LIKE '%/original/%' AND type = 'colorized' GROUP BY model_name_cd) mmm ON mmm.model_name_cd = s.model_name_cd";
 	$results = $db->get_results($sql, ARRAY_A);
-	// return $results;
 
 	foreach ( $results as $model ) {
 		// These models have at least one style ( therefore have been migrated from chromedata )
@@ -49,12 +47,12 @@ function get_updated_models() {
 		}
 
 		// These models have grabbed all colorized shot code image ftp images
-		if ( $model['ftp_images_one'] === $model['colorized_count'] ) {
+		if ( intval($model['colorized_original']) !== 0 ) {
 			$ftp_s3_updated[] = $model['model_name_cd'];
 		}
 
 		// These models have optimized and stored all colorized images
-		if ( ( $model['colorized_count'] * 8 ) === intval($model['colorized_images']) ) {
+		if ( ( $model['colorized_original'] * 8 ) === intval($model['colorized_images']) ) {
 			$colorized_updated[] = $model['model_name_cd'];
 		}
 	}
@@ -127,7 +125,14 @@ function update_styles( $model, $remove_media ) {
 function update_model_images( $model, $type ) {
 	global $k_s3;
 	
-	$media = get_chromedata_media_by_model( $model, $type );
+	// Grab media that need updating
+	if ( $type === 'view' ) {
+		$media = get_chromedata_media_by_model( $model );
+	} elseif ( $type === 'colorized' ) {
+		$media = get_colorized_media_by_model( $model );
+	}
+	display_var( $media );
+
 	if ( ! $media['pass'] ) {
 		return $media['outputs'];
 	} 
@@ -159,15 +164,14 @@ function update_model_images( $model, $type ) {
  */
 function update_ftps3( $model ) {
 	global $ftp_s3;
-	$media = get_chromedata_media_by_model( $model, 'ftps3' );
-	display_var( $media );
+	$media = get_chromedata_media_by_model( $model );
 	if ( ! $media['pass'] ) {
 		return array(
 			'outputs'	=> $media['outputs']
 		);
 	}
-
 	$media = $media['media'];
+
 	$test = $ftp_s3->copy_colorized_media_to_s3( $media );
 	if ( $test ) {
 		return array(
@@ -190,31 +194,25 @@ function update_ftps3( $model ) {
  * If a media entry is already updated for the type specified, that entry is removed from the database via the remove_cd_media function.
  *
  * @param string $model	The Chrome Data model name that is being queried for in the database.
- * @param string $type	The media type being queried ( view || coloried ) for update.
  * @return array		An array of media objects that need to be optimized, stored on S3, and re-referenced in our database.
  * 						This function returns false if there are no media objects, or the model does not exist.
  */
-function get_chromedata_media_by_model( $model, $type ) {
+function get_chromedata_media_by_model( $model ) {
 	global $db;
 
 	$results = array();
 	$outputs = array( array(
 		'type'	=> 'error', 
-		'msg'	=> 'Could not find any media entries for ' . $model . ' in database.' 
+		'msg'	=> 'Could not find any chromedata media entries for ' . $model . ' in database.' 
 	));
 
 	$sql = "SELECT
 	m.*,
 	IFNULL(b.view_images, 0) as view_images,
-	IFNULL(c.colorized_images, 0) as colorized_images,
-	IFNULL(d.colorized_original, 0) as colorized_original
+	IFNULL(c.colorized_original, 0) as colorized_original
 	FROM ( SELECT * FROM media WHERE url LIKE '%media.chromedata%' AND model_name_cd LIKE '{$model}') m
 	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as view_images FROM media WHERE url LIKE '%amazonaws.com/media%' AND type = 'view' GROUP BY style_id, file_name ) b ON ( b.style_id = m.style_id AND b.file_name = m.file_name )
-	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as colorized_images FROM media WHERE url LIKE '%amazonaws.com/media%' AND type = 'colorized' GROUP BY style_id, file_name ) c ON ( c.style_id = m.style_id AND c.file_name = m.file_name )
-	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as colorized_original FROM media WHERE url LIKE '%amazonaws.com/original%' AND type = 'colorized' GROUP BY style_id, file_name ) d ON ( d.style_id = m.style_id AND d.file_name = m.file_name )";
-	if ( $type === 'colorized' ) {
-		$sql = str_replace("%media.chromedata%", "%amazonaws.com/original/colorized%", $sql );
-	}
+	LEFT JOIN ( SELECT style_id, REPLACE(file_name, CONCAT('_',color_option_code), '') as file_name_original, COUNT(*) as colorized_original FROM media WHERE url LIKE '%amazonaws.com/original%' AND type = 'colorized' GROUP BY style_id, file_name_original ) c ON ( c.style_id = m.style_id AND c.file_name_original = m.file_name )";
 	$media = $db->get_results($sql, ARRAY_A);
 
 	// Check if Model exists
@@ -232,22 +230,18 @@ function get_chromedata_media_by_model( $model, $type ) {
 		if ( cd_media_is_updated( $m ) ) {
 			$delete_values[] = remove_cd_media_sql($m);
 		} else {
-			if ( $type === 'view' && intval($m['view_images']) !== 8 ) {
-				$results[] = $m;
-			} else if ( $type === 'ftps3' && intval($m['view_images']) === 8 ) {
-				$results[] = $m;
-			}
+			$results[] = $m;
 		}
 	}
 
 	// Delete any updated cd media entries
 	if ( count($delete_values) > 0 ) {
-		$db->query($delete_sql . implode( ' AND ', $delete_values ) );
+		$db->query($delete_sql . implode( ' OR ', $delete_values ) );
 	}
 
 	// No media entries found
-	if ( empty( $results ) ) {
-		$outputs['msg'] = 'Already updated ' . $model . ' in database for ' . $type . ' images.';
+	if ( count( $results ) === 0 ) {
+		$outputs['msg'] = 'Already updated ' . $model . ' in database for view images.';
 		return array(
 			'pass'		=> FALSE, 
 			'outputs'	=> $outputs
@@ -278,14 +272,66 @@ function cd_media_is_updated($media){
 		return $pass; 
 	}
 
-	// Colorized images should equal colorized_original * 8
-	if ( 
-		intval( $media['colorized_original'] ) === 0 || 
-		intval( $media['colorized_images'] ) !== ( $media['colorized_original'] * 8 ) 
-		) {
-		$pass = false;
+	// Remove CD shotcode 1 media if colorized_original not equal to 0
+	if ( intval( $media['colorized_original'] ) === 0 ) {
+		$pass = FALSE;
 	}
+
 	return $pass;
+}
+
+
+/**
+ * Undocumented function
+ *
+ * @param object $model
+ * @return object
+ */
+function get_colorized_media_by_model( $model ) {
+	global $db;
+
+	$results = array();
+	$outputs = array( array(
+		'type'	=> 'error', 
+		'msg'	=> 'Could not find any original media entries for ' . $model . ' in database.' 
+	));
+
+	$sql = "SELECT
+	m.*,
+	IFNULL(a.colorized_images, 0) as colorized_images
+	FROM ( SELECT * FROM media WHERE url LIKE '%amazonaws.com/original%' AND model_name_cd LIKE '{$model}') m
+	LEFT JOIN ( SELECT style_id, file_name, COUNT(*) as colorized_images FROM media WHERE url LIKE '%amazonaws.com/media%' AND type = 'colorized' GROUP BY style_id, file_name ) a ON ( a.style_id = m.style_id AND a.file_name = m.file_name )";
+	$media = $db->get_results($sql, ARRAY_A);
+
+	// Check if Model exists
+	if ( ! $media ) {
+		return array(
+			'pass'		=> FALSE,
+			'outputs' 	=> $outputs 
+		);
+	}
+
+	// Ignore not updated entries, but don't delete
+	foreach ( $media as $m ) {
+		if ( intval($m['colorized_images']) !== 8 ) {
+			$results[] = $m;
+		}
+	}
+
+	// No original images need optimizing
+	if ( count( $results ) === 0 ) {
+		$outputs['msg'] = 'Already updated ' . $model . ' in database for colorized images.';
+		return array(
+			'pass'		=> FALSE, 
+			'outputs'	=> $outputs
+		);
+	}
+
+	// These media entries need to be updated
+	return array(
+		'pass'	=> TRUE, 
+		'media'	=> $results
+	);
 }
 
 /**
@@ -295,10 +341,11 @@ function cd_media_is_updated($media){
  * @return void
  */
 function remove_cd_media_sql( $media ) {
-	return "( style_id LIKE '{$media['style_id']}'
-	AND type LIKE 'view'
-	AND file_name LIKE '{$media['file_name']}'
-	AND url LIKE '%media.chromedata%' )";
+	return "( style_id = {$media['style_id']}
+	AND type = 'view'
+	AND shot_code = {$media['shot_code']}
+	AND file_name = '{$media['file_name']}'
+	AND url LIKE '%media.chromedata.com%' )";
 }
 
 /**

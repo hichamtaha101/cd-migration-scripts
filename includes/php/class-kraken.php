@@ -78,7 +78,7 @@ class Kraken {
 	private function recursive_batch_request( $batch_requests, $attempt = 0 ) {
 
 		if ( $attempt == 3 ) {
-			echo 'Recursive Error';
+			display_var( count( $batch_requests ) . ' requests have failed.' );
 			exit();
 		}
 

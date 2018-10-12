@@ -13,9 +13,7 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // var_dump( $makes );
 // exit();
 
-// $models = get_updated_models();
-// echo '<pre>'; var_dump( $models ); echo '</pre>';
-// exit();
+// display_var( get_updated_models() );
 // $models = $obj->update_models();
 
 // var_dump($obj->test());
@@ -33,10 +31,9 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 
 // $results = update_styles_by_model( 'M4', 'false' );
 
-// update_model_images('TLX', 'view');
-// exit();
+// display_var( update_model_images( 'TLX', 'view' ) );
 
-update_ftps3('TLX');
+// update_ftps3('TLX');
 
 // $test = update_styles_by_model( 'CTS Sedan', 'false' );
 // var_dump( $test );
@@ -45,7 +42,7 @@ update_ftps3('TLX');
 // var_dump( get_updated_models() );
 // exit();
 
-get_chromedata_media_by_model('Super Duty F-350 SRW', 'view');
+// get_chromedata_media_by_model('Super Duty F-350 SRW', 'view');
 
 function update_all_body_styles() {
   global $obj;

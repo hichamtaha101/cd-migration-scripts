@@ -11,27 +11,35 @@ class FTP_S3 {
   function __construct( $db ) {
     $this->db = $db;
     $this->outputs = [];
+
+    // Connect to FTP
+    $this->conn_id = ftp_connect('ftp.chromedata.com') or set_error( 'FTP', "Couldn't connect to $ftp_server" ); 
+		if ( ! @ftp_login( $this->conn_id, 'u311191', 'con191' ) ) {
+			set_error( 'FTP', "Couldn't connect as u311191" );
+			echo 'Caught an error while trying to connect to ftp';
+			exit();
+    }
+    ftp_pasv( $this->conn_id, true );
   }
 
   /**
    * This function grabs all contents within the specified folder in the FTP.
    *
-   * @param string $conn_id The FTP Connection.
    * @param string $folder  The folder to grab the images from in the FTP.
    * @return array          Returns all image objects if folder exists, otherwise returns false.
    */
-  private function get_contents( $conn_id, $folder ) {
-    $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
+  private function get_contents($folder ) {
+    $contents = ftp_nlist( $this->conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $folder . '/' );
     if ( false !== $contents ) {
       return $contents;
     }
     $temp = explode( '000', $folder );
-    $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp[0] . '_01_1280/' );
+    $contents = ftp_nlist( $this->conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp[0] . '_01_1280/' );
     if ( false !== $contents ) {
       return $contents;
     }
     $temp = explode( '00', $folder );
-    $contents = ftp_nlist( $conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp[0] . '_01_1280/' );
+    $contents = ftp_nlist( $this->conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp[0] . '_01_1280/' );
     if ( false !== $contents ) {
       return $contents;
     }
@@ -48,44 +56,32 @@ class FTP_S3 {
 	public function copy_colorized_media_to_s3( $media ) {
     $model = $media[0]['model_name_cd'];
 
-		// 1) Connect to ftp or die
-		$ftp_server = 'ftp.chromedata.com';
-		$ftp_user = 'u311191';
-		$ftp_pass = 'con191';
-
-		$conn_id = ftp_connect($ftp_server) or set_error( 'FTP', "Couldn't connect to $ftp_server" ); 
-		if ( ! @ftp_login( $conn_id, $ftp_user, $ftp_pass ) ) {
-			set_error( 'FTP', "Couldn't connect as $ftp_user" );
-			echo 'Caught an error connecting to ftp';
-			return;
-    }
-    ftp_pasv( $conn_id, true );
-    
-		// 2) Foreach 01 media in this model
 		foreach ( $media as $m ) {
 			$style_id = strrev( $m['style_id'] );
-			$directory = '../../temp/media/' . $style_id;
-			if ( ! file_exists( '../../temp/media/' . $style_id ) ) {
+      $directory = '../../temp/media/' . $style_id;
+      
+      // 1) Create local directory to store images / continue downloading
+			if ( ! file_exists( $directory ) ) {
 				mkdir( $directory, 0777, true );
 				mkdir( $directory . '/01', 0777, true );
 			} else {
+
+        // Skip if all already downloaded for this media
         $files = scandir($directory . '/01');
-        
-				// Skip if all already downloaded
-				if ( $m['colorized_count'] == ( count( $files )-2 ) && $m['colorized_count'] != 0 ) {
+				if ( ( count( $files )-2 ) == $m['colorized_original'] && $m['colorized_original'] != 0 ) {
 					continue;
 				}
       }
+      
+      // 2) Try to grab folder containing the media's colorized images.
       $folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
-
-      // If folder has all styles combined, this grabs that folder.
-      $contents = $this->get_contents( $conn_id, $folder );
+      $contents = $this->get_contents( $folder );
       if ( false === $contents ) {
         var_dump('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.' );
         exit();
       }
 
-			// 3) Download foreach color variation for this media
+			// 3) Download each color variation for this media
 			foreach ( $contents as $image ) {
         $image_info = pathinfo( $image );
         // Sometimes folder has all the styles combined, so grab only the images for the current media
@@ -94,30 +90,19 @@ class FTP_S3 {
 				$color_code = end( $color_code );
         $local_path = $directory . '/01/' . $m['file_name'] . '_' . $color_code . '.png';
         
-				// If file already exists, skip ( this should only happen during re-runs after error caught )
+				// If file already exists, skip ( this should only happen during re-runs of incomplete scripts )
 				if ( file_exists($local_path) ) { continue; }
-				if ( ! ftp_get( $conn_id, $local_path, $image, FTP_BINARY ) ) {
+				if ( ! ftp_get( $this->conn_id, $local_path, $image, FTP_BINARY ) ) {
           echo 'Something went wrong when downloading images for style id ' . $m['style_id'];
 					exit(); // Error caught, exit script
 				}
       }
-      
-			// Update style's colorized_count
-      $colorized_count = count( $contents );
-      update_colorized_count( $m['style_id'], $colorized_count );
-    }
-		
-		// 5) Insert each image as an original s3 media
-		foreach ( $media as $m ) {
-			$style_id = strrev( $m['style_id'] );
-			$m['storage_path'] = 'original/colorized/' . $style_id . '/01/';
-      $directory = '../../temp/media/' . $style_id;
-      // Weird bug, go to next folder
-      if ( ! file_exists( $directory ) ) { continue; }
-			$dir = new DirectoryIterator( $directory . '/01' );
-      $values = array();
 
-      // Send all images to s3 for this style
+      // 4) Insert each image as an original s3 media
+      $m['storage_path'] = 'original/colorized/' . $style_id . '/01/';
+      $dir = new DirectoryIterator( $directory . '/01' );
+      $sql_values = array();
+       // Send all images to s3 for this style
 			foreach ( $dir as $image ) {
 				if ( $image->isDot() ) { continue; }
 				$image_info = pathinfo( $image );
@@ -129,7 +114,7 @@ class FTP_S3 {
 				$results = $this->send_media($copy);
 				if ( $results !== FALSE ) {
 					$copy['url'] = $results->get('ObjectURL');
-					$values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', '{$copy['model_year']}')";
+					$sql_values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', '{$copy['model_year']}')";
 				} else {
           var_dump( 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id );
           exit();
@@ -139,27 +124,26 @@ class FTP_S3 {
       // Close any operations with the folder in use before deleting tree
       unset( $image );
 			unset( $dir );
-			garbage();
+      garbage();
 
-			// Remove old entries if exists and insert S3 entries
-			$sql = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
-      $query = $this->db->query( $sql . implode( ',', $values ) );
+      //  Delete Tree 
+      del_tree( $directory );
       
-      //  Remove Tree
-			if ( $query !== FALSE ) {
-				del_tree( $directory );
-			} else {
-        var_dump('Cancer happened when running aws->s3 db query.' . $query );
-        exit();
-			}
+      // Remove old entries if exists and insert S3 entries
+      $sql_delete = "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND url LIKE '%amazonaws.com/original%' AND shot_code LIKE {$m['shot_code']}";
+			$sql_insert = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
+      $this->db->query( $sql_delete );
+      $this->db->query( $sql_insert . implode( ',', $sql_values ) );
     }
 
+    // Removes shotcode 1 media images
+    get_chromedata_media_by_model( $model );
+		
     // Everything went successful
     $this->outputs[] = array(
       'type'  => 'success',
-      'msg'   =>'Successfully downloaded all colorized ' . $model . ' ftp images onto S3'
+      'msg'   => 'Successfully downloaded all colorized ' . $model . ' ftp images onto S3'
     );
-
     return true;
   }
   
