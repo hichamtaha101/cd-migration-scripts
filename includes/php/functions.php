@@ -75,6 +75,7 @@ function get_updated_models() {
  */
 function update_all_makes() {
 	global $obj;
+	$results = array();
 	$obj->update_divisions();
 	$results['outputs'] = $obj->outputs;
 	return $results;
@@ -103,6 +104,7 @@ function update_all_models() {
 function update_styles( $model, $remove_media ) {
 	global $obj;
 	
+	$results = array();
 	$styles = $obj->get_model_details( "model_name_cd LIKE '{$model}'" );
 	$obj->update_styles( $styles, $remove_media );
 	$results['update'] = array( 
@@ -110,7 +112,6 @@ function update_styles( $model, $remove_media ) {
 		'data' => $model 
 	);
 	$results['outputs'] = $obj->outputs;
-
 	return $results;
 }
 
@@ -131,7 +132,6 @@ function update_model_images( $model, $type ) {
 	} elseif ( $type === 'colorized' ) {
 		$media = get_colorized_media_by_model( $model );
 	}
-	display_var( $media );
 
 	if ( ! $media['pass'] ) {
 		return $media['outputs'];

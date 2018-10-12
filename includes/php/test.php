@@ -8,7 +8,10 @@ $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
 if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
 // $obj->db->query('TRUNCATE style');
 
-// get_updated_models();
+// $obj->update_models();
+display_var(update_styles('A4', 'true'));
+
+// display_var(get_updated_models());
 // $makes = $obj->get_models();
 // var_dump( $makes );
 // exit();

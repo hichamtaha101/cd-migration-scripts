@@ -1358,7 +1358,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	 * @return void
 	 */
 	public function update_styles( $styles, $remove_media ) {
-		
+
 		// Defaults needed for queries
 		$queries = array(
 			'styles' => array(
