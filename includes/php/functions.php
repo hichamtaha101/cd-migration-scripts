@@ -94,6 +94,30 @@ function update_all_models() {
 	return $results;
 }
 
+function update_everything_for_model($model) {
+
+	$response = update_styles( $model, 'true' );
+	if ( $response === FALSE ) {
+		exit();
+	}
+	$response = update_model_images( $model, 'view' );
+	$response = update_ftps3( $model );
+	$response = update_model_images( $model, 'colorized' );
+
+	$outputs = array( array(
+		'type'	=> 'success',
+		'msg'	=> 'Beep boop ' . $model
+	) );
+	
+	return array(
+		'update'	=> array(
+			'key' 		=> 'models',
+			'data' 		=> $model,
+		),
+		'outputs'	=> $outputs
+	);
+}
+
 /**
  * Calls the chrome-data-api instance to update all styles for the model passed in.
  *
@@ -141,6 +165,7 @@ function update_model_images( $model, $type ) {
 
 	// Optimize and store all media images here
 	$result = $k_s3->update_images( $media, $type );
+	$outputs = array();
 	$outputs[0]['type'] = 'success';
 	$outputs[0]['msg'] = 'Updated all ' . $model . ' ' . $type . ' images in s3 and database';
 	if ( $result === FALSE ) {
@@ -370,19 +395,6 @@ function del_tree($dirPath) {
 			}
 	}
 	rmdir($dirPath);
-}
-
-/**
- * Update's the colorized_count column in the media table for a specific style.
- *
- * @param string $style_id	ID of style being modified.
- * @param integer $count	The new value.
- * @return void
- */
-function update_colorized_count( $style_id, $count ) {
-	global $db;
-	$sql = "UPDATE style SET colorized_count = {$count} WHERE style_id LIKE '{$style_id}'";
-	$db->query($sql);
 }
 
 /**

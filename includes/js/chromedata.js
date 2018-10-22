@@ -21,6 +21,13 @@ jQuery(document).ready(function ($) {
 			removeMedia: true
 		},
 		{
+			title: 'Update Everything For Model ( may take a long time )',
+			fname: 'update_everything_for_model',
+			type: 'models',
+			desc: 'Update all styles, views, ftp-s3, and colorized images for the model inputed.',
+			updateAll: true
+		},
+		{
 			title: '3.1) Update Styles By Model',
 			fname: 'update_styles',
 			desc: 'Grabs styles by model and updates all records in DB for the styles selected.',
@@ -166,6 +173,8 @@ jQuery(document).ready(function ($) {
 		}
 
 		vMain.updating = updating;
+		vMain.updating.models = vMain.models.slice();
+		vMain.updated.models = [];
 		$('.menu .item').tab();
 	});
 
@@ -208,7 +217,6 @@ jQuery(document).ready(function ($) {
 	}
 
 	function update_all(event, item, args) {
-		vMain.run = true;
 
 		// Start Loading
 		console.time();
@@ -223,6 +231,7 @@ jQuery(document).ready(function ($) {
 				args.unshift(model);
 				console.log(model);
 				if (vMain.run) {
+					vMain.run = false;
 					run_php_function(item.fname, args, callback);
 				} else {
 					$(event.target).parent().removeClass('active');

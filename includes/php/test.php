@@ -8,8 +8,16 @@ $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
 if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
 // $obj->db->query('TRUNCATE style');
 
+// display_var(get_updated_models());
+
 // $obj->update_models();
-update_styles('A4', 'true');
+// update_styles('A4', 'true');
+
+
+$test = update_everything_for_model('Escape');
+//$test = update_ftps3( 'Escape' );
+//$test = update_model_images( 'Escape', 'colorized' );
+display_var( $test );
 
 // display_var(get_updated_models());
 // $makes = $obj->get_models();
