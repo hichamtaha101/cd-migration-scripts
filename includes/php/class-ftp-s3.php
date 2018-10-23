@@ -75,9 +75,7 @@ class FTP_S3 {
       
       // 2) Try to grab folder containing the media's colorized images.
       $folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
-      var_dump( $folder ); echo "<br>";
       $contents = $this->get_contents( $folder );
-      var_dump( $contents );
       if ( false === $contents ) {
         var_dump('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.' );
         exit();

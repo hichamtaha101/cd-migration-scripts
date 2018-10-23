@@ -96,13 +96,12 @@ function update_all_models() {
 
 function update_everything_for_model($model) {
 
-	$response = update_styles( $model, 'true' );
-	if ( $response === FALSE ) {
-		exit();
-	}
-	$response = update_model_images( $model, 'view' );
-	$response = update_ftps3( $model );
+	// Script breaks if something goes wrong in the following functions
+	// $response = update_styles( $model, 'true' );
+	// $response = update_model_images( $model, 'view' );
+	// $response = update_ftps3( $model );
 	$response = update_model_images( $model, 'colorized' );
+	display_var( $response );
 
 	$outputs = array( array(
 		'type'	=> 'success',
