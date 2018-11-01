@@ -97,11 +97,15 @@ function update_all_models() {
 function update_everything_for_model($model) {
 
 	// Script breaks if something goes wrong in the following functions
-	// $response = update_styles( $model, 'true' );
-	// $response = update_model_images( $model, 'view' );
-	// $response = update_ftps3( $model );
-	$response = update_model_images( $model, 'colorized' );
-	display_var( $response );
+	
+	// $response1 = update_styles( $model, 'true' );
+	// var_dump( $response1 );
+	// $response2 = update_model_images( $model, 'view' );
+	// var_dump( $response2 );
+	// $response3 = update_ftps3( $model );
+	// var_dump( $response3 );
+	$response4 = update_model_images( $model, 'colorized' );
+	var_dump( $response4 );
 
 	$outputs = array( array(
 		'type'	=> 'success',

@@ -43,6 +43,14 @@ class FTP_S3 {
     if ( false !== $contents ) {
       return $contents;
     }
+    $index = stripos($folder, '00');
+    if ( $index !== false ) {
+      $temp = substr( $folder, 0, $index + 1);
+      $contents = ftp_nlist( $this->conn_id, '/media/ChromeImageGallery/ColorMatched_01/Transparent/1280/' . $temp . '_01_1280' );
+      if ( false !== $contents ) {
+        return $contents;
+      }
+    }
     return false;
   }
 
@@ -64,14 +72,7 @@ class FTP_S3 {
 			if ( ! file_exists( $directory ) ) {
 				mkdir( $directory, 0777, true );
 				mkdir( $directory . '/01', 0777, true );
-			} else {
-
-        // Skip if all already downloaded for this media
-        $files = scandir($directory . '/01');
-				if ( ( count( $files )-2 ) == $m['colorized_original'] && $m['colorized_original'] != 0 ) {
-					continue;
-				}
-      }
+			}
       
       // 2) Try to grab folder containing the media's colorized images.
       $folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
@@ -93,7 +94,7 @@ class FTP_S3 {
 				// If file already exists, skip ( this should only happen during re-runs of incomplete scripts )
 				if ( file_exists($local_path) ) { continue; }
 				if ( ! ftp_get( $this->conn_id, $local_path, $image, FTP_BINARY ) ) {
-          echo 'Something went wrong when downloading images for style id ' . $m['style_id'];
+          echo "Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}";
 					exit(); // Error caught, exit script
 				}
       }
@@ -131,14 +132,12 @@ class FTP_S3 {
       
       // Remove old entries if exists and insert S3 entries
       $sql_delete = "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND url LIKE '%amazonaws.com/original%' AND shot_code LIKE {$m['shot_code']}";
-			$sql_insert = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
+      $sql_insert = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
       $this->db->query( $sql_delete );
+      $this->db->query( "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND shot_code LIKE {$m['shot_code']} AND url LIKE '%chromedata%' " );
       $this->db->query( $sql_insert . implode( ',', $sql_values ) );
     }
 
-    // Removes shotcode 1 media images
-    get_chromedata_media_by_model( $model );
-		
     // Everything went successful
     $this->outputs[] = array(
       'type'  => 'success',

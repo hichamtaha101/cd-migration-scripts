@@ -13,8 +13,18 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 // $obj->update_models();
 // update_styles('A4', 'true');
 
+/*
+1. SELECT * FROM `style` WHERE model_name LIKE 'Explorer' : Styles updated
+2. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' : Optimized view images
+3. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%chromedata%' : One images
+4. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/original%' : Colorized Original
+5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
 
-update_everything_for_model('Escape');
+
+
+*/
+
+update_everything_for_model('Compass');
 //$test = update_ftps3( 'Escape' );
 //$test = update_model_images( 'Escape', 'colorized' );
 
