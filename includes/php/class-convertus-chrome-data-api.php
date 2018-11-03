@@ -689,6 +689,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
+		display_var( $models );
 		if ( empty( $models ) ) {
 			$this->outputs[] = array( 
 				'type' => 'error', 

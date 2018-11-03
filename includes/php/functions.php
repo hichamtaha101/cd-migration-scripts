@@ -104,8 +104,8 @@ function update_everything_for_model($model) {
 	// var_dump( $response2 );
 	// $response3 = update_ftps3( $model );
 	// var_dump( $response3 );
-	$response4 = update_model_images( $model, 'colorized' );
-	var_dump( $response4 );
+	// $response4 = update_model_images( $model, 'colorized' );
+	// var_dump( $response4 );
 
 	$outputs = array( array(
 		'type'	=> 'success',
@@ -131,16 +131,21 @@ function update_everything_for_model($model) {
 function update_styles( $model, $remove_media ) {
 	global $obj;
 	
-	$styles = $obj->get_model_details( "model_name_cd LIKE '{$model}'" );
-	$obj->update_styles( $styles, $remove_media );
-	return array(
-		'update'	=> array(
-			'key' 		=> 'styles',
-			'data' 		=> $model,
-		),
-		'outputs'	=> $obj->outputs
-	);
-	return $results;
+	$styles = $obj->get_model_details( "model_name_cd = '{$model}'" );
+	if ( $styles !== false ) {
+		$obj->update_styles( $styles, $remove_media );
+		return array(
+			'update'	=> array(
+				'key' 		=> 'styles',
+				'data' 		=> $model,
+			),
+			'outputs'	=> $obj->outputs
+		);
+	} else {
+		return array(
+			'outputs'	=> $obj->outputs
+		);
+	}
 }
 
 /**

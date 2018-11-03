@@ -3,29 +3,22 @@ jQuery(document).ready(function ($) {
 	// Might be able to grab this dynamically based on funtions.php
 	var functions = [
 		{
-			title: '1) Update All Makes',
+			title: '1) Update Remaining Makes',
 			fname: 'update_all_makes',
 			desc: 'Updates all makes/divisions ( replaces all divison entries in DB ).',
 		},
 		{
-			title: '2) Update All Models',
+			title: '2) Update Remaining Models',
 			fname: 'update_all_models',
 			desc: 'Updates all models ( replaces all model entries in DB ).',
 		},
 		{
-			title: '3) Update All Styles ( may take a long time )',
+			title: '3) Update Remaining Styles ( may take a long time )',
 			fname: 'update_styles',
 			type: 'styles',
 			desc: 'Updates styles table by each non-updated model, progress is reported in the output section.',
 			updateAll: true,
 			removeMedia: true
-		},
-		{
-			title: 'Update Everything For Model ( may take a long time )',
-			fname: 'update_everything_for_model',
-			type: 'models',
-			desc: 'Update all styles, views, ftp-s3, and colorized images for the model inputed.',
-			updateAll: true
 		},
 		{
 			title: '3.1) Update Styles By Model',
@@ -35,7 +28,7 @@ jQuery(document).ready(function ($) {
 			removeMedia: true
 		},
 		{
-			title: '4) Update All Database Views ( may take a long time )',
+			title: '4) Update Remaining Database Views ( may take a long time )',
 			fname: 'update_model_images',
 			type: 'view',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
@@ -49,7 +42,7 @@ jQuery(document).ready(function ($) {
 			hasModel: true,
 		},
 		{
-			title: '5) Update All FTP to S3 Colorized ( may take a long time )',
+			title: '5) Update Remaining FTP to S3 Colorized ( may take a long time )',
 			fname: 'update_ftps3',
 			type: 'ftps3',
 			desc: 'Downloads each model\'s colorized images from the chromedata ftp and stores it into the S3 Bucket under /original/{styleid}/01.',
@@ -62,7 +55,7 @@ jQuery(document).ready(function ($) {
 			hasModel: true,
 		},
 		{
-			title: '6) Update All Database Colorized ( may take a long time )',
+			title: '6) Update Remaining Database Colorized ( may take a long time )',
 			fname: 'update_model_images',
 			type: 'colorized',
 			desc: 'Optimizes images from new styles, stores on s3, and updates DB with the new media.',
@@ -74,6 +67,13 @@ jQuery(document).ready(function ($) {
 			type: 'colorized',
 			desc: 'Grabs all styles for model, optimizes and formats images based on url/localfiles, stores on s3 and updates Database Media table for styles.',
 			hasModel: true,
+		},
+		{
+			title: 'Update Everything For All Models ( may take a long time )',
+			fname: 'update_everything_for_model',
+			type: 'models',
+			desc: 'Update Remaining styles, views, ftp-s3, and colorized images for the model inputed.',
+			updateAll: true
 		}
 	];
 
@@ -96,13 +96,15 @@ jQuery(document).ready(function ($) {
 				'styles': [],
 				'view': [],
 				'ftps3': [],
-				'colorized': []
+				'colorized': [],
+				'everything': []
 			},
 			updated: {
 				'styles': [],
 				'view': [],
 				'ftps3': [],
-				'colorized': []
+				'colorized': [],
+				'everything': []
 			},
 			run: true,
 		},
@@ -157,10 +159,11 @@ jQuery(document).ready(function ($) {
 	run_php_function('get_updated_models', [], function () {
 
 		var updating = {
+			'everything': vMain.models.slice(),
 			'styles': vMain.models.slice(),
-			'view': vMain.updated['styles'].slice(),
-			'ftps3': vMain.updated['styles'].slice(),
-			'colorized': vMain.updated['styles'].slice()
+			'view': vMain.updated.styles.slice(),
+			'ftps3': vMain.updated.styles.slice(),
+			'colorized': vMain.updated.styles.slice()
 		};
 		// Can only update images on models that have been updated
 

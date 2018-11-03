@@ -23,8 +23,9 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 
 
 */
-
-update_everything_for_model('Compass');
+// update_all_models();
+// display_var(update_styles('MDX', true));
+// update_everything_for_model('Compass');
 //$test = update_ftps3( 'Escape' );
 //$test = update_model_images( 'Escape', 'colorized' );
 

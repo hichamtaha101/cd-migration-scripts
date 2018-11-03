@@ -49,6 +49,7 @@
 				<div class="item" data-tab="media-view">Media View</div>
 				<div class="item" data-tab="media-ftps3">FTP to S3</div>
 				<div class="item" data-tab="media-colorized">Media Colorized</div>
+				<div class="item" data-tab="everything">Update Everything</div>
 			</div>
 			<div class="ui bottom attached tab segment active section" data-tab="styles">
 				<updating-table 
@@ -73,6 +74,12 @@
 				:updated="updated.colorized" 
 				:updating="updating.colorized"
 				name="Colorized Media"></updating-table>
+			</div>
+			<div class="ui bottom attached tab segment section" data-tab="everything">
+				<updating-table 
+				:updated="updated.everything" 
+				:updating="updating.everything"
+				name="Everything"></updating-table>
 			</div>
 		</div>
 	</body>
