@@ -3,9 +3,10 @@ error_reporting(E_ALL);
 include_once( 'functions.php' );
 
 // Some SQL queries are pretty big
-$max = 100 * 1024 * 1024;
-$current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
-if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
+// $max = 100 * 1024 * 1024;
+// $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
+// if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
+
 // $obj->db->query('TRUNCATE style');
 
 // display_var(get_updated_models());
@@ -21,11 +22,10 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
 
 
-
 */
 // update_all_models();
 // display_var(update_styles('MDX', true));
-// update_everything_for_model('Compass');
+update_everything_for_model('Civic Coupe');
 //$test = update_ftps3( 'Escape' );
 //$test = update_model_images( 'Escape', 'colorized' );
 
@@ -52,9 +52,9 @@ if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . 
 
 // $results = update_styles_by_model( 'M4', 'false' );
 
-// display_var( update_model_images( 'TLX', 'view' ) );
+// display_var(update_model_images( 'Continental', 'colorized' ));
+// update_ftps3('Continental');
 
-// update_ftps3('TLX');
 
 // $test = update_styles_by_model( 'CTS Sedan', 'false' );
 // var_dump( $test );

@@ -4,7 +4,8 @@ include_once( dirname( __FILE__ ) . '/class-convertus-chrome-data-api.php' );
 include_once( dirname( __FILE__ ) . '/class-convertus-kraken-s3.php' );
 include_once( dirname( __FILE__ ) . '/class-ftp-s3.php' );
 $db = new WPDB();
-$obj = new Convertus_DB_Updater('CA');
+$obj = new Convertus_DB_Updater('CA', 'en');
+$obj_fr = new Convertus_DB_Updater('CA', 'fr');
 $k_s3 = new Convertus_Kraken_S3($db);
 $ftp_s3 = new FTP_S3($db);
 
@@ -88,8 +89,11 @@ function update_all_makes() {
  */
 function update_all_models() {
 	global $obj;
+	global $obj_fr;
 	$obj->update_models();
+	$obj_fr->update_models();
 	$results = get_updated_models();
+	$results_fr = get_updated_models();
 	$results['outputs'] = $obj->outputs;  
 	return $results;
 }
@@ -104,8 +108,8 @@ function update_everything_for_model($model) {
 	// var_dump( $response2 );
 	// $response3 = update_ftps3( $model );
 	// var_dump( $response3 );
-	// $response4 = update_model_images( $model, 'colorized' );
-	// var_dump( $response4 );
+	$response4 = update_model_images( $model, 'colorized' );
+	var_dump( $response4 );
 
 	$outputs = array( array(
 		'type'	=> 'success',
@@ -130,10 +134,23 @@ function update_everything_for_model($model) {
  */
 function update_styles( $model, $remove_media ) {
 	global $obj;
+	global $obj_fr;
 	
 	$styles = $obj->get_model_details( "model_name_cd = '{$model}'" );
+	$styles_fr = $obj_fr->get_model_details( "model_name_cd = '{$model}'" );
 	if ( $styles !== false ) {
 		$obj->update_styles( $styles, $remove_media );
+		if ( $styles_fr !== false ) {
+			$obj_fr->update_styles( $styles_fr, $remove_media );
+			return array(
+				'update'	=> array(
+					'key' 		=> 'styles',
+					'data' 		=> $model,
+				),
+				'outputs'	=> $obj->outputs,
+				'outputs_fr'	=> $obj_fr->outputs
+			);
+		}
 		return array(
 			'update'	=> array(
 				'key' 		=> 'styles',
