@@ -17,12 +17,12 @@ class Chrome_Data_API {
 
 	private $soap;
 
-	function __construct( $country_code, $language = 'en' ) {
+	function __construct( $country_code ) {
 
 		$this->number   = CHROME_DATA_ACCOUNT_ID;
 		$this->secret   = CHROME_DATA_SECRET_ACCESS_KEY;
 		$this->api_url  = 'http://services.chromedata.com/Description/7b?wsdl';
-		$this->language = $language;
+		$this->language = 'en';
 		$this->outputs = array();
 
 		$this->country_code = $country_code;
@@ -632,21 +632,16 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		$models = $this->get_models();
 		$models = $this->remove_duplicate_models( $models );
 
-		if ( $this->account_info['language'] != 'fr' ) {
-			$query = 'INSERT model ( model_year, model_name, model_name_cd, model_id, division_name, division_id, last_updated ) VALUES ';
-			$sql_values = array();
-	
-			foreach ( $models as $model ) {
-				$sql_values[] = "({$model->model_year}, '{$model->model_name}', '{$model->model_name_cd}', {$model->id}, '{$model->division_name}', {$model->division_id}, now())";
-			}
-			$query .= implode( ',', $sql_values );
-			$this->db->query( 'TRUNCATE model' );
-		} else {
-			$query = 'UPDATE model SET model_name_cd_fr = \'{$model->model_name_cd}\' WHERE model_id = {$model->id};';
-		}
-		
-		$result = $this->db->query( $query );
+		$query = 'INSERT model ( model_year, model_name, model_name_cd, model_id, division_name, division_id, last_updated ) VALUES ';
+		$sql_values = array();
 
+		foreach ( $models as $model ) {
+			$sql_values[] = "({$model->model_year}, '{$model->model_name}', '{$model->model_name_cd}', {$model->id}, '{$model->division_name}', {$model->division_id}, now())";
+		}
+		$query .= implode( ',', $sql_values );
+
+		$this->db->query( 'TRUNCATE model' );
+		$result = $this->db->query( $query );
 		if ( $result ) {
 			$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all models' );
 		} else {
@@ -694,7 +689,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
-		// display_var( $models );
+		display_var( $models );
 		if ( empty( $models ) ) {
 			$this->outputs[] = array( 
 				'type' => 'error', 
@@ -1394,85 +1389,53 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$value = $style['style'];
 				$style_id = $value['style_id'];
 
+				// Delete all currently existing entries
+				$this->db->delete( 'dev_showroomdata.style', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.engine', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.standard', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.exterior_color', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.option', array( 'style_id' => $style_id ) );
+				if ( $remove_media == 'true' ) {
+					$this->db->delete( 'dev_showroomdata.media', array( 'style_id' => $style_id ) );
+				} else {
+					// Only remove chromedata entries
+					$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
+				}
+				
+				$queries['styles']['query'] = 'INSERT dev_showroomdata.style ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
+				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
+				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['model_name_cd'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
 
-				if ( $this->account_info['language'] != 'fr' ) {
-					// Delete all currently existing entries
-					$this->db->delete( 'dev_showroomdata.style', array( 'style_id' => $style_id ) );
-					$this->db->delete( 'dev_showroomdata.engine', array( 'style_id' => $style_id ) );
-					$this->db->delete( 'dev_showroomdata.standard', array( 'style_id' => $style_id ) );
-					$this->db->delete( 'dev_showroomdata.exterior_color', array( 'style_id' => $style_id ) );
-					$this->db->delete( 'dev_showroomdata.option', array( 'style_id' => $style_id ) );
-					if ( $remove_media == 'true' ) {
-						$this->db->delete( 'dev_showroomdata.media', array( 'style_id' => $style_id ) );
-					} else {
-						// Only remove chromedata entries
-						$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
-					}
-					
-					$queries['styles']['query'] = 'INSERT dev_showroomdata.style ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
-					$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
-					array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['model_name_cd'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
+				$value = $style['engine'];
+				$queries['engines']['query'] = 'INSERT dev_showroomdata.engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
 
-					$value = $style['engine'];
-					$queries['engines']['query'] = 'INSERT dev_showroomdata.engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
-
-					if ( is_object( $value ) ) {
+				if ( is_object( $value ) ) {
+					$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
+					array_push( $queries['engines']['values'], $style_id, $value->engine, $value->engine_type, $value->fuel_type, $value->cylinders, $value->fuel_capacity_high, $value->fuel_capacity_low, $value->fuel_capacity_unit, $value->fuel_economy_hwy_high, $value->fuel_economy_hwy_low, $value->fuel_economy_city_high, $value->fuel_economy_city_low, $value->horsepower, $value->horsepower_rpm, $value->net_torque, $value->net_torque_rpm, $value->displacement, $value->displacement_unit );
+				} else if ( is_array( $value ) ) {
+					foreach ( $value as $single_value ) {
 						$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
-						array_push( $queries['engines']['values'], $style_id, $value->engine, $value->engine_type, $value->fuel_type, $value->cylinders, $value->fuel_capacity_high, $value->fuel_capacity_low, $value->fuel_capacity_unit, $value->fuel_economy_hwy_high, $value->fuel_economy_hwy_low, $value->fuel_economy_city_high, $value->fuel_economy_city_low, $value->horsepower, $value->horsepower_rpm, $value->net_torque, $value->net_torque_rpm, $value->displacement, $value->displacement_unit );
-					} else if ( is_array( $value ) ) {
-						foreach ( $value as $single_value ) {
-							$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
-							array_push( $queries['engines']['values'], $style_id, $single_value->engine, $single_value->engine_type, $single_value->fuel_type, $single_value->cylinders, $single_value->fuel_capacity_high, $single_value->fuel_capacity_low, $single_value->fuel_capacity_unit, $single_value->fuel_economy_hwy_high, $single_value->fuel_economy_hwy_low, $single_value->fuel_economy_city_high, $single_value->fuel_economy_city_low, $single_value->horsepower, $single_value->horsepower_rpm, $single_value->net_torque, $single_value->net_torque_rpm, $single_value->displacement, $single_value->displacement_unit );
-						}
-					}
-				} else { // inserting french data		
-					$queries['styles']['query'] = 'UPDATE dev_showroomdata.style SET trim_fr = %s, body_type_fr = %s, body_type_standard_fr = %s, market_class_fr = %s, drivetrain_fr = %s, transmission_fr = %s, exterior_colors_fr = %s WHERE style_id = ' . $style_id . ';';
-					array_push( $queries['styles']['values'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['drivetrain'], $value['transmission'], $value['exterior_colors'] );
-
-					$value = $style['engine'];
-					$queries['engines']['query'] = 'UPDATE dev_showroomdata.engine SET engine_type_fr = %s, fuel_type_fr = %s, displacement_unit_fr = %s  WHERE style_id = ' . $style_id . ';';
-
-					if ( is_object( $value ) ) {
-						array_push( $queries['engines']['values'],$value->engine_type, $value->fuel_type, $value->displacement_unit );
-					} else if ( is_array( $value ) ) {
-						foreach ( $value as $single_value ) {
-							array_push( $queries['engines']['values'], $single_value->engine_type, $single_value->fuel_type, $single_value->displacement_unit );
-						}
+						array_push( $queries['engines']['values'], $style_id, $single_value->engine, $single_value->engine_type, $single_value->fuel_type, $single_value->cylinders, $single_value->fuel_capacity_high, $single_value->fuel_capacity_low, $single_value->fuel_capacity_unit, $single_value->fuel_economy_hwy_high, $single_value->fuel_economy_hwy_low, $single_value->fuel_economy_city_high, $single_value->fuel_economy_city_low, $single_value->horsepower, $single_value->horsepower_rpm, $single_value->net_torque, $single_value->net_torque_rpm, $single_value->displacement, $single_value->displacement_unit );
 					}
 				}
 			}
-						
+			
 			if ( array_key_exists('style_colors', $style ) ) {
 				$colors = $style['style_colors'];
-				if ( $this->account_info['language'] != 'fr' ) {
-					$queries['colors']['query'] = 'INSERT dev_showroomdata.exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
-					foreach ( $colors as $color ) {
-						$queries['colors']['prepare'][] = "('%d', '%s', '%s', '%s', '%s')";
-						array_push( $queries['colors']['values'], $color['style_id'], $color['generic_name'], $color['name'], $color['code'], $color['rgb_value'] );
-					}
-				} else {
-					$queries['colors']['query'] = 'UPDATE dev_showroomdata.exterior_color SET name_fr = %s WHERE style_id = %d AND code = %s;';
-					foreach ( $colors as $color ) {
-						array_push( $queries['colors']['values'], $color['name'], $color['style_id'], $color['code'] );
-					}
+				$queries['colors']['query'] = 'INSERT dev_showroomdata.exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
+				foreach ( $colors as $color ) {
+					$queries['colors']['prepare'][] = "('%d', '%s', '%s', '%s', '%s')";
+					array_push( $queries['colors']['values'], $color['style_id'], $color['generic_name'], $color['name'], $color['code'], $color['rgb_value'] );
 				}
-
 			}
 
 			if ( array_key_exists( 'options', $style ) ) {
 				$options = $style['options'];
 				
-				if ( $this->account_info['language'] != 'fr' ) {
-					$queries['options']['query'] = 'INSERT dev_showroomdata.option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
-					foreach ( $options as $option ) {
-						$queries['options']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%s')";
-						array_push( $queries['options']['values'], $option['id'], $option['header'], $option['styleId'], $option['description'], $option['isChild'], $option['oemCode'], $option['chromeCode'], $option['msrpMin'], $option['msrpMax'], $option['categories'] );
-					}
-				} else {
-					$queries['options']['query'] = 'UPDATE dev_showroomdata.option SET header_fr = %s, description_fr = %s WHERE style_id = %d AND oem_code = %s;';
-					foreach ( $options as $option ) {
-						array_push( $queries['options']['values'], $option['header'], $option['description'], $option['styleId'], $option['oemCode'] );
-					}
+				$queries['options']['query'] = 'INSERT dev_showroomdata.option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
+				foreach ( $options as $option ) {
+					$queries['options']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%s')";
+					array_push( $queries['options']['values'], $option['id'], $option['header'], $option['styleId'], $option['description'], $option['isChild'], $option['oemCode'], $option['chromeCode'], $option['msrpMin'], $option['msrpMax'], $option['categories'] );
 				}
 			}
 
@@ -1497,13 +1460,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		foreach( $queries as $values ) {
 			// Incase there are no entries to update for a particular table
 			if ( ! isset( $values['query']) || ! isset($values['prepare']) ) { continue; }
-			if ( $this->account_info['language'] != 'fr' ) {
-				$query = $values['query'] . implode(',', $values['prepare'] );
-				$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
-			} else {
-				$query = $values['query'];
-				$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
-			}
+			$query = $values['query'] . implode(',', $values['prepare'] );
+			$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
 		}
 	}
 
