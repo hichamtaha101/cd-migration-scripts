@@ -20,12 +20,25 @@ include_once( 'functions.php' );
 3. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%chromedata%' : One images
 4. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/original%' : Colorized Original
 5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
-
-
 */
-// update_all_models();
-// display_var(update_styles('MDX', true));
-update_everything_for_model('Civic Coupe');
+
+
+
+
+// $models = array();
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
+// foreach( $models as $index=>$model ) {
+//   if ( $index >= 0 ) {
+//     echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
+//     update_styles($model, false );
+//   }
+// }
+
+
+
+update_all_models();
+//display_var(update_styles('M4', false ));
+// update_everything_for_model('Civic Coupe');
 //$test = update_ftps3( 'Escape' );
 //$test = update_model_images( 'Escape', 'colorized' );
 

@@ -17,15 +17,15 @@ class Chrome_Data_API {
 
 	private $soap;
 
-	function __construct( $country_code ) {
+	function __construct( $country_code, $language ) {
 
 		$this->number   = CHROME_DATA_ACCOUNT_ID;
 		$this->secret   = CHROME_DATA_SECRET_ACCESS_KEY;
 		$this->api_url  = 'http://services.chromedata.com/Description/7b?wsdl';
-		$this->language = 'en';
 		$this->outputs = array();
 
 		$this->country_code = $country_code;
+		$this->language = $language;
 
 		$this->account_info = array(
 			'number'        => $this->number,
@@ -70,6 +70,32 @@ class Chrome_Data_API {
 			'Crew Cab Chassis-Cab'						=> 'Truck',
 			'Extended Cab Chassis-Cab'					=> 'Truck',
 			'["3dr Car","Hatchback"]'					=> 'Hatchback',
+			// FRENCH
+			'Voiture à deux portes'											=> 'Coupé',
+			'["Cabriolet","Voiture \u00e0 deux portes"]'					=> 'Cabriolet',
+			'Utilitaire sport'												=> 'VUS',
+			'Voiture à quatre portes'										=> 'Sedan',
+			'["Hayon","Voiture \u00e0 quatre portes"]'						=> 'Hayon',
+			'Véhicule spécial' 												=> 'Autre',
+			'["Caisse de s\u00e9rie","Pick-up \u00e0 cabine classique"]' 	=> 'Camion',
+			'["Caisse longue","Pick-up \u00e0 cabine classique"]' 			=> 'Camion',
+			'["Caisse de s\u00e9rie","Pick-up \u00e0 cabine allong\u00e9e"]' => 'Camion',
+			'["Caisse courte","Pick-up \u00e0 cabine multiplace"]'			=> 'Camion',
+			'["Caisse de s\u00e9rie","Pick-up \u00e0 cabine multiplace"]' 	=> 'Camion',
+			'["Caisse longue","Pick-up \u00e0 cabine allong\u00e9e"]'		=> 'Camion',
+			'Fourgonnette utilitaire'										=> 'Fourgonnette',
+			'Fourgonnette de tourisme'										=> 'Fourgonnette',
+			'["Caisse longue","Pick-up \u00e0 cabine multiplace"]'			=> 'Camion',
+			'Châssis-cabine à cabine classique' 							=> 'Camion',
+			'Châssis-cabine à cabine multiplace' 							=> 'Camion',
+			'Châssis-cabine à cabine allongée'								=> 'Camion',
+			'["Familiale","Voiture \u00e0 quatre portes"]' 					=> 'Familiale',
+			'["Hayon","Voiture \u00e0 deux portes"]'						=> 'Hayon',
+			'Grosse fourgonnette de tourisme' 								=> 'Fourgonnette',
+			'Grosse fourgonnette utilitaire'								=> 'Fourgonnette',
+			'["Caisse courte","Pick-up \u00e0 cabine allong\u00e9e"]'		=> 'Camion',
+			'["Utilitaire sport","Cabriolet"]'								=> 'VUS',
+			'["Voiture \u00e0 3 portes","Hayon"]' 							=> 'Hayon',
 		);
 
 		// Standardize model names
@@ -225,6 +251,14 @@ class Chrome_Data_API {
 			'Yaris Sedan'				            => 'Yaris',
 		);
 
+		// French Drivetrains
+		$this->french_drivetrains = array(
+			'Transmission intégrale',
+			'Traction avant',
+			'Propulsion arrière',
+			'4 roues motrices',
+			'Quatre roues motrices',
+		);
 	}
 
 	public function soap_call( $function, $args = array(), $all_years = false ) {
@@ -319,9 +353,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	private $style_properties;
 	private $engine_properties;
 
-	function __construct( $country_code ) {
+	function __construct( $country_code, $language ) {
 
-		parent::__construct( $country_code );
+		parent::__construct( $country_code, $language  );
 		$this->db = new WPDB();
 
 		$this->style_properties = array(
@@ -632,20 +666,27 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		$models = $this->get_models();
 		$models = $this->remove_duplicate_models( $models );
 
-		$query = 'INSERT model ( model_year, model_name, model_name_cd, model_id, division_name, division_id, last_updated ) VALUES ';
-		$sql_values = array();
-
-		foreach ( $models as $model ) {
-			$sql_values[] = "({$model->model_year}, '{$model->model_name}', '{$model->model_name_cd}', {$model->id}, '{$model->division_name}', {$model->division_id}, now())";
-		}
-		$query .= implode( ',', $sql_values );
-
-		$this->db->query( 'TRUNCATE model' );
-		$result = $this->db->query( $query );
-		if ( $result ) {
-			$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all models' );
+		if ( $this->account_info['language'] != 'fr' ) {
+			$query = 'INSERT model ( model_year, model_name, model_name_cd, model_name_cd_fr, model_id, division_name, division_id, last_updated ) VALUES ';
+			$sql_values = array();
+	
+			foreach ( $models as $model ) {
+				$sql_values[] = "({$model->model_year}, \"{$model->model_name}\", \"{$model->model_name_cd}\", null, {$model->id}, \"{$model->division_name}\", {$model->division_id}, now())";
+			}
+			$query .= implode( ',', $sql_values );
+	
+			$this->db->query( 'TRUNCATE model' );
+			$result = $this->db->query( $query );
+			if ( $result ) {
+				$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all models' );
+			} else {
+				$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all models' );
+			}
 		} else {
-			$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all models' );
+			foreach ( $models as $model ) {
+				$query = 'UPDATE model SET model_name_cd_fr = "'. $model->model_name_cd . '" WHERE model_id = ' . $model->id . '; ';
+				$this->db->query( $query );
+			}
 		}
 	}
 
@@ -689,7 +730,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function get_model_details( $filter ) {
 
 		$models = $this->db->get_results( "SELECT * FROM model WHERE {$filter}" );
-		display_var( $models );
+		//display_var( $models );
 		if ( empty( $models ) ) {
 			$this->outputs[] = array( 
 				'type' => 'error', 
@@ -846,7 +887,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					$style['engine'][] = $this->set_engine_properties( $engine );
 				}
 			}
-		}
+		} 
 
 		if ( isset( $response->standard ) ) {
 			$data = $response->standard;
@@ -860,7 +901,20 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				// If transmission was not grabbed before, grab from equipment
 				if ( ! array_key_exists( 'transmission', $style['style'] ) ) {
 					if ( strcasecmp( $item->header->_, 'mechanical' ) === 0 && stripos( $item->description, 'Transmission' ) !== false ) {
-						$style['style']['transmission'] = self::get_transmission($item->description);
+						$style['style']['transmission'] = self::get_transmission($item->description, $style_id);
+					} else if ( strcasecmp( $item->header->_, 'MÉCANIQUE' ) === 0 && stripos( $item->description, 'Transmission' ) !== false ) {
+						$style['style']['transmission'] = self::get_transmission($item->description, $style_id);
+					} else if ( strcasecmp( $item->header->_, 'MÉCANIQUE' ) === 0 && stripos( $item->description, 'Boîte' ) === 0 ) {
+						$style['style']['transmission'] = self::get_transmission($item->description, $style_id);
+					}
+				}
+				// If drivetrain was not grabbed before, grab from equipment
+				if ( ! array_key_exists( 'drivetrain', $style['style'] ) || $style['style']['drivetrain'] == null ) {
+					foreach( $this->french_drivetrains as $drivetrain ) {
+						if ( strcasecmp( $item->header->_, 'MÉCANIQUE' ) === 0 && stripos( $item->description, $drivetrain ) !== false ) {
+							$style['style']['drivetrain'] = $drivetrain;
+							break;
+						}
 					}
 				}
 			}
@@ -875,6 +929,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		if ( ! isset( $style['style']['transmission'] ) ) {
 			if ( strpos( $style['engine']->fuel_type, 'Electric' ) !== FALSE ) {
 				$style['style']['transmission'] = 'Electric';
+			} elseif ( strpos( $style['engine']->fuel_type, 'électrique' ) !== FALSE ) {
+				$style['style']['transmission'] = 'Électrique';
 			}
 		}
 
@@ -931,6 +987,8 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 		// ^ media gallery
 		$style['style']['has_media'] = false;
+		$hasLargerAlternatives = false;
+		$hasSmallerAlternatives = false;
 		$style['style']['view_count'] = 0;
 		$unique_images = array();
 		if ( property_exists( $response->style, 'mediaGallery' ) ) {
@@ -940,6 +998,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					foreach ( $data as $image ) {
 						if ( property_exists( $image, 'url' ) ) {
 							// Only need these images, the rest is grabbed via ftp and the sizes are optimized via Kraken 
+							// if ( $style_id == 403468) {
+							// 	echo '<pre>' , var_dump($image), '</pre>';
+							// }
 							if ( $image->width == 1280 && $image->height == 960 && $image->backgroundDescription == 'Transparent' ) {
 								// Idk why, chromedata has duplicate entries, make each entry unique by url :/
 								if ( ! in_array( $image->url, $unique_images ) ) {
@@ -951,6 +1012,48 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 									$style['view'][] = $this->set_properties( $image, $this->image_gallery_properties );
 								}
 								$unique_images[] = $image->url;
+							} elseif ( $image->width >= 1280 && $image->height >= 960 && $image->backgroundDescription == 'Transparent' ) {
+								$hasLargerAlternatives = true;
+							} elseif ( $image->backgroundDescription == 'Transparent' ) {
+								$hasSmallerAlternatives = true;
+							}
+						}
+					}
+					// If there aren't any transparent-bg images exactly 1280x960, but there are larger transparent-bg images:
+					if ( count( $style['view'] ) == 0 && $hasLargerAlternatives == true ) {
+						foreach ( $data as $image ) {
+							if ( property_exists( $image, 'url' ) ) {
+								// Only need these images, the rest is grabbed via ftp and the sizes are optimized via Kraken 
+								if ( $image->width >= 1280 && $image->height >= 960 && $image->backgroundDescription == 'Transparent' ) {
+									// Idk why, chromedata has duplicate entries, make each entry unique by url :/
+									if ( ! in_array( $image->url, $unique_images ) ) {
+										$image->styleId = $style_id;
+										$fname = explode( '/', $image->url );
+										$fname = end( $fname );
+										$fname = str_replace( '.png', '', $fname );	
+										$image->fileName = $fname;
+										$style['view'][] = $this->set_properties( $image, $this->image_gallery_properties );
+									}
+									$unique_images[] = $image->url;
+								}
+							}
+						} // If there aren't any transparent-bg images exactly 1280x960 OR larger, we'll take the smaller ones with transparent-bg. 
+					} elseif ( count( $style['view'] ) == 0 && $hasSmallerAlternatives == true ) {
+						foreach ( $data as $image ) {
+							if ( property_exists( $image, 'url' ) ) {
+								// Only need these images, the rest is grabbed via ftp and the sizes are optimized via Kraken 
+								if ( $image->backgroundDescription == 'Transparent' ) {
+									// Idk why, chromedata has duplicate entries, make each entry unique by url :/
+									if ( ! in_array( $image->url, $unique_images ) ) {
+										$image->styleId = $style_id;
+										$fname = explode( '/', $image->url );
+										$fname = end( $fname );
+										$fname = str_replace( '.png', '', $fname );	
+										$image->fileName = $fname;
+										$style['view'][] = $this->set_properties( $image, $this->image_gallery_properties );
+									}
+									$unique_images[] = $image->url;
+								}
 							}
 						}
 					}
@@ -1015,7 +1118,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	 * @param string $desc	The string value from chromedata containing the transmission.
 	 * @return string		The transmission
 	 */
-	private function get_transmission( $desc ) {
+	private function get_transmission( $desc, $style_id ) {
+		if( $style_id == 391600 ) {
+			// var_dump($desc);
+			var_dump(stripos( $desc, 'Transmission' ));
+		}
+		// var_dump($desc);
 		if ( stripos($desc, 'Transmission,' ) !== FALSE ) {
 			$desc = explode( ', ', $desc );
 			return $desc[1];
@@ -1035,6 +1143,24 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			$desc = str_replace( ' transmission', '', $desc );
 			return $desc;
 		} elseif ( strpos( $desc, 'Transmission' ) === 0 ) {
+			if ( $this->account_info['language'] == 'fr' ) {
+				$desc = str_replace( 'Transmission', '', $desc );
+				if ( strpos( $desc, 'avec' ) !== FALSE ) {
+					$desc = explode( 'avec', $desc );
+					return $desc[0];
+				}
+			}
+			return $desc;
+		} elseif ( stripos( $desc, 'Transmission' ) !== FALSE ) {
+			if ( $this->account_info['language'] == 'fr' ) {
+				$desc = str_replace( ' Transmission', '', $desc );
+				if ( strpos( $desc, 'avec' ) !== FALSE ) {
+					$desc = explode( 'avec', $desc );
+					return $desc[0];
+				}
+			}
+			return $desc;
+		} elseif ( strpos( $desc, 'Boîte' ) === 0 ) {
 			return $desc;
 		} else {
 			return NULL;
@@ -1083,7 +1209,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( empty( $style['style']['drivetrain'] ) ) {
 				echo 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				exit();	
+				if ( $this->account_info['language'] != 'fr' ) {
+					exit();	
+				}
 			}
 			if ( empty( $style['style']['body_type'] ) ) {
 				echo 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1135,11 +1263,11 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	 * @return void
 	 */
 	private function set_properties( $style, $properties ) {
-
 		$returned_properties = array();
 		// Loop through all properties we need for this particular part of the api call
 		foreach ( $properties as $property ) {
 			// Check if a particular property exists in the chrome object returned that we want
+			//var_dump($property['property'] );
 			if ( property_exists( $style, $property['property'] ) ) {
 				// Assign value of the property to $property_value
 				$property_value = $style->{$property['property']};
@@ -1388,13 +1516,18 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 				$value = $style['style'];
 				$style_id = $value['style_id'];
+				$language_suffix = '';
+
+				if ( $this->account_info['language'] == 'fr' ) {
+					$language_suffix = '_fr';
+				}
 
 				// Delete all currently existing entries
-				$this->db->delete( 'dev_showroomdata.style', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.engine', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.standard', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.exterior_color', array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.option', array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.style' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.engine' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.standard' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.exterior_color' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'dev_showroomdata.option' . $language_suffix, array( 'style_id' => $style_id ) );
 				if ( $remove_media == 'true' ) {
 					$this->db->delete( 'dev_showroomdata.media', array( 'style_id' => $style_id ) );
 				} else {
@@ -1402,12 +1535,12 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
 				}
 				
-				$queries['styles']['query'] = 'INSERT dev_showroomdata.style ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
+				$queries['styles']['query'] = 'INSERT dev_showroomdata.style' . $language_suffix . ' ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
 				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
 				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['model_name_cd'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
 
 				$value = $style['engine'];
-				$queries['engines']['query'] = 'INSERT dev_showroomdata.engine ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
+				$queries['engines']['query'] = 'INSERT dev_showroomdata.engine' . $language_suffix . ' ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
 
 				if ( is_object( $value ) ) {
 					$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
@@ -1422,7 +1555,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			
 			if ( array_key_exists('style_colors', $style ) ) {
 				$colors = $style['style_colors'];
-				$queries['colors']['query'] = 'INSERT dev_showroomdata.exterior_color( style_id, generic_name, name, code, rgb_value ) VALUES ';
+				$queries['colors']['query'] = 'INSERT dev_showroomdata.exterior_color' . $language_suffix . '( style_id, generic_name, name, code, rgb_value ) VALUES ';
 				foreach ( $colors as $color ) {
 					$queries['colors']['prepare'][] = "('%d', '%s', '%s', '%s', '%s')";
 					array_push( $queries['colors']['values'], $color['style_id'], $color['generic_name'], $color['name'], $color['code'], $color['rgb_value'] );
@@ -1432,7 +1565,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			if ( array_key_exists( 'options', $style ) ) {
 				$options = $style['options'];
 				
-				$queries['options']['query'] = 'INSERT dev_showroomdata.option( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
+				$queries['options']['query'] = 'INSERT dev_showroomdata.option' . $language_suffix . '( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
 				foreach ( $options as $option ) {
 					$queries['options']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%s')";
 					array_push( $queries['options']['values'], $option['id'], $option['header'], $option['styleId'], $option['description'], $option['isChild'], $option['oemCode'], $option['chromeCode'], $option['msrpMin'], $option['msrpMax'], $option['categories'] );
@@ -1449,7 +1582,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 
 			if ( array_key_exists( 'standard', $style ) ) {
-				$queries['standard']['query'] = 'INSERT dev_showroomdata.standard ( style_id, type, description, categories ) VALUES ';
+				$queries['standard']['query'] = 'INSERT dev_showroomdata.standard' . $language_suffix . ' ( style_id, type, description, categories ) VALUES ';
 				foreach ( $style['standard'] as $item ) {
 					$queries['standard']['prepare'][] = "('%d', '%s', '%s', '%s')";
 					array_push( $queries['standard']['values'], $style_id, $item['type'], $item['description'], $item['categories'] );

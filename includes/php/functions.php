@@ -95,7 +95,39 @@ function update_all_models() {
 	$results = get_updated_models();
 	$results_fr = get_updated_models();
 	$results['outputs'] = $obj->outputs;  
-	return $results;
+	$results_fr['outputs'] = $obj_fr->outputs;  
+	return [$results,$results_fr];
+}
+
+function update_database_structure() {
+	global $db;
+
+	$queries = array(
+		'CREATE TABLE `showroom`.`style_fr` LIKE `style`;',
+		'CREATE TABLE `showroom`.``standard`_fr` LIKE `standard`',
+		'CREATE TABLE `showroom`.`option_fr` LIKE `option`',
+		'CREATE TABLE `showroom`.`engine_fr` LIKE `engine`',
+		'CREATE TABLE `showroom`.`exterior_color_fr` LIKE `exterior_color`',
+		'ALTER TABLE `model` ADD `model_name_cd_fr` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `model_name_cd`;',
+		'ALTER TABLE `region` ADD `name_fr` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `postal_code`;',
+		'UPDATE `region` SET `name_fr` = \'Alberta\' WHERE `region`.`id` = 1;',
+		'UPDATE `region` SET `name_fr` = \'Colombie-Britannique\' WHERE `region`.`id` = 2;',
+		'UPDATE `region` SET `name_fr` = \'Manitoba\' WHERE `region`.`id` = 3;',
+		'UPDATE `region` SET `name_fr` = \'Nouveau-Brunswick\' WHERE `region`.`id` = 4;',
+		'UPDATE `region` SET `name_fr` = \'Terre-Neuve-et-Labrador\' WHERE `region`.`id` = 5;',
+		'UPDATE `region` SET `name_fr` = \'Territoires du Nord-Ouest\' WHERE `region`.`id` = 6;',
+		'UPDATE `region` SET `name_fr` = \'Nouvelle-Écosse\' WHERE `region`.`id` = 7;',
+		'UPDATE `region` SET `name_fr` = \'Nunavut\' WHERE `region`.`id` = 8;',
+		'UPDATE `region` SET `name_fr` = \'Ontario\' WHERE `region`.`id` = 9;',
+		'UPDATE `region` SET `name_fr` = \'Île-du-Prince-Édouard\' WHERE `region`.`id` = 10;',
+		'UPDATE `region` SET `name_fr` = \'Québec\' WHERE `region`.`id` = 11;',
+		'UPDATE `region` SET `name_fr` = \'Saskatchewan\' WHERE `region`.`id` = 12;',
+		'UPDATE `region` SET `name_fr` = \'Yukon\' WHERE `region`.`id` = 13;',
+	);
+
+	foreach ( $queries as $query ) {
+		$db->query( $query );
+	}
 }
 
 function update_everything_for_model($model) {
