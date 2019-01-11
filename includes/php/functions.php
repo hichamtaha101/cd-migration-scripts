@@ -103,11 +103,11 @@ function update_database_structure() {
 	global $db;
 
 	$queries = array(
-		'CREATE TABLE `showroom`.`style_fr` LIKE `style`;',
-		'CREATE TABLE `showroom`.``standard`_fr` LIKE `standard`',
-		'CREATE TABLE `showroom`.`option_fr` LIKE `option`',
-		'CREATE TABLE `showroom`.`engine_fr` LIKE `engine`',
-		'CREATE TABLE `showroom`.`exterior_color_fr` LIKE `exterior_color`',
+		'CREATE TABLE `style_fr` LIKE `style`;',
+		'CREATE TABLE `standard_fr` LIKE `standard`',
+		'CREATE TABLE `option_fr` LIKE `option`',
+		'CREATE TABLE `engine_fr` LIKE `engine`',
+		'CREATE TABLE `exterior_color_fr` LIKE `exterior_color`',
 		'ALTER TABLE `model` ADD `model_name_cd_fr` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `model_name_cd`;',
 		'ALTER TABLE `region` ADD `name_fr` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `postal_code`;',
 		'UPDATE `region` SET `name_fr` = \'Alberta\' WHERE `region`.`id` = 1;',
@@ -128,6 +128,8 @@ function update_database_structure() {
 	foreach ( $queries as $query ) {
 		$db->query( $query );
 	}
+
+	return 'Finished updating database structure.';
 }
 
 function update_everything_for_model($model) {
@@ -306,7 +308,7 @@ function get_chromedata_media_by_model( $model ) {
 	}
 
 	// Remove chromedata images if updated views and ftp to s3
-	$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
+	$delete_sql = "DELETE FROM showroom.media WHERE ";
 	$delete_values = array();
 	foreach( $media as $m ) {
 		if ( cd_media_is_updated( $m ) ) {

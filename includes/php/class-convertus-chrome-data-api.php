@@ -1523,24 +1523,24 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				}
 
 				// Delete all currently existing entries
-				$this->db->delete( 'dev_showroomdata.style' . $language_suffix, array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.engine' . $language_suffix, array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.standard' . $language_suffix, array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.exterior_color' . $language_suffix, array( 'style_id' => $style_id ) );
-				$this->db->delete( 'dev_showroomdata.option' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'showroom.style' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'showroom.engine' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'showroom.standard' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'showroom.exterior_color' . $language_suffix, array( 'style_id' => $style_id ) );
+				$this->db->delete( 'showroom.option' . $language_suffix, array( 'style_id' => $style_id ) );
 				if ( $remove_media == 'true' ) {
-					$this->db->delete( 'dev_showroomdata.media', array( 'style_id' => $style_id ) );
+					$this->db->delete( 'showroom.media', array( 'style_id' => $style_id ) );
 				} else {
 					// Only remove chromedata entries
 					$this->db->query( "DELETE FROM media WHERE style_id LIKE '{$style_id}' AND url LIKE '%chromedata%'"); // Delete only chromedata media
 				}
 				
-				$queries['styles']['query'] = 'INSERT dev_showroomdata.style' . $language_suffix . ' ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
+				$queries['styles']['query'] = 'INSERT showroom.style' . $language_suffix . ' ( style_id, model_code, model_year, model_name, model_name_cd, division, subdivision, trim, body_type, body_type_standard, market_class, msrp, drivetrain, transmission, doors, acode, exterior_colors, has_media, view_count ) VALUES ';
 				$queries['styles']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%d')";
 				array_push( $queries['styles']['values'], $value['style_id'], $value['model_code'], $value['model_year'], $value['model_name'], $value['model_name_cd'], $value['division'], $value['subdivision'], $value['trim'], $value['body_type'], $value['body_type_standard'], $value['market_class'], $value['msrp'], $value['drivetrain'], $value['transmission'], $value['doors'], $value['acode'], $value['exterior_colors'], $value['has_media'], $value['view_count'] );
 
 				$value = $style['engine'];
-				$queries['engines']['query'] = 'INSERT dev_showroomdata.engine' . $language_suffix . ' ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
+				$queries['engines']['query'] = 'INSERT showroom.engine' . $language_suffix . ' ( style_id, engine, engine_type, fuel_type, cylinders, fuel_capacity_high, fuel_capacity_low, fuel_capacity_unit, fuel_economy_hwy_high, fuel_economy_hwy_low, fuel_economy_city_high, fuel_economy_city_low, horsepower, horsepower_rpm, net_torque, net_torque_rpm, displacement, displacement_unit ) VALUES ';
 
 				if ( is_object( $value ) ) {
 					$queries['engines']['prepare'][] = "('%d', '%s', '%s', '%s', '%d', '%f', '%f', '%s', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%s')";
@@ -1555,7 +1555,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			
 			if ( array_key_exists('style_colors', $style ) ) {
 				$colors = $style['style_colors'];
-				$queries['colors']['query'] = 'INSERT dev_showroomdata.exterior_color' . $language_suffix . '( style_id, generic_name, name, code, rgb_value ) VALUES ';
+				$queries['colors']['query'] = 'INSERT showroom.exterior_color' . $language_suffix . '( style_id, generic_name, name, code, rgb_value ) VALUES ';
 				foreach ( $colors as $color ) {
 					$queries['colors']['prepare'][] = "('%d', '%s', '%s', '%s', '%s')";
 					array_push( $queries['colors']['values'], $color['style_id'], $color['generic_name'], $color['name'], $color['code'], $color['rgb_value'] );
@@ -1565,7 +1565,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			if ( array_key_exists( 'options', $style ) ) {
 				$options = $style['options'];
 				
-				$queries['options']['query'] = 'INSERT dev_showroomdata.option' . $language_suffix . '( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
+				$queries['options']['query'] = 'INSERT showroom.option' . $language_suffix . '( option_id, header, style_id, description, is_child, oem_code, chrome_code, msrp_min, msrp_max, categories ) VALUES ';
 				foreach ( $options as $option ) {
 					$queries['options']['prepare'][] = "('%d', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%f', '%s')";
 					array_push( $queries['options']['values'], $option['id'], $option['header'], $option['styleId'], $option['description'], $option['isChild'], $option['oemCode'], $option['chromeCode'], $option['msrpMin'], $option['msrpMax'], $option['categories'] );
@@ -1574,7 +1574,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			// Adjust this
 			if ( array_key_exists( 'view', $style ) ) {
-				$queries['media']['query'] = 'INSERT dev_showroomdata.media ( style_id, type, url, width, height, shot_code, background, file_name, model_name, model_name_cd, model_year ) VALUES ';
+				$queries['media']['query'] = 'INSERT showroom.media ( style_id, type, url, width, height, shot_code, background, file_name, model_name, model_name_cd, model_year ) VALUES ';
 				foreach ( $style['view'] as $image ) {
 					$queries['media']['prepare'][] = "('%d', '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s')";
 					array_push( $queries['media']['values'], $image['style_id'], 'view', $image['url'], $image['width'], $image['height'], $image['shot_code'], $image['background_description'], $image['file_name'], $style['style']['model_name'], $style['style']['model_name_cd'], $style['style']['model_year'] );
@@ -1582,7 +1582,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 
 			if ( array_key_exists( 'standard', $style ) ) {
-				$queries['standard']['query'] = 'INSERT dev_showroomdata.standard' . $language_suffix . ' ( style_id, type, description, categories ) VALUES ';
+				$queries['standard']['query'] = 'INSERT showroom.standard' . $language_suffix . ' ( style_id, type, description, categories ) VALUES ';
 				foreach ( $style['standard'] as $item ) {
 					$queries['standard']['prepare'][] = "('%d', '%s', '%s', '%s')";
 					array_push( $queries['standard']['values'], $style_id, $item['type'], $item['description'], $item['categories'] );

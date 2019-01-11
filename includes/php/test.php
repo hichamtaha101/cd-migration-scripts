@@ -22,21 +22,27 @@ include_once( 'functions.php' );
 5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
 */
 
+/////////////////// ---------- for updating french data on live db ---------- //////////////////
+
+// 1. ----- ADD THE NEW FRENCH TABLES AND UPDATE MODEL/REGION 
+// update_database_structure();
+
+// 2. ----- UPDATE MODEL TO HAVE FRENCH MODEL_NAME_CD
+// update_all_models();
+
+// 3. ----- UPDATE THE FRENCH STYLES/STANDARD EQUIPMENT/OPTIONS/EXT COLORS/ENGINES
+$models = array();
+$models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
+foreach( $models as $index=>$model ) {
+  if ( $index >= 0 ) {
+    echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
+    update_styles($model, false );
+  }
+}
+
+/////////////////// ---------- end updating french data on live db ---------- //////////////////
 
 
-
-// $models = array();
-// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
-// foreach( $models as $index=>$model ) {
-//   if ( $index >= 0 ) {
-//     echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
-//     update_styles($model, false );
-//   }
-// }
-
-
-
-update_all_models();
 //display_var(update_styles('M4', false ));
 // update_everything_for_model('Civic Coupe');
 //$test = update_ftps3( 'Escape' );
