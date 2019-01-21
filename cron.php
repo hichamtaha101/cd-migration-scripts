@@ -33,7 +33,7 @@ if ( sizeOf( $running_job > 0 ) ) {
     } elseif( $running_job->cron_type == 'models' ) {
         $text = ' Currently updating models.';
     } else {
-        $text = ' Currently updating ' . $running_job->model_name . '.';
+        $text = ' Currently updating ' . $running_job[0]->model_name . '.';
     }
     fwrite($cronlog, $text);
     fclose($cronlog);
@@ -118,7 +118,7 @@ if ( sizeOf( $result ) > 0 ) {
         $cron = $result;
     }
     $start_time = microtime(true); 
-    $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id =" . $cron->cron_id );
+    $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id = " . $cron->cron_id );
     update_everything_for_model( $cron->model_name );
     update_cron_scheduler( $cron->cron_id, $cron->frequency );
     $end_time = microtime(true);
