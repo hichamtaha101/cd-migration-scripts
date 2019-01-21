@@ -7,9 +7,9 @@ date_default_timezone_set('America/Los_Angeles');
 $now = date( 'Y-m-d H:i:s' );
 
 // ------------------------------------ LOG ------------------------------------------
-$cronlog = fopen("cron.txt", "w");
-$text = 'Last run started at: ' . $now;
-fwrite($cronlog, $text);
+$cronlog = fopen("cron.txt", "a");
+$text = 'Last run started at: ' . $now . ' for:';
+fwrite($cronlog, "\n" . $text);
 fclose($cronlog);
 // ------------------------------------ TIME OUT -------------------------------------
 
@@ -38,6 +38,10 @@ if ( sizeOf( $result ) > 0 ) {
     $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id =".$cron->cron_id );
     if ( update_all_makes()[0]['outputs'][0]['type'] == 'success' ) {
         update_cron_scheduler( $cron->cron_id, $cron->frequency );
+        $cronlog = fopen("cron.txt", "a");
+        $text = ' makes;';
+        fwrite($cronlog, $text);
+        fclose($cronlog);
     }
 } else {
     echo '<pre>Makes don\'t need updating yet.</pre>';
@@ -57,6 +61,10 @@ if ( sizeOf( $result ) > 0 ) {
     $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id =".$cron->cron_id );
     if ( update_all_models()[0]['outputs'][0]['type'] == 'success' ) {
         update_cron_scheduler( $cron->cron_id, $cron->frequency );
+        $cronlog = fopen("cron.txt", "a");
+        $text = ' models;';
+        fwrite($cronlog, $text);
+        fclose($cronlog);
     }
 } else {
     echo '<pre>Models don\'t need updating yet.</pre>';
@@ -79,6 +87,10 @@ if ( sizeOf( $result ) > 0 ) {
     update_cron_scheduler( $cron->cron_id, $cron->frequency );
     $end_time = microtime(true);
     echo '<pre>Updated ', $cron->model_name, ' in <strong>', strval( ( $end_time - $start_time )/60 ), ' minutes</strong>.</pre>';
+    $cronlog = fopen("cron.txt", "a");
+    $text = ' ' . $cron->model_name . ' in ' . strval( ( $end_time - $start_time )/60 ) . ' minutes.';
+    fwrite($cronlog, $text);
+    fclose($cronlog);
 } else {
     echo '<pre>Styles don\'t need updating yet.</pre>';
 }
