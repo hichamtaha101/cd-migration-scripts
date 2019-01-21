@@ -25,7 +25,19 @@ $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TI
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 360 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
 
 // If something is running and not timed out, exit. 
-if ( sizeOf( $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' ) ) > 0 ) {
+$running_job = $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' );
+if ( sizeOf( $running_job > 0 ) ) {
+    $cronlog = fopen("cron.txt", "a");
+    if ( $running_job->cron_type == 'makes' ) {
+        $text = ' Currently updating makes.';
+    } elseif( $running_job->cron_type == 'models' ) {
+        $text = ' Currently updating models.';
+    } else {
+        $text = ' Currently updating ' . $running_job->model_name . '.';
+    }
+    fwrite($cronlog, $text);
+    fclose($cronlog);
+    
     exit();
 }
 // -------------------------------- UPDATING ALL MAKES --------------------------------
@@ -106,7 +118,7 @@ if ( sizeOf( $result ) > 0 ) {
         $cron = $result;
     }
     $start_time = microtime(true); 
-    $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id =".$cron->cron_id );
+    $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id =" . $cron->cron_id );
     update_everything_for_model( $cron->model_name );
     update_cron_scheduler( $cron->cron_id, $cron->frequency );
     $end_time = microtime(true);
