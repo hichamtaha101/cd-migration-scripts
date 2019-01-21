@@ -148,8 +148,8 @@ class Convertus_Kraken_S3 {
 		if ( $type === 'colorized' ) {
 			$insert_format = "( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year )";
 		}
-		$insert_sql = "INSERT INTO showroom.media " . $insert_format . " VALUES ";
-		$delete_sql = "DELETE FROM showroom.media WHERE ";
+		$insert_sql = "INSERT INTO dev_showroomdata.media " . $insert_format . " VALUES ";
+		$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
 		$insert_values = array();
 		$delete_values = array();
 
@@ -172,10 +172,10 @@ class Convertus_Kraken_S3 {
 			foreach ( $results as $result ) {
 				$background = 'Transparent';
 				if ( $extension === '.jpg' ) { $background = 'White'; }
-				if ( $media['type'] == 'view' )  {
-					$insert_values[] = "( '{$media['style_id']}', '{$type}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '{$media['file_name']}', '{$media['model_name']}', '{$model_name_cd}', '{$media['model_year']}' )";
-				} elseif ( $media['type'] == 'colorized' ) {
-					$insert_values[] = "( '{$media['style_id']}', '{$type}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', '{$media['file_name']}', '{$media['model_name']}', '{$model_name_cd}', '{$media['model_year']}')";
+				if ( $media['type'] == 'view' && $type === 'view' )  {
+					$insert_values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '{$media['file_name']}', '{$media['model_name']}', '{$model_name_cd}', '{$media['model_year']}' )";
+				} elseif ( $media['type'] == 'colorized' && $type === 'colorized' ) {
+					$insert_values[] = "( '{$media['style_id']}', '{$media['type']}', '{$result['kraked_url']}', {$result['kraked_height']}, {$media['shot_code']}, {$result['kraked_width']}, '{$background}', '', '{$media['color_option_code']}', '', '{$media['file_name']}', '{$media['model_name']}', '{$model_name_cd}', '{$media['model_year']}')";
 				}
 			}
 		}

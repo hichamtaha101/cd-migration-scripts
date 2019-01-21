@@ -1,5 +1,6 @@
 <?php
-require './vendor/aws-autoloader.php';
+// require './vendor/aws-autoloader.php';
+require_once( dirname( __FILE__ ) . '/vendor/aws-autoloader.php' );
 
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
@@ -75,8 +76,15 @@ class FTP_S3 {
 			}
       
       // 2) Try to grab folder containing the media's colorized images.
+      $num_tries = 0;
       $folder = 'cc_' . str_replace( '_1280_01', '_01_1280', $m['file_name'] );
-      $contents = $this->get_contents( $folder );
+      while( $num_tries < 3 ) {
+        $contents = $this->get_contents( $folder );
+        if ( false === $contents ) {
+          $num_tries++; 
+          continue;
+        } else { break; }
+      }
       if ( false === $contents ) {
         var_dump('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.' );
         exit();

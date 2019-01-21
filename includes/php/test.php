@@ -7,13 +7,6 @@ include_once( 'functions.php' );
 // $current = $obj->db->get_var('SELECT @@global.max_allowed_packet');
 // if ( $current < $max ) { $obj->db->query('SET @@global.max_allowed_packet = ' . $max ); }
 
-// $obj->db->query('TRUNCATE style');
-
-// display_var(get_updated_models());
-
-// $obj->update_models();
-// update_styles('A4', 'true');
-
 /*
 1. SELECT * FROM `style` WHERE model_name LIKE 'Explorer' : Styles updated
 2. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' : Optimized view images
@@ -21,6 +14,8 @@ include_once( 'functions.php' );
 4. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/original%' : Colorized Original
 5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
 */
+
+// update_everything_for_model('S4 Sedan');
 
 /////////////////// ---------- for updating french data on live db ---------- //////////////////
 
@@ -31,58 +26,33 @@ include_once( 'functions.php' );
 // update_all_models();
 
 // 3. ----- UPDATE THE FRENCH STYLES/STANDARD EQUIPMENT/OPTIONS/EXT COLORS/ENGINES
-$models = array();
-$models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
-foreach( $models as $index=>$model ) {
-  if ( $index >= 0 ) {
-    echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
-    update_styles($model, false );
-  }
-}
+// $models = array();
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
+// foreach( $models as $index=>$model ) {
+//   if ( $index >= 0 ) {
+//     echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
+//     update_styles( $model, false );
+//     //update_everything_for_model( $model );
+//   }
+// }
 
 /////////////////// ---------- end updating french data on live db ---------- //////////////////
 
+//--------------- UPDATE CRON_SCHEDULER TABLE
 
-//display_var(update_styles('M4', false ));
-// update_everything_for_model('Civic Coupe');
-//$test = update_ftps3( 'Escape' );
-//$test = update_model_images( 'Escape', 'colorized' );
+// $db->query( "ALTER TABLE `cron_scheduler` ADD `model_name` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `division_name`;" );
+// $today = date( 'Y-m-d' );
+// $db->query( "INSERT INTO `cron_scheduler` VALUES ( '', null, '', 'makes', '{$today}', '1 Week', '12:00:00', '', 0 ) " );
+// $db->query( "INSERT INTO `cron_scheduler` VALUES ( '', null, '', 'models', '{$today}', '1 Week', '12:00:00', '', 0 ) " );
 
-// display_var(get_updated_models());
-// $makes = $obj->get_models();
-// var_dump( $makes );
-// exit();
-
-// display_var( get_updated_models() );
-// $models = $obj->update_models();
-
-// var_dump($obj->test());
-// $styles = $obj->get_model_details("model_name_cd LIKE 'TLX'");
-// $test = array();
-// foreach ( $styles as $style ) {
-//   if ( $style['style']['style_id'] === 399843 ) {
-//     display_var( $style );
-//   }
+// $models = array();
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
+// foreach( $models as $index=>$model ) {
+//   $sql = "INSERT INTO `cron_scheduler` VALUES ( '',null,'{$model}', 'styles', '{$today}','1 Week','12:00:00', '', 0 )";
+//   $db->query($sql);
 // }
-// exit();
-// $obj->update_styles( $styles, 'true' );
-// var_dump('done');
-// exit();
 
-// $results = update_styles_by_model( 'M4', 'false' );
-
-// display_var(update_model_images( 'Continental', 'colorized' ));
-// update_ftps3('Continental');
-
-
-// $test = update_styles_by_model( 'CTS Sedan', 'false' );
-// var_dump( $test );
-// exit();
-
-// var_dump( get_updated_models() );
-// exit();
-
-// get_chromedata_media_by_model('Super Duty F-350 SRW', 'view');
+//--------------- end UPDATE CRON_SCHEDULER TABLE
 
 function update_all_body_styles() {
   global $obj;

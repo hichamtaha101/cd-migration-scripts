@@ -76,10 +76,12 @@ function get_updated_models() {
  */
 function update_all_makes() {
 	global $obj;
+	$start_time = microtime(true); 
 	$results = array();
 	$obj->update_divisions();
 	$results['outputs'] = $obj->outputs;
-	return $results;
+	$end_time = microtime(true);
+	return array( $results, '<pre>Updating all makes took: <strong>' . strval($end_time - $start_time) . ' seconds</strong>.</pre>' );
 }
 
 /**
@@ -90,13 +92,15 @@ function update_all_makes() {
 function update_all_models() {
 	global $obj;
 	global $obj_fr;
+	$start_time = microtime(true); 
 	$obj->update_models();
 	$obj_fr->update_models();
 	$results = get_updated_models();
 	$results_fr = get_updated_models();
 	$results['outputs'] = $obj->outputs;  
 	$results_fr['outputs'] = $obj_fr->outputs;  
-	return [$results,$results_fr];
+	$end_time = microtime(true);
+	return [$results,$results_fr,'<pre>Updating all models took: <strong>' . strval($end_time - $start_time) . ' seconds</strong>.</pre>'];
 }
 
 function update_database_structure() {
@@ -136,14 +140,14 @@ function update_everything_for_model($model) {
 
 	// Script breaks if something goes wrong in the following functions
 	
-	// $response1 = update_styles( $model, 'true' );
-	// var_dump( $response1 );
-	// $response2 = update_model_images( $model, 'view' );
-	// var_dump( $response2 );
-	// $response3 = update_ftps3( $model );
-	// var_dump( $response3 );
+	$response1 = update_styles( $model, 'true' );
+	echo '<pre>' , var_dump($response1), '</pre>';
+	$response2 = update_model_images( $model, 'view' );
+	echo '<pre>' , var_dump($response2), '</pre>';
+	$response3 = update_ftps3( $model );
+	echo '<pre>' , var_dump($response3), '</pre>';
 	$response4 = update_model_images( $model, 'colorized' );
-	var_dump( $response4 );
+	echo '<pre>' , var_dump($response4), '</pre>';
 
 	$outputs = array( array(
 		'type'	=> 'success',
@@ -308,7 +312,7 @@ function get_chromedata_media_by_model( $model ) {
 	}
 
 	// Remove chromedata images if updated views and ftp to s3
-	$delete_sql = "DELETE FROM showroom.media WHERE ";
+	$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
 	$delete_values = array();
 	foreach( $media as $m ) {
 		if ( cd_media_is_updated( $m ) ) {
