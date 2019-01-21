@@ -8,7 +8,7 @@ $now = date( 'Y-m-d H:i:s' );
 
 // ------------------------------------ LOG ------------------------------------------
 $cronlog = fopen("cron.txt", "a");
-$text = 'Last run started at: ' . $now . ' for:';
+$text = 'Last run started at: ' . $now . '. Notes:';
 fwrite($cronlog, "\n" . $text);
 fclose($cronlog);
 // ------------------------------------ TIME OUT -------------------------------------
@@ -24,6 +24,10 @@ $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TI
 
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 360 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
 
+// If something is running and not timed out, exit. 
+if ( sizeOf( $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' ) ) ) {
+    exit();
+}
 // -------------------------------- UPDATING ALL MAKES --------------------------------
 
 $sql_statement = "SELECT cron_id, cron_type, run_time, frequency, start_time, last_run, running FROM `cron_scheduler` WHERE ( cron_type = 'makes' AND running = 0 AND frequency != '' AND TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 0)";
@@ -39,12 +43,22 @@ if ( sizeOf( $result ) > 0 ) {
     if ( update_all_makes()[0]['outputs'][0]['type'] == 'success' ) {
         update_cron_scheduler( $cron->cron_id, $cron->frequency );
         $cronlog = fopen("cron.txt", "a");
-        $text = ' makes;';
+        $text = ' makes updated successfully;';
+        fwrite($cronlog, $text);
+        fclose($cronlog);
+    } else {
+        echo '<pre>Updating makes failed.</pre>';
+        $cronlog = fopen("cron.txt", "a");
+        $text = ' makes failed update;';
         fwrite($cronlog, $text);
         fclose($cronlog);
     }
 } else {
     echo '<pre>Makes don\'t need updating yet.</pre>';
+    $cronlog = fopen("cron.txt", "a");
+    $text = ' makes didn\'t need updating;';
+    fwrite($cronlog, $text);
+    fclose($cronlog);
 }
 
 // -------------------------------- UPDATING ALL MODELS --------------------------------
@@ -62,12 +76,22 @@ if ( sizeOf( $result ) > 0 ) {
     if ( update_all_models()[0]['outputs'][0]['type'] == 'success' ) {
         update_cron_scheduler( $cron->cron_id, $cron->frequency );
         $cronlog = fopen("cron.txt", "a");
-        $text = ' models;';
+        $text = ' models updated successfully;';
+        fwrite($cronlog, $text);
+        fclose($cronlog);
+    } else {
+        echo '<pre>Updating models failed.</pre>';
+        $cronlog = fopen("cron.txt", "a");
+        $text = ' models update failed;';
         fwrite($cronlog, $text);
         fclose($cronlog);
     }
 } else {
     echo '<pre>Models don\'t need updating yet.</pre>';
+    $cronlog = fopen("cron.txt", "a");
+    $text = ' models didn\'t need updating;';
+    fwrite($cronlog, $text);
+    fclose($cronlog);
 }
 
 // -------------------------------- UPDATING STYLES OF MODELS --------------------------------
@@ -93,6 +117,10 @@ if ( sizeOf( $result ) > 0 ) {
     fclose($cronlog);
 } else {
     echo '<pre>Styles don\'t need updating yet.</pre>';
+    $cronlog = fopen("cron.txt", "a");
+    $text = ' no styles needed updating.';
+    fwrite($cronlog, $text);
+    fclose($cronlog);
 }
 
 if ( $db->error ) {
