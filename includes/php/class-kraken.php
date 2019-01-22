@@ -100,7 +100,11 @@ class Kraken {
 			// Else, there's something wrong with the media entry
 			} else {
 				echo 'Request does not have a url or file param <pre>'; var_dump( $request ); echo '</pre>';
-				exit();
+				$errorlog = fopen("../../error_log.txt", "a");
+				$text = date( 'Y-m-d H:i:s' ) . ': Request does not have a url or file param <pre>' . $request . '</pre>';
+				fwrite($errorlog, "\n" . $text);
+				fclose($errorlog);
+				return( 'Request does not have a url or file param <pre>' . $request . '</pre>' );
 			}
 			// Force continue-100 from server
 			curl_setopt($curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36");

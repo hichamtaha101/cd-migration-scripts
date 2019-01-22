@@ -25,21 +25,23 @@ $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TI
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 360 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
 
 // If something is running and not timed out, exit. 
-$running_job = $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' );
+$running_jobs = $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' );
 if ( sizeOf( $running_job ) > 0 ) {
     $cronlog = fopen("cron.txt", "a");
-    if ( $running_job->cron_type == 'makes' ) {
-        $text = ' Currently updating makes.';
-    } elseif( $running_job->cron_type == 'models' ) {
-        $text = ' Currently updating models.';
-    } else {
-        $text = ' Currently updating ' . $running_job[0]->model_name . '.';
+    foreach( $running_jobs as $i=>$job ) {
+        $text .= ' Currently updating';
+        if ( $job->cron_type == 'makes' ) {
+            $text .= ' makes;';
+        } elseif( $job->cron_type == 'models' ) {
+            $text .= 'models;';
+        } else {
+            $text .= ' ' . $job->model_name . ';';
+        }
     }
     fwrite($cronlog, $text);
     fclose($cronlog);
-    
-    exit();
 }
+
 // -------------------------------- UPDATING ALL MAKES --------------------------------
 
 $sql_statement = "SELECT cron_id, cron_type, run_time, frequency, start_time, last_run, running FROM `cron_scheduler` WHERE ( cron_type = 'makes' AND running = 0 AND frequency != '' AND TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 0)";

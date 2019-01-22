@@ -87,7 +87,7 @@ class FTP_S3 {
       }
       if ( false === $contents ) {
         var_dump('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.' );
-        exit();
+        return('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.');
       }
 
 			// 3) Download each color variation for this media
@@ -103,7 +103,11 @@ class FTP_S3 {
 				if ( file_exists($local_path) ) { continue; }
 				if ( ! ftp_get( $this->conn_id, $local_path, $image, FTP_BINARY ) ) {
           echo "Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}";
-					exit(); // Error caught, exit script
+          $errorlog = fopen("../../error_log.txt", "a");
+          $text = date( 'Y-m-d H:i:s' ) . ": Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}";
+          fwrite($errorlog, "\n" . $text);
+          fclose($errorlog);
+          return("Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}");
 				}
       }
 
@@ -126,7 +130,11 @@ class FTP_S3 {
 					$sql_values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', '{$copy['model_year']}')";
 				} else {
           var_dump( 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id );
-          exit();
+          $errorlog = fopen("../../error_log.txt", "a");
+          $text = date( 'Y-m-d H:i:s' ) . ': Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id;
+          fwrite($errorlog, "\n" . $text);
+          fclose($errorlog);
+          return( 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id );
         }
       }
 
