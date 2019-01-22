@@ -17,8 +17,12 @@ class FTP_S3 {
     $this->conn_id = ftp_connect('ftp.chromedata.com') or set_error( 'FTP', "Couldn't connect to $ftp_server" ); 
 		if ( ! @ftp_login( $this->conn_id, 'u311191', 'con191' ) ) {
 			set_error( 'FTP', "Couldn't connect as u311191" );
-			echo 'Caught an error while trying to connect to ftp';
-			exit();
+      echo 'Caught an error while trying to connect to ftp';
+      $errorlog = fopen("../../error_log.txt", "a");
+      $text = date( 'Y-m-d H:i:s' ) . ': Caught an error while trying to connect to ftp';
+      fwrite($errorlog, "\n" . $text);
+      fclose($errorlog);
+			return;
     }
     ftp_pasv( $this->conn_id, true );
   }

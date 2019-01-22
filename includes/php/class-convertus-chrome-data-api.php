@@ -773,13 +773,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					break;
 				default:
 					echo 'get_model_details response was not an object nor array :/';
-					exit();
+					$errorlog = fopen("../../error_log.txt", "a");
+					$text = date( 'Y-m-d H:i:s' ) . ': get_model_details response was not an object nor array :/';
+					fwrite($errorlog, "\n" . $text);
+					fclose($errorlog);
+					break;
 			}
 		}
 
 		// Test to see if all models styles pass
 		$meets_reqs = $this->meets_requirements( $styles );
-		if ( $meets_reqs['success'] ) {
+		if ( $meets_reqs['success'] == '' ) {
 			$this->outputs[] = array(
 				'type' => 'success', 
 				'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name_cd
@@ -1661,7 +1665,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			if ( ! isset( $values['query']) || ! isset($values['prepare']) ) { continue; }
 			$query = $values['query'] . implode(',', $values['prepare'] );
 			$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
-			// exit();
 		}
 	}
 
