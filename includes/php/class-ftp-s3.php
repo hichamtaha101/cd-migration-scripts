@@ -107,7 +107,10 @@ class FTP_S3 {
           $text = date( 'Y-m-d H:i:s' ) . ": Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}";
           fwrite($errorlog, "\n" . $text);
           fclose($errorlog);
-          return("Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}");
+          return array(
+            'success' => false,
+            'error' =>  "Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}",
+          );
 				}
       }
 
@@ -134,7 +137,10 @@ class FTP_S3 {
           $text = date( 'Y-m-d H:i:s' ) . ': Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id;
           fwrite($errorlog, "\n" . $text);
           fclose($errorlog);
-          return( 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id );
+          return array(
+            'success' => false,
+            'error' => 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id ,
+          );
         }
       }
 
