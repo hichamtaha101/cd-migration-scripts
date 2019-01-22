@@ -777,13 +777,21 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 		}
 
-		// Test to see if all models styles pass / breaks if one fails
-		$this->meets_requirements( $styles );
-		$this->outputs[] = array(
-			'type' => 'success', 
-			'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name_cd
-		);
-		return $styles;
+		// Test to see if all models styles pass
+		$meets_reqs = $this->meets_requirements( $styles );
+		if ( $meets_reqs['success'] ) {
+			$this->outputs[] = array(
+				'type' => 'success', 
+				'msg' => 'Successfully updated styles for ' . $model->division_name . ' ' . $model->model_name_cd
+			);
+			return $styles;
+		} else {
+			$this->outputs[] = array(
+				'type' => 'success', 
+				'msg' => 'Updated styles for ' . $model->division_name . ' ' . $model->model_name_cd . ' but ' . $meets_reqs['error'],
+			);
+			return $styles;
+		}
 	}
 
 	/**
@@ -1200,7 +1208,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return( 'No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>' );
+				return array(
+					'success' => false,
+					'error' => 'No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( ! isset( $style['style']['msrp'] ) ) {
 				echo 'No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1208,7 +1219,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return('No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>');	
+				return array(
+					'success' => false,
+					'error' => 'No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( empty( $style['style']['transmission'] ) ) {
 				echo 'No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1216,7 +1230,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return('No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>');	
+				return array(
+					'success' => false,
+					'error' => 'No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( empty( $style['style']['drivetrain'] ) ) {
 				echo 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1224,7 +1241,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return('No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>');	
+				return array(
+					'success' => false,
+					'error' => 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( empty( $style['style']['body_type'] ) ) {
 				echo 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1232,7 +1252,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return('No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>');	
+				return array(
+					'success' => false,
+					'error' => 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( empty( $style['style']['exterior_colors'] ) ) {
 				echo 'No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1240,7 +1263,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return('No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>');
+				return array(
+					'success' => false,
+					'error' => 'No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( empty( $style['engine'] ) ) {
 				echo 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
@@ -1248,7 +1274,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				$text = date( 'Y-m-d H:i:s' ) . ': No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
-				return('No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>');
+				return array(
+					'success' => false,
+					'error' => 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>',
+				);
 			}
 			if ( $this->account_info['language'] !== 'fr' ) {
 				if ( $style['style']['has_media'] && $style['style']['view_count'] === 0 ) {
@@ -1257,7 +1286,10 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					$text = date( 'Y-m-d H:i:s' ) . ': Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
 					fwrite($errorlog, "\n" . $text);
 					fclose($errorlog);
-					return('Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>');
+					return array(
+						'success' => false,
+						'error' => 'Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>',
+					);
 				}
 			}
 		}

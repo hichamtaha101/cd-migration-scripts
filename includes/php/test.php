@@ -15,7 +15,7 @@ include_once( 'functions.php' );
 5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
 */
 
-// update_everything_for_model('S4 Sedan');
+// update_everything_for_model('Equinox');
 
 /////////////////// ---------- for updating french data on live db ---------- //////////////////
 
