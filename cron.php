@@ -26,7 +26,7 @@ $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TI
 
 // If something is running and not timed out, exit. 
 $running_jobs = $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' );
-if ( sizeOf( $running_job ) > 0 ) {
+if ( sizeOf( $running_jobs ) > 0 ) {
     $cronlog = fopen("cron.txt", "a");
     foreach( $running_jobs as $i=>$job ) {
         $text .= ' Currently updating';
