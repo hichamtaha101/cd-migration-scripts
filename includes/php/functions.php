@@ -6,8 +6,6 @@ include_once( dirname( __FILE__ ) . '/class-ftp-s3.php' );
 $db = new WPDB();
 $obj = new Convertus_DB_Updater('CA', 'en');
 $obj_fr = new Convertus_DB_Updater('CA', 'fr');
-$k_s3 = new Convertus_Kraken_S3($db);
-$ftp_s3 = new FTP_S3($db);
 
 /************************* CHROME DATA FUNCTIONS *************************/
 
@@ -19,6 +17,7 @@ $ftp_s3 = new FTP_S3($db);
  */
 function get_updated_models() {
 	global $db;
+	$ftp_s3 = new FTP_S3($db);
 
 	// Declare udpated variables
 	$models = $models_updated = $views_updated = $ftp_s3_updated = $colorized_updated = array();
@@ -139,15 +138,33 @@ function update_database_structure() {
 function update_everything_for_model($model) {
 
 	// Script breaks if something goes wrong in the following functions
-	
 	$response1 = update_styles( $model, 'true' );
 	echo '<pre>' , var_dump($response1), '</pre>';
+	$testlog = fopen("test.txt", "a");
+    $text = 'step 1 finished for ' . $model;
+    fwrite($testlog, "\n" . $text);
+	fclose($testlog);
+	
 	$response2 = update_model_images( $model, 'view' );
 	echo '<pre>' , var_dump($response2), '</pre>';
+    $testlog = fopen("test.txt", "a");
+    $text = 'step 2 finished at for ' . $model;
+    fwrite($testlog, "\n" . $text);
+	fclose($testlog);
+	
 	$response3 = update_ftps3( $model );
 	echo '<pre>' , var_dump($response3), '</pre>';
+    $testlog = fopen("test.txt", "a");
+    $text = 'step 3 finished at for ' . $model;
+    fwrite($testlog, "\n" . $text);
+	fclose($testlog);
+	
 	$response4 = update_model_images( $model, 'colorized' );
 	echo '<pre>' , var_dump($response4), '</pre>';
+	$testlog = fopen("test.txt", "a");
+    $text = 'step 4 finished at for ' . $model . ' ---------------------- DONE ---------------------- ';
+    fwrite($testlog, "\n" . $text);
+	fclose($testlog);
 
 	$outputs = array( array(
 		'type'	=> 'success',
@@ -212,7 +229,8 @@ function update_styles( $model, $remove_media ) {
  * @return object		The updated item used for front-end display.	
  */
 function update_model_images( $model, $type ) {
-	global $k_s3;
+	global $db;
+	$k_s3 = new Convertus_Kraken_S3($db);
 	
 	// Grab media that need updating
 	if ( $type === 'view' ) {
@@ -251,7 +269,9 @@ function update_model_images( $model, $type ) {
  * @return object		The updated object used for front-end display.
  */
 function update_ftps3( $model ) {
-	global $ftp_s3;
+	global $db;
+	$ftp_s3 = new FTP_S3($db);
+
 	$media = get_chromedata_media_by_model( $model );
 	if ( ! $media['pass'] ) {
 		return array(
@@ -314,6 +334,7 @@ function get_chromedata_media_by_model( $model ) {
 	// Remove chromedata images if updated views and ftp to s3
 	$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
 	$delete_values = array();
+
 	foreach( $media as $m ) {
 		if ( cd_media_is_updated( $m ) ) {
 			$delete_values[] = remove_cd_media_sql($m);

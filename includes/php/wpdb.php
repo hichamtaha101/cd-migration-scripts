@@ -10,8 +10,8 @@
 define('WP_DEBUG', true);
 
 /** The name of the database for WordPress */
-// define('DB_NAME', 'showroom');
 define('DB_NAME', 'dev_showroomdata');
+// define('DB_NAME', 'showroom');
 
 /** MySQL database username */
 // define('DB_USER', 'scriptrunner');

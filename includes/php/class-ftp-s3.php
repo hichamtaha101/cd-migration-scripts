@@ -157,10 +157,10 @@ class FTP_S3 {
       del_tree( $directory );
       
       // Remove old entries if exists and insert S3 entries
-      $sql_delete = "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND url LIKE '%amazonaws.com/original%' AND shot_code LIKE {$m['shot_code']}";
+      $sql_delete = "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND (url LIKE '%amazonaws.com/original%' OR url LIKE '%chromedata%') AND shot_code LIKE {$m['shot_code']}";
       $sql_insert = "INSERT media ( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year ) VALUES ";
       $this->db->query( $sql_delete );
-      $this->db->query( "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND shot_code LIKE {$m['shot_code']} AND url LIKE '%chromedata%' " );
+      // $this->db->query( "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND shot_code LIKE {$m['shot_code']} AND url LIKE '%chromedata%' " );
       $this->db->query( $sql_insert . implode( ',', $sql_values ) );
     }
 

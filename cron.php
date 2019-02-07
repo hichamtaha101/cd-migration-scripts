@@ -16,20 +16,20 @@ fclose($cronlog);
 // Run another process if current running process has been running too long 
 // Set 'running' back to 0 if running=1 and run_time > x-time past the current time
 // For makes and models -- x-time = 5 mins
-// For styles ------------ x-time = 4 hours
+// For styles ------------ x-time = 3 hours
 
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 5 AND cron_type = 'makes' AND frequency != '' AND running = 1" );
 
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 5 AND cron_type = 'models' AND frequency != '' AND running = 1" );
 
-$db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 360 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
+$db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 180 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
 
 // If something is running and not timed out, exit. 
 $running_jobs = $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' );
 if ( sizeOf( $running_jobs ) > 0 ) {
     $cronlog = fopen("cron.txt", "a");
+    $text .= ' Currently running ' . sizeOf($running_jobs) . ' jobs: ';
     foreach( $running_jobs as $i=>$job ) {
-        $text .= ' Currently updating';
         if ( $job->cron_type == 'makes' ) {
             $text .= ' makes;';
         } elseif( $job->cron_type == 'models' ) {
@@ -126,7 +126,7 @@ if ( sizeOf( $result ) > 0 ) {
     $end_time = microtime(true);
     echo '<pre>Updated ', $cron->model_name, ' in <strong>', strval( ( $end_time - $start_time )/60 ), ' minutes</strong>.</pre>';
     $cronlog = fopen("cron.txt", "a");
-    $text = ' ' . $cron->model_name . ' in ' . strval( ( $end_time - $start_time )/60 ) . ' minutes.';
+    $text = ' Finished updating ' . $cron->model_name . ' in ' . strval( ( $end_time - $start_time )/60 ) . ' minutes.';
     fwrite($cronlog, $text);
     fclose($cronlog);
 } else {

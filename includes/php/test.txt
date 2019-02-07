@@ -1,0 +1,121 @@
+
+step 1 finished at: . for CT6
+step 2 finished at: . for CT6
+step 3 finished at: . for CT6
+step 4 finished at: . for CT6
+step 1 finished at: . for CTS-V
+step 2 finished at: . for CTS-V
+step 3 finished at: . for CTS-V
+step 4 finished at: . for CTS-V
+step 1 finished at: . for Camaro
+step 2 finished at: . for Camaro
+step 3 finished at: . for Camaro
+step 4 finished at: . for Camaro
+step 1 finished at: . for Canyon
+step 2 finished at: . for Canyon
+step 3 finished at: . for Canyon
+step 4 finished at: . for Canyon
+step 1 finished at: . for Colorado
+step 2 finished at: . for Colorado
+step 3 finished at: . for Colorado
+step 4 finished at: . for Colorado
+step 1 finished at: . for Enclave
+step 2 finished at: . for Enclave
+step 3 finished at: . for Enclave
+step 4 finished at: . for Enclave
+step 1 finished at: . for Encore
+step 2 finished at: . for Encore
+step 3 finished at: . for Encore
+step 4 finished at: . for Encore
+step 1 finished at: . for Envision
+step 2 finished at: . for Envision
+step 3 finished at: . for Envision
+step 4 finished at: . for Envision
+step 1 finished at: . for Equinox
+step 2 finished at: . for Equinox
+step 3 finished at: . for Equinox
+step 4 finished at: . for Equinox
+step 1 finished at: . for Express
+step 2 finished at: . for Express
+step 3 finished at: . for Express
+step 4 finished at: . for Express
+step 1 finished at: . for Impala
+step 2 finished at: . for Impala
+step 3 finished at: . for Impala
+step 4 finished at: . for Impala
+step 1 finished at: . for LaCrosse
+step 2 finished at: . for LaCrosse
+step 3 finished at: . for LaCrosse
+step 4 finished at: . for LaCrosse
+step 1 finished at: . for Malibu
+step 2 finished at: . for Malibu
+step 3 finished at: . for Malibu
+step 4 finished at: . for Malibu
+step 1 finished at: . for Regal
+step 2 finished at: . for Regal
+step 3 finished at: . for Regal
+step 4 finished at: . for Regal
+step 1 finished at: . for Savana
+step 2 finished at: . for Savana
+step 3 finished at: . for Savana
+step 4 finished at: . for Savana
+step 1 finished at: . for Sierra 1500
+step 2 finished at: . for Sierra 1500
+step 3 finished at: . for Sierra 1500
+step 4 finished at: . for Sierra 1500
+step 1 finished at: . for Sierra 2500HD
+step 2 finished at: . for Sierra 2500HD
+step 3 finished at: . for Sierra 2500HD
+step 4 finished at: . for Sierra 2500HD
+step 1 finished at: . for Sierra 3500HD
+step 2 finished at: . for Sierra 3500HD
+step 3 finished at: . for Sierra 3500HD
+step 4 finished at: . for Sierra 3500HD
+step 1 finished at: . for Spark
+step 2 finished at: . for Spark
+step 3 finished at: . for Spark
+step 4 finished at: . for Spark
+step 1 finished at: . for Suburban
+step 2 finished at: . for Suburban
+step 3 finished at: . for Suburban
+step 4 finished at: . for Suburban
+step 1 finished at: . for Tahoe
+step 2 finished at: . for Tahoe
+step 3 finished at: . for Tahoe
+step 4 finished at: . for Tahoe
+step 1 finished at: . for Terrain
+step 2 finished at: . for Terrain
+step 3 finished at: . for Terrain
+step 4 finished at: . for Terrain
+step 1 finished at: . for Traverse
+step 2 finished at: . for Traverse
+step 3 finished at: . for Traverse
+step 4 finished at: . for Traverse
+step 1 finished at: . for Trax
+step 2 finished at: . for Trax
+step 3 finished at: . for Trax
+step 4 finished at: . for Trax
+step 1 finished at: . for Volt
+step 2 finished at: . for Volt
+step 3 finished at: . for Volt
+step 4 finished at: . for Volt
+step 1 finished at: . for XTS
+step 2 finished at: . for XTS
+step 3 finished at: . for XTS
+step 4 finished at: . for XTS
+step 1 finished at: . for Yukon
+step 2 finished at: . for Yukon
+step 3 finished at: . for Yukon
+step 4 finished at: . for Yukon
+step 1 finished at: . for Yukon XL
+step 2 finished at: . for Yukon XL
+step 3 finished at: . for Yukon XL
+step 4 finished at: . for Yukon XL
+step 1 finished at: . for Silverado 2500HD
+step 2 finished at: . for Silverado 2500HD
+step 3 finished at: . for Silverado 2500HD
+step 4 finished at: . for Silverado 2500HD ---------------------- DONE ---------------------- 
+step 1 finished at: . for Silverado 3500HD
+step 2 finished at: . for Silverado 3500HD
+step 3 finished at: . for Silverado 3500HD
+step 4 finished at: . for Silverado 3500HD ---------------------- DONE ---------------------- 
