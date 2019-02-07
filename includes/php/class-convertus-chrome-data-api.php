@@ -268,8 +268,6 @@ class Chrome_Data_API {
 
 		$soap_response = $this->soap->__soapCall( $function, array( $params ) );
 
-		var_dump($soap_response);
-
 		$response = new stdClass();
 		$response->response = $soap_response;
 		$response->parameters = $args;
@@ -523,6 +521,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function get_divisions() {
 
 		$soap_response = $this->soap_call_loop( 'getDivisions' );
+		echo '<pre>Here is #1: ' , var_dump($soap_response), '</pre>';
 
 		$divisions = array();
 
@@ -563,6 +562,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function update_divisions() {
 
 		$divisions = $this->get_divisions();
+		echo '<pre>Here is #2: ' , var_dump($divisions), '</pre>';
 
 		$query = 'INSERT division ( division_name, division_id, oem_logo, last_updated ) VALUES ';
 		$sql_values = array();
