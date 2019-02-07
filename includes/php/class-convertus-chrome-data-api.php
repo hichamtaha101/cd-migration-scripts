@@ -268,6 +268,8 @@ class Chrome_Data_API {
 
 		$soap_response = $this->soap->__soapCall( $function, array( $params ) );
 
+		var_dump($soap_response);
+
 		$response = new stdClass();
 		$response->response = $soap_response;
 		$response->parameters = $args;
@@ -283,7 +285,8 @@ class Chrome_Data_API {
 
 		foreach ( $args as $parameters ) {
 
-			$api_call = $this->soap_call(
+			$api_call = $this->
+			soap_call(
 				$function,
 				$parameters
 			);

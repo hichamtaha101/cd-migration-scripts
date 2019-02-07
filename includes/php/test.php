@@ -51,7 +51,7 @@ include_once( 'functions.php' );
 //   }
 // }
 var_dump(update_all_makes());
-update_everything_for_model('Fusion Energi');
+// update_everything_for_model('Fusion Energi');
 // var_dump( update_ftps3( 'Expedition' ));
 // var_dump( update_model_images( 'Expedition', 'view' ));
 /////////////////// ---------- end updating french data on live db ---------- //////////////////
