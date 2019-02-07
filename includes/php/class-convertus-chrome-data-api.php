@@ -550,8 +550,9 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			}
 		}
-		echo '<pre>Here is #4: ' , var_dump(  $divisions) , '</pre>';
-		return array_values( array_intersect_key( $divisions, array_unique( array_column( $divisions, 'id' ) ) ) );
+		// echo '<pre>Here is #4: ' , var_dump(  $divisions) , '</pre>';
+		// return array_values( array_intersect_key( $divisions, array_unique( array_column( $divisions, 'id' ) ) ) );
+		return $divisions;
 	}
 
 	/**
