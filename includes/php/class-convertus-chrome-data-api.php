@@ -552,6 +552,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		}
 		// echo '<pre>Here is #4: ' , var_dump(  $divisions) , '</pre>';
 		// return array_values( array_intersect_key( $divisions, array_unique( array_column( $divisions, 'id' ) ) ) );
+		$divisions = $this->remove_duplicate_makes( $divisions );
 		return $divisions;
 	}
 
@@ -582,6 +583,23 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all makes' );
 		}
 
+	}
+
+	/**
+	 * Returns a list of makes unique by make name.
+	 *
+	 * @param string $models	Array of makes.
+	 * @return array			Array of unique makes.
+	 */
+	private function remove_duplicate_makes( $makes ) {
+		$results = $duplicates = array();
+		foreach ( $makes as $make ) {
+			$id = $make->name;
+			if ( in_array( $id, $duplicates ) ) { continue; }
+			$results[] = $make;
+			$duplicates[] = $id;
+		}
+		return $results;
 	}
 
 	function test() {
