@@ -528,7 +528,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		foreach ( $soap_response as $response ) {
 
 			if ( is_array( $response->response->division ) ) {
-
+				echo '<pre>Here is #3: is array.</pre>';
 				foreach ( $response->response->division as $division ) {
 
 					$division->name = $division->_;
@@ -539,7 +539,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 				}
 			} else if ( is_object( $response->response->division ) ) {
-
+				echo '<pre>Here is #3: is object.</pre>';
 				$obj = new stdClass();
 
 				$division = $response->response->division;
@@ -550,7 +550,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			}
 		}
-
+		echo '<pre>Here is #4: ' , var_dump( array_values( array_intersect_key( $divisions, array_unique( array_column( $divisions, 'id' ) ) ) )) , '</pre>';
 		return array_values( array_intersect_key( $divisions, array_unique( array_column( $divisions, 'id' ) ) ) );
 	}
 
