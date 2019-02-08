@@ -521,7 +521,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function get_divisions() {
 
 		$soap_response = $this->soap_call_loop( 'getDivisions' );
-		echo '<pre>Here is #1: ' , var_dump($soap_response), '</pre>';
 
 		$divisions = array();
 
@@ -564,7 +563,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	public function update_divisions() {
 
 		$divisions = $this->get_divisions();
-		echo '<pre>Here is #2: ' , var_dump($divisions), '</pre>';
 
 		$query = 'INSERT division ( division_name, division_id, oem_logo, last_updated ) VALUES ';
 		$sql_values = array();
@@ -1154,7 +1152,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	private function get_transmission( $desc, $style_id ) {
 		if( $style_id == 391600 ) {
 			// var_dump($desc);
-			var_dump(stripos( $desc, 'Transmission' ));
+			// var_dump(stripos( $desc, 'Transmission' ));
 		}
 		// var_dump($desc);
 		if ( stripos($desc, 'Transmission,' ) !== FALSE ) {

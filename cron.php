@@ -40,6 +40,10 @@ if ( sizeOf( $running_jobs ) > 0 ) {
     }
     fwrite($cronlog, $text);
     fclose($cronlog);
+    // MAX 3 JOBS RUNNING.
+    if ( sizeOf( $running_jobs ) > 2 ) {
+        exit();
+    }
 }
 
 // -------------------------------- UPDATING ALL MAKES --------------------------------
