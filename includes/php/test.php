@@ -51,29 +51,29 @@ include_once( 'functions.php' );
 //   }
 // }
 // var_dump(update_all_makes());
-update_everything_for_model('4 Series');
+update_everything_for_model('F-TYPE');
 // var_dump( update_ftps3( 'Expedition' ));
 // var_dump( update_model_images( 'Expedition', 'view' ));
 /////////////////// ---------- end updating french data on live db ---------- //////////////////
 
 //--------------- UPDATE CRON_SCHEDULER TABLE
 
-// $db->query( "ALTER TABLE `cron_scheduler` ADD `model_name` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `division_name`;" );
-// update_all_makes();
-// update_all_models();
-// $today = date( 'Y-m-d' );
-// $db->query( "INSERT INTO `cron_scheduler` VALUES ( '', null, '', 'makes', '{$today}', '1 Week', '12:00:00', '', 0 ) " );
-// $db->query( "INSERT INTO `cron_scheduler` VALUES ( '', null, '', 'models', '{$today}', '1 Week', '12:00:00', '', 0 ) " );
+$db->query( "ALTER TABLE `cron_scheduler` ADD `model_name` VARCHAR(25) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL AFTER `division_name`;" );
+update_all_makes();
+update_all_models();
+$today = date( 'Y-m-d' );
+$db->query( "INSERT INTO `cron_scheduler` VALUES ( '', null, '', 'makes', '{$today}', '1 Week', '12:00:00', '', 0 ) " );
+$db->query( "INSERT INTO `cron_scheduler` VALUES ( '', null, '', 'models', '{$today}', '1 Week', '12:00:00', '', 0 ) " );
 
-// $models = array();
-// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
-// var_dump($models);
+$models = array();
+$models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
+var_dump($models);
 
-// foreach( $models as $index=>$model ) {
-//   $sql = "INSERT INTO `cron_scheduler` VALUES ( '',null,'{$model}', 'styles', '{$today}','1 Week','12:00:00', '', 0 )";
-//   $db->query($sql);
-//   var_dump('inserted ', $model);
-// }
+foreach( $models as $index=>$model ) {
+  $sql = "INSERT INTO `cron_scheduler` VALUES ( '',null,'{$model}', 'styles', '{$today}','1 Week','12:00:00', '', 0 )";
+  $db->query($sql);
+  var_dump('inserted ', $model);
+}
 
 //--------------- end UPDATE CRON_SCHEDULER TABLE
 

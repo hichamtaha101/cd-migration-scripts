@@ -125,6 +125,10 @@ if ( sizeOf( $result ) > 0 ) {
     }
     $start_time = microtime(true); 
     $db->query( "UPDATE cron_scheduler SET running = 1 WHERE cron_id = " . $cron->cron_id );
+    $cronlog = fopen("cron.txt", "a");
+    $text = ' Started updating ' . $cron->model_name . ';';
+    fwrite($cronlog, $text);
+    fclose($cronlog);
     update_everything_for_model( $cron->model_name );
     update_cron_scheduler( $cron->cron_id, $cron->frequency );
     $end_time = microtime(true);
