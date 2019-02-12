@@ -1,4 +1,5 @@
 <?php
+ini_set('MAX_EXECUTION_TIME', '-1');
 require_once( getcwd() . '/includes/php/functions.php' );
 
 global $db;
@@ -22,7 +23,7 @@ $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TI
 
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 5 AND cron_type = 'models' AND frequency != '' AND running = 1" );
 
-$db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 180 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
+$db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 60 AND cron_type = 'styles' AND frequency != '' AND running = 1" );
 
 // If something is running and not timed out, exit. 
 $running_jobs = $db->get_results( 'SELECT * FROM `cron_scheduler` WHERE running = 1 AND ( cron_type = "makes" OR cron_type = "models" OR cron_type = "styles" )' );
