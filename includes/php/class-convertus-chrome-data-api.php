@@ -793,7 +793,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					break;
 				default:
 					echo 'get_model_details response was not an object nor array :/';
-					$errorlog = fopen("../../error_log.txt", "a");
+					$errorlog = fopen("error_log.txt", "a");
 					$text = date( 'Y-m-d H:i:s' ) . ': get_model_details response was not an object nor array :/';
 					fwrite($errorlog, "\n" . $text);
 					fclose($errorlog);
@@ -1228,7 +1228,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 			if ( count( $style['options'] ) < 1 ) {
 				echo 'No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No options were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1239,7 +1239,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( ! isset( $style['style']['msrp'] ) ) {
 				echo 'No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No MSRP was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1250,7 +1250,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( empty( $style['style']['transmission'] ) ) {
 				echo 'No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No transmission was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1261,7 +1261,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( empty( $style['style']['drivetrain'] ) ) {
 				echo 'No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No drivetrain was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1272,7 +1272,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( empty( $style['style']['body_type'] ) ) {
 				echo 'No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No body type was found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1283,7 +1283,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( empty( $style['style']['exterior_colors'] ) ) {
 				echo 'No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No exterior colors were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1294,7 +1294,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			if ( empty( $style['engine'] ) ) {
 				echo 'No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': No engine(s) were found for model ' . $model . ' with style_id ' . $style_id . '<br>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
@@ -1306,7 +1306,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			if ( $this->account_info['language'] !== 'fr' ) {
 				if ( $style['style']['has_media'] && $style['style']['view_count'] === 0 ) {
 					echo 'Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
-					$errorlog = fopen("../../error_log.txt", "a");
+					$errorlog = fopen("error_log.txt", "a");
 					$text = date( 'Y-m-d H:i:s' ) . ': Style has images but none were pulled for model ' . $model . ' with style_id ' . $style_id . '<br>';
 					fwrite($errorlog, "\n" . $text);
 					fclose($errorlog);

@@ -1,5 +1,4 @@
 <?php 
-ini_set('MAX_EXECUTION_TIME', '-1');
 error_reporting(E_ALL);
 include_once( 'functions.php' );
 

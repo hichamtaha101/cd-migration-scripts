@@ -18,7 +18,7 @@ class FTP_S3 {
 		if ( ! @ftp_login( $this->conn_id, 'u311191', 'con191' ) ) {
 			set_error( 'FTP', "Couldn't connect as u311191" );
       echo 'Caught an error while trying to connect to ftp';
-      $errorlog = fopen("../../error_log.txt", "a");
+      $errorlog = fopen("error_log.txt", "a");
       $text = date( 'Y-m-d H:i:s' ) . ': Caught an error while trying to connect to ftp';
       fwrite($errorlog, "\n" . $text);
       fclose($errorlog);
@@ -107,7 +107,7 @@ class FTP_S3 {
 				if ( file_exists($local_path) ) { continue; }
 				if ( ! ftp_get( $this->conn_id, $local_path, $image, FTP_BINARY ) ) {
           echo "Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}";
-          $errorlog = fopen("../../error_log.txt", "a");
+          $errorlog = fopen("error_log.txt", "a");
           $text = date( 'Y-m-d H:i:s' ) . ": Something went wrong when downloading images for style id {$m['style_id']} at {$local_path}";
           fwrite($errorlog, "\n" . $text);
           fclose($errorlog);
@@ -137,7 +137,7 @@ class FTP_S3 {
 					$sql_values[] = "( '{$copy['style_id']}', 'colorized', '{$copy['url']}', 1280, {$copy['shot_code']}, 960, 'Transparent', '', '$color_code', '', '{$copy['file_name']}', '{$copy['model_name']}', '{$copy['model_name_cd']}', '{$copy['model_year']}')";
 				} else {
           var_dump( 'Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id );
-          $errorlog = fopen("../../error_log.txt", "a");
+          $errorlog = fopen("error_log.txt", "a");
           $text = date( 'Y-m-d H:i:s' ) . ': Did not successfully download all local ' . $model . ' images onto s3' . ' specifically for ' . $style_id;
           fwrite($errorlog, "\n" . $text);
           fclose($errorlog);

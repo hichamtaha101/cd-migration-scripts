@@ -100,7 +100,7 @@ class Kraken {
 			// Else, there's something wrong with the media entry
 			} else {
 				echo 'Request does not have a url or file param <pre>'; var_dump( $request ); echo '</pre>';
-				$errorlog = fopen("../../error_log.txt", "a");
+				$errorlog = fopen("error_log.txt", "a");
 				$text = date( 'Y-m-d H:i:s' ) . ': Request does not have a url or file param <pre>' . $request . '</pre>';
 				fwrite($errorlog, "\n" . $text);
 				fclose($errorlog);
