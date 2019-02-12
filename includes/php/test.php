@@ -50,8 +50,8 @@ include_once( 'functions.php' );
 //     update_everything_for_model( $model );
 //   }
 // }
-var_dump(update_all_makes());
-// update_everything_for_model('Fusion Energi');
+// var_dump(update_all_makes());
+update_everything_for_model('4 Series');
 // var_dump( update_ftps3( 'Expedition' ));
 // var_dump( update_model_images( 'Expedition', 'view' ));
 /////////////////// ---------- end updating french data on live db ---------- //////////////////

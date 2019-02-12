@@ -119,3 +119,7 @@ step 1 finished at: . for Silverado 3500HD
 step 2 finished at: . for Silverado 3500HD
 step 3 finished at: . for Silverado 3500HD
 step 4 finished at: . for Silverado 3500HD ---------------------- DONE ---------------------- 
+step 1 finished for 4 Series
+step 2 finished at for 4 Series
+step 3 finished at for 4 Series
+step 4 finished at for 4 Series ---------------------- DONE ---------------------- 
