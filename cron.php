@@ -16,7 +16,7 @@ fclose($cronlog);
 // Run another process if current running process has been running too long 
 // Set 'running' back to 0 if running=1 and run_time > x-time past the current time
 // For makes and models -- x-time = 5 mins
-// For styles ------------ x-time = 3 hours
+// For styles ------------ x-time = 2.5 hours
 
 $db->query( "UPDATE cron_scheduler SET run_time = '{$now}', running = 0 WHERE TIMESTAMPDIFF(MINUTE, run_time, '{$now}') > 5 AND cron_type = 'makes' AND frequency != '' AND running = 1" );
 
@@ -40,7 +40,7 @@ if ( sizeOf( $running_jobs ) > 0 ) {
     }
     fwrite($cronlog, $text);
     fclose($cronlog);
-    // MAX 3 JOBS RUNNING.
+    // MAX 1 JOB RUNNING.
     if ( sizeOf( $running_jobs ) > 0 ) {
         exit();
     }

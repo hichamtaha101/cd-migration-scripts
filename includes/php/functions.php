@@ -332,7 +332,7 @@ function get_chromedata_media_by_model( $model ) {
 	}
 
 	// Remove chromedata images if updated views and ftp to s3
-	$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
+	$delete_sql = "DELETE FROM showroom.media WHERE ";
 	$delete_values = array();
 
 	foreach( $media as $m ) {

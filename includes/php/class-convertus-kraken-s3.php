@@ -148,8 +148,8 @@ class Convertus_Kraken_S3 {
 		if ( $type === 'colorized' ) {
 			$insert_format = "( style_id, type, url, height, shot_code, width, background, rgb_hex_code, color_option_code, color_name, file_name, model_name, model_name_cd, model_year )";
 		}
-		$insert_sql = "INSERT INTO dev_showroomdata.media " . $insert_format . " VALUES ";
-		$delete_sql = "DELETE FROM dev_showroomdata.media WHERE ";
+		$insert_sql = "INSERT INTO showroom.media " . $insert_format . " VALUES ";
+		$delete_sql = "DELETE FROM showroom.media WHERE ";
 		$insert_values = array();
 		$delete_values = array();
 
