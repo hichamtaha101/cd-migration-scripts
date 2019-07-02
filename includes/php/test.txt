@@ -1,0 +1,877 @@
+
+step 1 finished for A5 Cabriolet
+step 2 finished at for A5 Cabriolet
+step 3 finished at for A5 Cabriolet
+step 4 finished at for A5 Cabriolet ---------------------- DONE ---------------------- 
+step 1 finished for A5 Coupe
+step 2 finished at for A5 Coupe
+step 3 finished at for A5 Coupe
+step 4 finished at for A5 Coupe ---------------------- DONE ---------------------- 
+step 1 finished for A5 Sportback
+step 2 finished at for A5 Sportback
+step 3 finished at for A5 Sportback
+step 4 finished at for A5 Sportback ---------------------- DONE ---------------------- 
+step 1 finished for A6
+step 2 finished at for A6
+step 3 finished at for A6
+step 4 finished at for A6 ---------------------- DONE ---------------------- 
+step 1 finished for A8
+step 2 finished at for A8
+step 3 finished at for A8
+step 4 finished at for A8 ---------------------- DONE ---------------------- 
+step 1 finished for Q5
+step 2 finished at for Q5
+step 3 finished at for Q5
+step 4 finished at for Q5 ---------------------- DONE ---------------------- 
+step 1 finished for Q7
+step 2 finished at for Q7
+step 3 finished at for Q7
+step 4 finished at for Q7 ---------------------- DONE ---------------------- 
+step 1 finished for RS 5 Coupe
+step 2 finished at for RS 5 Coupe
+step 3 finished at for RS 5 Coupe
+step 4 finished at for RS 5 Coupe ---------------------- DONE ---------------------- 
+step 1 finished for S5 Coupe
+step 2 finished at for S5 Coupe
+step 3 finished at for S5 Coupe
+step 4 finished at for S5 Coupe ---------------------- DONE ---------------------- 
+step 1 finished for S5 Sportback
+step 2 finished at for S5 Sportback
+step 3 finished at for S5 Sportback
+step 4 finished at for S5 Sportback ---------------------- DONE ---------------------- 
+step 1 finished for S5 Cabriolet
+step 2 finished at for S5 Cabriolet
+step 3 finished at for S5 Cabriolet
+step 4 finished at for S5 Cabriolet ---------------------- DONE ---------------------- 
+step 1 finished for SQ5
+step 2 finished at for SQ5
+step 3 finished at for SQ5
+step 4 finished at for SQ5 ---------------------- DONE ---------------------- 
+step 1 finished for TT RS Coupe
+step 2 finished at for TT RS Coupe
+step 3 finished at for TT RS Coupe
+step 4 finished at for TT RS Coupe ---------------------- DONE ---------------------- 
+step 1 finished for e-tron
+step 2 finished at for e-tron
+step 3 finished at for e-tron
+step 4 finished at for e-tron ---------------------- DONE ---------------------- 
+step 1 finished for 3 Series
+step 2 finished at for 3 Series
+step 3 finished at for 3 Series
+step 4 finished at for 3 Series ---------------------- DONE ---------------------- 
+step 1 finished for 3 Series Gran Turismo
+step 2 finished at for 3 Series Gran Turismo
+step 3 finished at for 3 Series Gran Turismo
+step 4 finished at for 3 Series Gran Turismo ---------------------- DONE ---------------------- 
+step 1 finished for 2500
+step 2 finished at for 2500
+step 3 finished at for 2500
+step 4 finished at for 2500 ---------------------- DONE ---------------------- 
+step 1 finished for 1500
+step 2 finished at for 1500
+step 3 finished at for 1500
+step 1 finished for Challenger
+step 2 finished at for Challenger
+step 3 finished at for Challenger
+step 4 finished at for Challenger ---------------------- DONE ---------------------- 
+step 1 finished for Durango
+step 2 finished at for Durango
+step 1 finished for Challenger
+step 2 finished at for Challenger
+step 3 finished at for Challenger
+step 4 finished at for Challenger ---------------------- DONE ---------------------- 
+step 1 finished for Durango
+step 2 finished at for Durango
+step 3 finished at for Durango
+step 4 finished at for Durango ---------------------- DONE ---------------------- 
+step 1 finished for Renegade
+step 2 finished at for Renegade
+step 3 finished at for Durango
+step 4 finished at for Durango ---------------------- DONE ---------------------- 
+step 1 finished for Renegade
+step 2 finished at for Renegade
+step 3 finished at for Renegade
+step 4 finished at for Renegade ---------------------- DONE ---------------------- 
+step 3 finished at for Renegade
+step 4 finished at for Renegade ---------------------- DONE ---------------------- 
+step 1 finished for 1500
+step 2 finished at for 1500
+step 1 finished for 1500
+step 2 finished at for 1500
+step 3 finished at for 1500
+step 4 finished at for 1500 ---------------------- DONE ---------------------- 
+step 3 finished at for 1500
+step 1 finished for M4
+step 2 finished at for M4
+step 3 finished at for M4
+step 4 finished at for M4 ---------------------- DONE ---------------------- 
+step 1 finished for M4
+step 2 finished at for M4
+step 3 finished at for M4
+step 4 finished at for M4 ---------------------- DONE ---------------------- 
+step 1 finished for 1500
+step 2 finished at for 1500
+step 3 finished at for 1500
+step 4 finished at for 1500 ---------------------- DONE ---------------------- 
+step 1 finished for M4
+step 2 finished at for M4
+step 3 finished at for M4
+step 4 finished at for M4 ---------------------- DONE ---------------------- 
+step 1 finished for 1500
+step 2 finished at for 1500
+step 3 finished at for 1500
+step 4 finished at for 1500 ---------------------- DONE ---------------------- 
+step 1 finished for Challenger
+step 1 finished for Challenger
+step 2 finished at for Challenger
+step 2 finished at for Challenger
+step 3 finished at for Challenger
+step 4 finished at for Challenger ---------------------- DONE ---------------------- 
+step 3 finished at for Challenger
+step 4 finished at for Challenger ---------------------- DONE ---------------------- 
+step 1 finished for Murano
+step 2 finished at for Murano
+step 3 finished at for Murano
+step 4 finished at for Murano ---------------------- DONE ---------------------- 
+step 1 finished for Rogue
+step 2 finished at for Rogue
+step 3 finished at for Rogue
+step 4 finished at for Rogue ---------------------- DONE ---------------------- 
+step 1 finished for Sentra
+step 2 finished at for Sentra
+step 1 finished for Murano
+step 3 finished at for Sentra
+step 2 finished at for Murano
+step 4 finished at for Sentra ---------------------- DONE ---------------------- 
+step 1 finished for Qashqai
+step 2 finished at for Qashqai
+step 3 finished at for Murano
+step 4 finished at for Murano ---------------------- DONE ---------------------- 
+step 1 finished for Rogue
+step 2 finished at for Rogue
+step 3 finished at for Rogue
+step 3 finished at for Qashqai
+step 4 finished at for Rogue ---------------------- DONE ---------------------- 
+step 1 finished for Sentra
+step 4 finished at for Qashqai ---------------------- DONE ---------------------- 
+step 2 finished at for Sentra
+step 1 finished for Versa Note
+step 2 finished at for Versa Note
+step 3 finished at for Sentra
+step 4 finished at for Sentra ---------------------- DONE ---------------------- 
+step 1 finished for Qashqai
+step 3 finished at for Versa Note
+step 2 finished at for Qashqai
+step 4 finished at for Versa Note ---------------------- DONE ---------------------- 
+step 3 finished at for Qashqai
+step 4 finished at for Qashqai ---------------------- DONE ---------------------- 
+step 1 finished for Versa Note
+step 2 finished at for Versa Note
+step 3 finished at for Versa Note
+step 4 finished at for Versa Note ---------------------- DONE ---------------------- 
+step 1 finished for Pathfinder
+step 2 finished at for Pathfinder
+step 3 finished at for Pathfinder
+step 4 finished at for Pathfinder ---------------------- DONE ---------------------- 
+step 1 finished for QX30
+step 1 finished for QX30
+step 2 finished at for QX30
+step 2 finished at for QX30
+step 3 finished at for QX30
+step 4 finished at for QX30 ---------------------- DONE ---------------------- 
+step 1 finished for Q50
+step 2 finished at for Q50
+step 3 finished at for QX30
+step 4 finished at for QX30 ---------------------- DONE ---------------------- 
+step 1 finished for Q50
+step 2 finished at for Q50
+step 3 finished at for Q50
+step 4 finished at for Q50 ---------------------- DONE ---------------------- 
+step 1 finished for Q70
+step 2 finished at for Q70
+step 3 finished at for Q50
+step 4 finished at for Q50 ---------------------- DONE ---------------------- 
+step 1 finished for Q70
+step 3 finished at for Q70
+step 2 finished at for Q70
+step 4 finished at for Q70 ---------------------- DONE ---------------------- 
+step 1 finished for Q70L
+step 2 finished at for Q70L
+step 3 finished at for Q70
+step 4 finished at for Q70 ---------------------- DONE ---------------------- 
+step 1 finished for Q70L
+step 2 finished at for Q70L
+step 3 finished at for Q70L
+step 4 finished at for Q70L ---------------------- DONE ---------------------- 
+step 1 finished for Q60
+step 3 finished at for Q70L
+step 2 finished at for Q60
+step 4 finished at for Q70L ---------------------- DONE ---------------------- 
+step 1 finished for Q60
+step 2 finished at for Q60
+step 3 finished at for Q60
+step 4 finished at for Q60 ---------------------- DONE ---------------------- 
+step 1 finished for QX60
+step 2 finished at for QX60
+step 3 finished at for Q60
+step 4 finished at for Q60 ---------------------- DONE ---------------------- 
+step 3 finished at for QX60
+step 1 finished for QX60
+step 4 finished at for QX60 ---------------------- DONE ---------------------- 
+step 2 finished at for QX60
+step 1 finished for QX80
+step 2 finished at for QX80
+step 3 finished at for QX60
+step 4 finished at for QX60 ---------------------- DONE ---------------------- 
+step 3 finished at for QX80
+step 4 finished at for QX80 ---------------------- DONE ---------------------- 
+step 1 finished for QX50
+step 2 finished at for QX50
+step 3 finished at for QX50
+step 4 finished at for QX50 ---------------------- DONE ---------------------- 
+step 1 finished for QX80
+step 1 finished for QX80
+step 2 finished at for QX80
+step 2 finished at for QX80
+step 3 finished at for QX80
+step 4 finished at for QX80 ---------------------- DONE ---------------------- 
+step 1 finished for 2500
+step 1 finished for 2500
+step 2 finished at for 2500
+step 2 finished at for 2500
+step 3 finished at for 2500
+step 4 finished at for 2500 ---------------------- DONE ---------------------- 
+step 3 finished at for 2500
+step 4 finished at for 2500 ---------------------- DONE ---------------------- 
+step 1 finished for 300
+step 2 finished at for 300
+step 3 finished at for 300
+step 4 finished at for 300 ---------------------- DONE ---------------------- 
+step 1 finished for Telluride
+step 2 finished at for Telluride
+step 3 finished at for Telluride
+step 4 finished at for Telluride ---------------------- DONE ---------------------- 
+step 1 finished for Stinger
+step 2 finished at for Stinger
+step 3 finished at for Stinger
+step 4 finished at for Stinger ---------------------- DONE ---------------------- 
+step 1 finished for Soul
+step 2 finished at for Soul
+step 3 finished at for Soul
+step 4 finished at for Soul ---------------------- DONE ---------------------- 
+step 1 finished for Eclipse Cross
+step 1 finished for Eclipse Cross
+step 2 finished at for Eclipse Cross
+step 2 finished at for Eclipse Cross
+step 3 finished at for Eclipse Cross
+step 4 finished at for Eclipse Cross ---------------------- DONE ---------------------- 
+step 3 finished at for Eclipse Cross
+step 4 finished at for Eclipse Cross ---------------------- DONE ---------------------- 
+step 1 finished for Odyssey
+step 2 finished at for Odyssey
+step 3 finished at for Odyssey
+step 4 finished at for Odyssey ---------------------- DONE ---------------------- 
+step 1 finished for Fit
+step 2 finished at for Fit
+step 3 finished at for Fit
+step 4 finished at for Fit ---------------------- DONE ---------------------- 
+step 1 finished for Ridgeline
+step 2 finished at for Ridgeline
+step 3 finished at for Ridgeline
+step 4 finished at for Ridgeline ---------------------- DONE ---------------------- 
+step 1 finished for Civic Hatchback
+step 2 finished at for Civic Hatchback
+step 3 finished at for Civic Hatchback
+step 4 finished at for Civic Hatchback ---------------------- DONE ---------------------- 
+step 1 finished for HR-V
+step 2 finished at for HR-V
+step 3 finished at for HR-V
+step 4 finished at for HR-V ---------------------- DONE ---------------------- 
+step 1 finished for Civic Type R
+step 2 finished at for Civic Type R
+step 3 finished at for Civic Type R
+step 4 finished at for Civic Type R ---------------------- DONE ---------------------- 
+step 1 finished for Civic Sedan
+step 2 finished at for Civic Sedan
+step 3 finished at for Civic Sedan
+step 4 finished at for Civic Sedan ---------------------- DONE ---------------------- 
+step 1 finished for Civic Coupe
+step 2 finished at for Civic Coupe
+step 3 finished at for Civic Coupe
+step 4 finished at for Civic Coupe ---------------------- DONE ---------------------- 
+step 1 finished for CR-V
+step 2 finished at for CR-V
+step 3 finished at for CR-V
+step 4 finished at for CR-V ---------------------- DONE ---------------------- 
+step 1 finished for Accord Sedan
+step 2 finished at for Accord Sedan
+step 3 finished at for Accord Sedan
+step 4 finished at for Accord Sedan ---------------------- DONE ---------------------- 
+step 1 finished for Clarity Plug-In Hybrid
+step 2 finished at for Clarity Plug-In Hybrid
+step 3 finished at for Clarity Plug-In Hybrid
+step 4 finished at for Clarity Plug-In Hybrid ---------------------- DONE ---------------------- 
+step 1 finished for Pilot
+step 2 finished at for Pilot
+step 3 finished at for Pilot
+step 4 finished at for Pilot ---------------------- DONE ---------------------- 
+step 1 finished for Accord Hybrid
+step 2 finished at for Accord Hybrid
+step 3 finished at for Accord Hybrid
+step 4 finished at for Accord Hybrid ---------------------- DONE ---------------------- 
+step 1 finished for Insight
+step 2 finished at for Insight
+step 3 finished at for Insight
+step 4 finished at for Insight ---------------------- DONE ---------------------- 
+step 1 finished for Civic Si Coupe
+step 2 finished at for Civic Si Coupe
+step 3 finished at for Civic Si Coupe
+step 4 finished at for Civic Si Coupe ---------------------- DONE ---------------------- 
+step 1 finished for Civic Si Sedan
+step 2 finished at for Civic Si Sedan
+step 3 finished at for Civic Si Sedan
+step 4 finished at for Civic Si Sedan ---------------------- DONE ---------------------- 
+step 1 finished for Passport
+step 2 finished at for Passport
+step 3 finished at for Passport
+step 4 finished at for Passport ---------------------- DONE ---------------------- 
+step 1 finished for Journey
+step 2 finished at for Journey
+step 3 finished at for Journey
+step 4 finished at for Journey ---------------------- DONE ---------------------- 
+step 1 finished for ProMaster City Wagon
+step 2 finished at for ProMaster City Wagon
+step 3 finished at for ProMaster City Wagon
+step 4 finished at for ProMaster City Wagon ---------------------- DONE ---------------------- 
+step 1 finished for ProMaster City Cargo Van
+step 2 finished at for ProMaster City Cargo Van
+step 3 finished at for ProMaster City Cargo Van
+step 4 finished at for ProMaster City Cargo Van ---------------------- DONE ---------------------- 
+step 1 finished for Silverado 1500
+step 1 finished for Silverado 1500
+step 2 finished at for Silverado 1500
+step 2 finished at for Silverado 1500
+step 3 finished at for Silverado 1500
+step 4 finished at for Silverado 1500 ---------------------- DONE ---------------------- 
+step 3 finished at for Silverado 1500
+step 4 finished at for Silverado 1500 ---------------------- DONE ---------------------- 
+step 1 finished for Q5
+step 2 finished at for Q5
+step 3 finished at for Q5
+step 4 finished at for Q5 ---------------------- DONE ---------------------- 
+step 1 finished for Police Interceptor Utility
+step 2 finished at for Police Interceptor Utility
+step 3 finished at for Police Interceptor Utility
+step 4 finished at for Police Interceptor Utility ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Coupe
+step 2 finished at for 370Z Coupe
+step 3 finished at for 370Z Coupe
+step 4 finished at for 370Z Coupe ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover Evoque
+step 2 finished at for Range Rover Evoque
+step 3 finished at for Range Rover Evoque
+step 4 finished at for Range Rover Evoque ---------------------- DONE ---------------------- 
+step 1 finished for I-PACE
+step 2 finished at for I-PACE
+step 3 finished at for I-PACE
+step 4 finished at for I-PACE ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Roadster
+step 2 finished at for 370Z Roadster
+step 3 finished at for 370Z Roadster
+step 4 finished at for 370Z Roadster ---------------------- DONE ---------------------- 
+step 1 finished for F-TYPE
+step 2 finished at for F-TYPE
+step 3 finished at for F-TYPE
+step 4 finished at for F-TYPE ---------------------- DONE ---------------------- 
+step 1 finished for Police Interceptor Utility
+step 2 finished at for Police Interceptor Utility
+step 3 finished at for Police Interceptor Utility
+step 4 finished at for Police Interceptor Utility ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Coupe
+step 2 finished at for 370Z Coupe
+step 3 finished at for 370Z Coupe
+step 4 finished at for 370Z Coupe ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover Evoque
+step 2 finished at for Range Rover Evoque
+step 3 finished at for Range Rover Evoque
+step 4 finished at for Range Rover Evoque ---------------------- DONE ---------------------- 
+step 1 finished for I-PACE
+step 2 finished at for I-PACE
+step 3 finished at for I-PACE
+step 4 finished at for I-PACE ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Roadster
+step 2 finished at for 370Z Roadster
+step 3 finished at for 370Z Roadster
+step 4 finished at for 370Z Roadster ---------------------- DONE ---------------------- 
+step 1 finished for F-TYPE
+step 2 finished at for F-TYPE
+step 3 finished at for F-TYPE
+step 4 finished at for F-TYPE ---------------------- DONE ---------------------- 
+step 1 finished for Envision
+step 2 finished at for Envision
+step 3 finished at for Envision
+step 4 finished at for Envision ---------------------- DONE ---------------------- 
+step 1 finished for GT-R
+step 2 finished at for GT-R
+step 3 finished at for GT-R
+step 4 finished at for GT-R ---------------------- DONE ---------------------- 
+step 1 finished for Aviator
+step 2 finished at for Aviator
+step 3 finished at for Aviator
+step 4 finished at for Aviator ---------------------- DONE ---------------------- 
+step 1 finished for XT6
+step 2 finished at for XT6
+step 3 finished at for XT6
+step 4 finished at for XT6 ---------------------- DONE ---------------------- 
+step 1 finished for Sierra 3500HD
+step 2 finished at for Sierra 3500HD
+step 3 finished at for Sierra 3500HD
+step 4 finished at for Sierra 3500HD ---------------------- DONE ---------------------- 
+step 1 finished for Corolla
+step 2 finished at for Corolla
+step 3 finished at for Corolla
+step 4 finished at for Corolla ---------------------- DONE ---------------------- 
+step 1 finished for Silverado 3500HD
+step 2 finished at for Silverado 3500HD
+step 3 finished at for Silverado 3500HD
+step 4 finished at for Silverado 3500HD ---------------------- DONE ---------------------- 
+step 1 finished for Sienna
+step 2 finished at for Sienna
+step 1 finished for Police Interceptor Utility
+step 2 finished at for Police Interceptor Utility
+step 3 finished at for Police Interceptor Utility
+step 4 finished at for Police Interceptor Utility ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Coupe
+step 2 finished at for 370Z Coupe
+step 3 finished at for 370Z Coupe
+step 4 finished at for 370Z Coupe ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover Evoque
+step 2 finished at for Range Rover Evoque
+step 3 finished at for Range Rover Evoque
+step 4 finished at for Range Rover Evoque ---------------------- DONE ---------------------- 
+step 1 finished for I-PACE
+step 2 finished at for I-PACE
+step 3 finished at for I-PACE
+step 4 finished at for I-PACE ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Roadster
+step 2 finished at for 370Z Roadster
+step 3 finished at for 370Z Roadster
+step 4 finished at for 370Z Roadster ---------------------- DONE ---------------------- 
+step 1 finished for F-TYPE
+step 2 finished at for F-TYPE
+step 3 finished at for Sienna
+step 3 finished at for F-TYPE
+step 4 finished at for F-TYPE ---------------------- DONE ---------------------- 
+step 1 finished for Envision
+step 2 finished at for Envision
+step 3 finished at for Envision
+step 4 finished at for Envision ---------------------- DONE ---------------------- 
+step 1 finished for GT-R
+step 2 finished at for GT-R
+step 3 finished at for GT-R
+step 4 finished at for GT-R ---------------------- DONE ---------------------- 
+step 1 finished for Aviator
+step 2 finished at for Aviator
+step 4 finished at for Sienna ---------------------- DONE ---------------------- 
+step 1 finished for Z4
+step 3 finished at for Aviator
+step 2 finished at for Z4
+step 4 finished at for Aviator ---------------------- DONE ---------------------- 
+step 1 finished for XT6
+step 2 finished at for XT6
+step 3 finished at for XT6
+step 4 finished at for XT6 ---------------------- DONE ---------------------- 
+step 3 finished at for Z4
+step 4 finished at for Z4 ---------------------- DONE ---------------------- 
+step 1 finished for Sierra 3500HD
+step 2 finished at for Sierra 3500HD
+step 3 finished at for Sierra 3500HD
+step 4 finished at for Sierra 3500HD ---------------------- DONE ---------------------- 
+step 1 finished for Corolla
+step 2 finished at for Corolla
+step 3 finished at for Corolla
+step 4 finished at for Corolla ---------------------- DONE ---------------------- 
+step 1 finished for Silverado 3500HD
+step 2 finished at for Silverado 3500HD
+step 3 finished at for Silverado 3500HD
+step 4 finished at for Silverado 3500HD ---------------------- DONE ---------------------- 
+step 1 finished for Sienna
+step 2 finished at for Sienna
+step 3 finished at for Sienna
+step 4 finished at for Sienna ---------------------- DONE ---------------------- 
+step 1 finished for Z4
+step 2 finished at for Z4
+step 3 finished at for Z4
+step 4 finished at for Z4 ---------------------- DONE ---------------------- 
+step 1 finished for M2
+step 2 finished at for M2
+step 3 finished at for M2
+step 4 finished at for M2 ---------------------- DONE ---------------------- 
+step 1 finished for 3 Series
+step 2 finished at for 3 Series
+step 3 finished at for 3 Series
+step 4 finished at for 3 Series ---------------------- DONE ---------------------- 
+step 1 finished for 4 Series
+step 2 finished at for 4 Series
+step 3 finished at for 4 Series
+step 4 finished at for 4 Series ---------------------- DONE ---------------------- 
+step 1 finished for Silverado 2500HD
+step 2 finished at for Silverado 2500HD
+step 3 finished at for Silverado 2500HD
+step 4 finished at for Silverado 2500HD ---------------------- DONE ---------------------- 
+step 1 finished for 2 Series
+step 2 finished at for 2 Series
+step 3 finished at for 2 Series
+step 4 finished at for 2 Series ---------------------- DONE ---------------------- 
+step 1 finished for Spark
+step 2 finished at for Spark
+step 3 finished at for Spark
+step 4 finished at for Spark ---------------------- DONE ---------------------- 
+step 1 finished for Sierra 2500HD
+step 2 finished at for Sierra 2500HD
+step 3 finished at for Sierra 2500HD
+step 4 finished at for Sierra 2500HD ---------------------- DONE ---------------------- 
+step 1 finished for M4
+step 2 finished at for M4
+step 3 finished at for M4
+step 4 finished at for M4 ---------------------- DONE ---------------------- 
+step 1 finished for Transit Connect Van
+step 2 finished at for Transit Connect Van
+step 3 finished at for Transit Connect Van
+step 4 finished at for Transit Connect Van ---------------------- DONE ---------------------- 
+step 1 finished for Transit Connect Wagon
+step 2 finished at for Transit Connect Wagon
+step 3 finished at for Transit Connect Wagon
+step 4 finished at for Transit Connect Wagon ---------------------- DONE ---------------------- 
+step 1 finished for 911
+step 2 finished at for 911
+step 3 finished at for 911
+step 4 finished at for 911 ---------------------- DONE ---------------------- 
+step 1 finished for XF
+step 2 finished at for XF
+step 3 finished at for XF
+step 4 finished at for XF ---------------------- DONE ---------------------- 
+step 1 finished for 7 Series
+step 2 finished at for 7 Series
+step 3 finished at for 7 Series
+step 4 finished at for 7 Series ---------------------- DONE ---------------------- 
+step 1 finished for Soul
+step 2 finished at for Soul
+step 3 finished at for Soul
+step 4 finished at for Soul ---------------------- DONE ---------------------- 
+step 1 finished for Armada
+step 2 finished at for Armada
+step 3 finished at for Armada
+step 4 finished at for Armada ---------------------- DONE ---------------------- 
+step 1 finished for X3 M
+step 2 finished at for X3 M
+step 3 finished at for X3 M
+step 4 finished at for X3 M ---------------------- DONE ---------------------- 
+step 1 finished for X4 M
+step 2 finished at for X4 M
+step 3 finished at for X4 M
+step 4 finished at for X4 M ---------------------- DONE ---------------------- 
+step 1 finished for Sportage
+step 2 finished at for Sportage
+step 3 finished at for Sportage
+step 4 finished at for Sportage ---------------------- DONE ---------------------- 
+step 1 finished for GR Supra
+step 2 finished at for GR Supra
+step 3 finished at for GR Supra
+step 4 finished at for GR Supra ---------------------- DONE ---------------------- 
+step 1 finished for TLX
+step 2 finished at for TLX
+step 3 finished at for TLX
+step 4 finished at for TLX ---------------------- DONE ---------------------- 
+step 1 finished for MDX
+step 2 finished at for MDX
+step 3 finished at for MDX
+step 4 finished at for MDX ---------------------- DONE ---------------------- 
+step 1 finished for XE
+step 2 finished at for XE
+step 3 finished at for XE
+step 4 finished at for XE ---------------------- DONE ---------------------- 
+step 1 finished for GLE
+step 2 finished at for GLE
+step 3 finished at for GLE
+step 4 finished at for GLE ---------------------- DONE ---------------------- 
+step 1 finished for R8 Coupe
+step 2 finished at for R8 Coupe
+step 3 finished at for R8 Coupe
+step 4 finished at for R8 Coupe ---------------------- DONE ---------------------- 
+step 1 finished for R8 Spyder
+step 2 finished at for R8 Spyder
+step 3 finished at for R8 Spyder
+step 4 finished at for R8 Spyder ---------------------- DONE ---------------------- 
+step 1 finished for Traverse
+step 2 finished at for Traverse
+step 3 finished at for Traverse
+step 4 finished at for Traverse ---------------------- DONE ---------------------- 
+step 1 finished for Regal Sportback
+step 2 finished at for Regal Sportback
+step 3 finished at for Regal Sportback
+step 4 finished at for Regal Sportback ---------------------- DONE ---------------------- 
+step 1 finished for Equinox
+step 2 finished at for Equinox
+step 3 finished at for Equinox
+step 4 finished at for Equinox ---------------------- DONE ---------------------- 
+step 1 finished for Encore
+step 2 finished at for Encore
+step 3 finished at for Encore
+step 4 finished at for Encore ---------------------- DONE ---------------------- 
+step 1 finished for Suburban
+step 2 finished at for Suburban
+step 3 finished at for Suburban
+step 4 finished at for Suburban ---------------------- DONE ---------------------- 
+step 1 finished for Tahoe
+step 2 finished at for Tahoe
+step 3 finished at for Tahoe
+step 4 finished at for Tahoe ---------------------- DONE ---------------------- 
+step 1 finished for Telluride
+step 2 finished at for Telluride
+step 3 finished at for Telluride
+step 4 finished at for Telluride ---------------------- DONE ---------------------- 
+step 1 finished for Trax
+step 2 finished at for Trax
+step 3 finished at for Trax
+step 4 finished at for Trax ---------------------- DONE ---------------------- 
+step 1 finished for Enclave
+step 2 finished at for Enclave
+step 3 finished at for Enclave
+step 4 finished at for Enclave ---------------------- DONE ---------------------- 
+step 1 finished for XT4
+step 2 finished at for XT4
+step 3 finished at for XT4
+step 4 finished at for XT4 ---------------------- DONE ---------------------- 
+step 1 finished for EcoSport
+step 2 finished at for EcoSport
+step 3 finished at for EcoSport
+step 4 finished at for EcoSport ---------------------- DONE ---------------------- 
+step 1 finished for G80
+step 2 finished at for G80
+step 3 finished at for G80
+step 4 finished at for G80 ---------------------- DONE ---------------------- 
+step 1 finished for Yukon
+step 2 finished at for Yukon
+step 3 finished at for Yukon
+step 4 finished at for Yukon ---------------------- DONE ---------------------- 
+step 1 finished for Yukon XL
+step 2 finished at for Yukon XL
+step 3 finished at for Yukon XL
+step 4 finished at for Yukon XL ---------------------- DONE ---------------------- 
+step 1 finished for Escalade
+step 2 finished at for Escalade
+step 3 finished at for Escalade
+step 4 finished at for Escalade ---------------------- DONE ---------------------- 
+step 1 finished for Escalade ESV
+step 2 finished at for Escalade ESV
+step 3 finished at for Escalade ESV
+step 4 finished at for Escalade ESV ---------------------- DONE ---------------------- 
+step 1 finished for G70
+step 2 finished at for G70
+step 3 finished at for G70
+step 4 finished at for G70 ---------------------- DONE ---------------------- 
+step 1 finished for F-PACE
+step 2 finished at for F-PACE
+step 3 finished at for F-PACE
+step 4 finished at for F-PACE ---------------------- DONE ---------------------- 
+step 1 finished for Altima
+step 2 finished at for Altima
+step 3 finished at for Altima
+step 4 finished at for Altima ---------------------- DONE ---------------------- 
+step 1 finished for Maxima
+step 2 finished at for Maxima
+step 3 finished at for Maxima
+step 4 finished at for Maxima ---------------------- DONE ---------------------- 
+step 1 finished for RC F
+step 2 finished at for RC F
+step 3 finished at for RC F
+step 4 finished at for RC F ---------------------- DONE ---------------------- 
+step 1 finished for Malibu
+step 2 finished at for Malibu
+step 3 finished at for Malibu
+step 4 finished at for Malibu ---------------------- DONE ---------------------- 
+step 1 finished for Gladiator
+step 2 finished at for Gladiator
+step 3 finished at for Gladiator
+step 4 finished at for Gladiator ---------------------- DONE ---------------------- 
+step 1 finished for Terrain
+step 2 finished at for Terrain
+step 3 finished at for Terrain
+step 4 finished at for Terrain ---------------------- DONE ---------------------- 
+step 1 finished for Colorado
+step 2 finished at for Colorado
+step 3 finished at for Colorado
+step 4 finished at for Colorado ---------------------- DONE ---------------------- 
+step 1 finished for Canyon
+step 2 finished at for Canyon
+step 3 finished at for Canyon
+step 4 finished at for Canyon ---------------------- DONE ---------------------- 
+step 1 finished for Soul EV
+step 2 finished at for Soul EV
+step 3 finished at for Soul EV
+step 4 finished at for Soul EV ---------------------- DONE ---------------------- 
+step 1 finished for Sierra 1500
+step 2 finished at for Sierra 1500
+step 3 finished at for Sierra 1500
+step 4 finished at for Sierra 1500 ---------------------- DONE ---------------------- 
+step 1 finished for CT6-V
+step 2 finished at for CT6-V
+step 3 finished at for CT6-V
+step 4 finished at for CT6-V ---------------------- DONE ---------------------- 
+step 1 finished for XC60
+step 2 finished at for XC60
+step 3 finished at for XC60
+step 4 finished at for XC60 ---------------------- DONE ---------------------- 
+step 1 finished for S90
+step 2 finished at for S90
+step 3 finished at for S90
+step 4 finished at for S90 ---------------------- DONE ---------------------- 
+step 1 finished for Rogue
+step 2 finished at for Rogue
+step 3 finished at for Rogue
+step 4 finished at for Rogue ---------------------- DONE ---------------------- 
+step 1 finished for Explorer
+step 2 finished at for Explorer
+step 3 finished at for Explorer
+step 4 finished at for Explorer ---------------------- DONE ---------------------- 
+step 1 finished for XC90
+step 2 finished at for XC90
+step 3 finished at for XC90
+step 4 finished at for XC90 ---------------------- DONE ---------------------- 
+step 1 finished for Silverado 1500
+step 2 finished at for Silverado 1500
+step 3 finished at for Silverado 1500
+step 4 finished at for Silverado 1500 ---------------------- DONE ---------------------- 
+step 1 finished for Qashqai
+step 2 finished at for Qashqai
+step 3 finished at for Qashqai
+step 4 finished at for Qashqai ---------------------- DONE ---------------------- 
+step 1 finished for CT6
+step 2 finished at for CT6
+step 3 finished at for CT6
+step 4 finished at for CT6 ---------------------- DONE ---------------------- 
+step 1 finished for XT5
+step 2 finished at for XT5
+step 3 finished at for XT5
+step 4 finished at for XT5 ---------------------- DONE ---------------------- 
+step 1 finished for Elantra
+step 2 finished at for Elantra
+step 3 finished at for Elantra
+step 4 finished at for Elantra ---------------------- DONE ---------------------- 
+step 1 finished for QX60
+step 2 finished at for QX60
+step 3 finished at for QX60
+step 4 finished at for QX60 ---------------------- DONE ---------------------- 
+step 1 finished for Murano
+step 2 finished at for Murano
+step 3 finished at for Murano
+step 4 finished at for Murano ---------------------- DONE ---------------------- 
+step 1 finished for Acadia
+step 2 finished at for Acadia
+step 3 finished at for Acadia
+step 4 finished at for Acadia ---------------------- DONE ---------------------- 
+step 1 finished for V60 Cross Country
+step 2 finished at for V60 Cross Country
+step 3 finished at for V60 Cross Country
+step 4 finished at for V60 Cross Country ---------------------- DONE ---------------------- 
+step 1 finished for V60
+step 2 finished at for V60
+step 3 finished at for V60
+step 4 finished at for V60 ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover Sport
+step 2 finished at for Range Rover Sport
+step 3 finished at for Range Rover Sport
+step 4 finished at for Range Rover Sport ---------------------- DONE ---------------------- 
+step 1 finished for XC40
+step 2 finished at for XC40
+step 3 finished at for XC40
+step 4 finished at for XC40 ---------------------- DONE ---------------------- 
+step 1 finished for S60
+step 2 finished at for S60
+step 3 finished at for S60
+step 4 finished at for S60 ---------------------- DONE ---------------------- 
+step 1 finished for Mustang
+step 2 finished at for Mustang
+step 3 finished at for Mustang
+step 4 finished at for Mustang ---------------------- DONE ---------------------- 
+step 1 finished for Prius Prime
+step 2 finished at for Prius Prime
+step 3 finished at for Prius Prime
+step 4 finished at for Prius Prime ---------------------- DONE ---------------------- 
+step 1 finished for Fusion
+step 2 finished at for Fusion
+step 3 finished at for Fusion
+step 4 finished at for Fusion ---------------------- DONE ---------------------- 
+step 1 finished for Fusion Energi
+step 2 finished at for Fusion Energi
+step 3 finished at for Fusion Energi
+step 4 finished at for Fusion Energi ---------------------- DONE ---------------------- 
+step 1 finished for Fusion Hybrid
+step 2 finished at for Fusion Hybrid
+step 3 finished at for Fusion Hybrid
+step 4 finished at for Fusion Hybrid ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover
+step 2 finished at for Range Rover
+step 3 finished at for Range Rover
+step 4 finished at for Range Rover ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover Velar
+step 2 finished at for Range Rover Velar
+step 3 finished at for Range Rover Velar
+step 4 finished at for Range Rover Velar ---------------------- DONE ---------------------- 
+step 1 finished for Police Responder Hybrid Sedan
+step 2 finished at for Police Responder Hybrid Sedan
+step 3 finished at for Police Responder Hybrid Sedan
+step 4 finished at for Police Responder Hybrid Sedan ---------------------- DONE ---------------------- 
+step 1 finished for Escape
+step 2 finished at for Escape
+step 3 finished at for Escape
+step 4 finished at for Escape ---------------------- DONE ---------------------- 
+step 1 finished for MKZ
+step 2 finished at for MKZ
+step 3 finished at for MKZ
+step 4 finished at for MKZ ---------------------- DONE ---------------------- 
+step 1 finished for Sedona
+step 2 finished at for Sedona
+step 3 finished at for Sedona
+step 4 finished at for Sedona ---------------------- DONE ---------------------- 
+step 1 finished for Impala
+step 2 finished at for Impala
+step 3 finished at for Impala
+step 4 finished at for Impala ---------------------- DONE ---------------------- 
+step 1 finished for LC
+step 2 finished at for LC
+step 3 finished at for LC
+step 4 finished at for LC ---------------------- DONE ---------------------- 
+step 1 finished for Veloster
+step 2 finished at for Veloster
+step 3 finished at for Veloster
+step 4 finished at for Veloster ---------------------- DONE ---------------------- 
+step 1 finished for Veloster N
+step 2 finished at for Veloster N
+step 3 finished at for Veloster N
+step 4 finished at for Veloster N ---------------------- DONE ---------------------- 
+step 1 finished for Police Interceptor Utility
+step 2 finished at for Police Interceptor Utility
+step 3 finished at for Police Interceptor Utility
+step 4 finished at for Police Interceptor Utility ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Coupe
+step 2 finished at for 370Z Coupe
+step 3 finished at for 370Z Coupe
+step 4 finished at for 370Z Coupe ---------------------- DONE ---------------------- 
+step 1 finished for Range Rover Evoque
+step 2 finished at for Range Rover Evoque
+step 3 finished at for Range Rover Evoque
+step 4 finished at for Range Rover Evoque ---------------------- DONE ---------------------- 
+step 1 finished for I-PACE
+step 2 finished at for I-PACE
+step 3 finished at for I-PACE
+step 4 finished at for I-PACE ---------------------- DONE ---------------------- 
+step 1 finished for 370Z Roadster
+step 2 finished at for 370Z Roadster
+step 3 finished at for 370Z Roadster
+step 4 finished at for 370Z Roadster ---------------------- DONE ---------------------- 
+step 1 finished for F-TYPE
+step 2 finished at for F-TYPE
+step 3 finished at for F-TYPE
+step 4 finished at for F-TYPE ---------------------- DONE ---------------------- 

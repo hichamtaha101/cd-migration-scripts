@@ -1,0 +1,48 @@
+
+2019-03-02 01:35:19: No drivetrain was found for model C-HR with style_id 404899<br>
+2019-03-02 01:35:20: No drivetrain was found for model C-HR with style_id 404899<br>
+2019-03-15 19:07:41: Something went wrong when downloading images for style id 396849 at ../../temp/media/948693/01/2018RMT110005_1280_01_PAUQXR.png
+2019-03-29 19:31:40: Did not successfully download all local Renegade images onto s3 specifically for 315793
+2019-04-05 21:39:10: Something went wrong when downloading images for style id 397528 at ../../temp/media/825793/01/2018RMT110003_1280_01_P69.png
+2019-04-09 19:40:32: Did not successfully download all local Challenger images onto s3 specifically for 619493
+2019-04-27 01:35:43: Did not successfully download all local QX30 images onto s3 specifically for 316093
+2019-04-27 02:00:39: Did not successfully download all local Q60 images onto s3 specifically for 233304
+2019-05-04 00:43:28: Did not successfully download all local 2500 images onto s3 specifically for 802593
+2019-05-14 17:27:17: No drivetrain was found for model Telluride with style_id 406411<br>
+2019-05-16 19:00:43: No drivetrain was found for model Eclipse Cross with style_id 398018<br>
+2019-05-16 19:00:45: No drivetrain was found for model Eclipse Cross with style_id 398018<br>
+2019-05-16 19:07:23: Did not successfully download all local Eclipse Cross images onto s3 specifically for 810893
+2019-05-29 20:26:50: No drivetrain was found for model Journey with style_id 394809<br>
+2019-05-29 20:39:05: No drivetrain was found for model Fourgonnette de tourisme ProMaster City with style_id 393781<br>
+2019-05-29 20:42:00: No drivetrain was found for model ProMaster City fourgonnette utilitaire with style_id 393783<br>
+2019-06-04 01:27:26: Did not successfully download all local Silverado 1500 images onto s3 specifically for 007383
+2019-06-06 03:22:42: Something went wrong when downloading images for style id 402041 at ../../temp/media/140204/01/2019JAC130001_1280_02_1AB.png
+2019-06-06 03:42:16: No drivetrain was found for model Armada with style_id 406045<br>
+2019-06-06 04:14:10: No drivetrain was found for model GLE with style_id 406132<br>
+2019-06-06 05:07:49: No drivetrain was found for model EcoSport with style_id 406597<br>
+2019-06-06 05:37:14: No drivetrain was found for model G70 with style_id 406733<br>
+2019-06-06 06:19:50: No drivetrain was found for model Maxima with style_id 406752<br>
+2019-06-06 06:22:08: No drivetrain was found for model RC F with style_id 406787<br>
+2019-06-06 06:27:34: No drivetrain was found for model Gladiator with style_id 406814<br>
+2019-06-06 07:14:23: No drivetrain was found for model Soul EV with style_id 406862<br>
+2019-06-06 08:09:27: No drivetrain was found for model Rogue with style_id 406964<br>
+2019-06-06 08:09:55: No drivetrain was found for model Explorer with style_id 406981<br>
+2019-06-06 08:59:55: No drivetrain was found for model Qashqai with style_id 407239<br>
+2019-06-06 09:03:03: No drivetrain was found for model XT5 with style_id 407378<br>
+2019-06-06 09:03:43: No drivetrain was found for model Elantra with style_id 407404<br>
+2019-06-06 09:10:22: No drivetrain was found for model Murano with style_id 407532<br>
+2019-06-06 09:13:13: No drivetrain was found for model Acadia with style_id 407683<br>
+2019-06-06 09:14:12: No drivetrain was found for model Range Rover Sport with style_id 407767<br>
+2019-06-06 09:39:29: No drivetrain was found for model Mustang with style_id 407833<br>
+2019-06-06 09:40:18: No drivetrain was found for model Prius Prime with style_id 407841<br>
+2019-06-06 09:42:34: No drivetrain was found for model Fusion with style_id 407882<br>
+2019-06-06 09:46:29: No drivetrain was found for model Fusion Energi with style_id 407883<br>
+2019-06-06 09:46:51: No drivetrain was found for model Fusion hybride with style_id 407885<br>
+2019-06-06 09:47:16: No drivetrain was found for model Range Rover with style_id 407960<br>
+2019-06-06 11:15:21: No drivetrain was found for model Range Rover Velar with style_id 407974<br>
+2019-06-06 11:30:23: No drivetrain was found for model Police Responder Hybrid Sedan with style_id 407978<br>
+2019-06-06 11:30:35: No drivetrain was found for model Escape with style_id 407994<br>
+2019-06-06 11:37:13: No drivetrain was found for model MKZ with style_id 408004<br>
+2019-06-06 11:37:36: No drivetrain was found for model Sedona with style_id 408026<br>
+2019-06-06 11:38:25: No drivetrain was found for model Veloster with style_id 408292<br>
+2019-06-06 11:42:11: No drivetrain was found for model Veloster N with style_id 408269<br>

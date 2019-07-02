@@ -135,10 +135,10 @@ function update_database_structure() {
 	return 'Finished updating database structure.';
 }
 
-function update_everything_for_model($model) {
+function update_everything_for_model($model, $year) {
 
 	// Script breaks if something goes wrong in the following functions
-	$response1 = update_styles( $model, 'true' );
+	$response1 = update_styles( $model, 'true', $year );
 	echo '<pre>' , var_dump($response1), '</pre>';
 	$testlog = fopen("test.txt", "a");
     $text = 'step 1 finished for ' . $model;
@@ -158,6 +158,7 @@ function update_everything_for_model($model) {
     $text = 'step 3 finished at for ' . $model;
     fwrite($testlog, "\n" . $text);
 	fclose($testlog);
+
 	
 	$response4 = update_model_images( $model, 'colorized' );
 	echo '<pre>' , var_dump($response4), '</pre>';
@@ -187,12 +188,15 @@ function update_everything_for_model($model) {
  * @param boolean $remove_media		Whether to remove ALL media entries when updating. Default removes Chrome Data ones only.
  * @return object					The updated object used for front-end display.
  */
-function update_styles( $model, $remove_media ) {
+function update_styles( $model, $remove_media, $year ) {
 	global $obj;
 	global $obj_fr;
+
+	$filter = "model_name_cd = '{$model}'";
+	$filter .= ! empty( $year ) ? ' AND model_year = ' . $year : '';
 	
-	$styles = $obj->get_model_details( "model_name_cd = '{$model}'" );
-	$styles_fr = $obj_fr->get_model_details( "model_name_cd = '{$model}'" );
+	$styles = $obj->get_model_details( $filter );
+	$styles_fr = $obj_fr->get_model_details( $filter );
 	if ( $styles !== false ) {
 		$obj->update_styles( $styles, $remove_media );
 		if ( $styles_fr !== false ) {

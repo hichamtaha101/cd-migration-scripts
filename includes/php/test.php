@@ -27,21 +27,40 @@ include_once( 'functions.php' );
 
 // 3. ----- UPDATE THE FRENCH STYLES/STANDARD EQUIPMENT/OPTIONS/EXT COLORS/ENGINES
 // $models = array();
-// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model");
-// foreach( $models as $index=>$model ) {
-//   if ( $index >= 0 ) {
-//     echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
-//     update_styles( $model, false );
-//     //update_everything_for_model( $model );
-//   }
-// }
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE division_name LIKE 'Honda'");
+// echo '<pre>' , var_dump($models), '</pre>';
+
+// $models = $db->get_col("SELECT DISTINCT model.model_name_cd FROM model LEFT JOIN media ON model.model_name_cd = media.model_name_cd AND media.model_year > 2018 WHERE media.model_name_cd is null");
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE division_name LIKE 'Infiniti'");
+$models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE model_year = 2020");
+// $models = array(
+//   'Journey',
+//   'ProMaster City Wagon',
+//   'ProMaster City Cargo Van',
+// );
+
+foreach( $models as $index=>$model ) {
+  if ( $index >= 0 ) {
+    echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
+    // update_styles( $model, false );
+    update_everything_for_model( $model, 2020 );
+  }
+}
+	// Script breaks if something goes wrong in the following functions
+	// var_dump( update_styles( 'Silverado 1500', false ));
+	// var_dump( update_model_images( 'Silverado 1500', 'view' ));
+	// var_dump( update_ftps3( '1500' ));
+	// var_dump( update_model_images( '1500', 'colorized' ));
+
+
+
 // update_all_makes();
 // update_all_models();
-
 // $models = array(
 
-//   'Escape',
-//   '',
+//   'Accord',
+//   'CR-V',
+//   'Civic',
 
 // );
 
@@ -51,7 +70,7 @@ include_once( 'functions.php' );
 //   }
 // }
 // var_dump(update_all_makes());
-// update_everything_for_model('F-TYPE');
+// update_everything_for_model('Q5');
 // var_dump( update_ftps3( 'Expedition' ));
 // var_dump( update_model_images( 'Expedition', 'view' ));
 /////////////////// ---------- end updating french data on live db ---------- //////////////////

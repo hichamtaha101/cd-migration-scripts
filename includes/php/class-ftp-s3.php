@@ -91,8 +91,11 @@ class FTP_S3 {
       }
       if ( false === $contents ) {
         var_dump('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.' );
-        return('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.');
-      }
+
+        del_tree( $directory );
+        continue;
+        // return('Couldn\'t find ' . $folder . ' in ftp. Please add a fix for this.');
+      } 
 
 			// 3) Download each color variation for this media
 			foreach ( $contents as $image ) {
@@ -163,6 +166,7 @@ class FTP_S3 {
       // $this->db->query( "DELETE FROM media WHERE style_id LIKE '{$m['style_id']}' AND file_name LIKE '%{$m['file_name']}%' AND shot_code LIKE {$m['shot_code']} AND url LIKE '%chromedata%' " );
       $this->db->query( $sql_insert . implode( ',', $sql_values ) );
     }
+    
 
     // Everything went successful
     $this->outputs[] = array(

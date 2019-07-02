@@ -14,6 +14,7 @@ class Chrome_Data_API {
 	public $outputs;
 	public $country_code;
 	public $language;
+	public $standard_model_specs;
 
 	private $soap;
 
@@ -74,7 +75,7 @@ class Chrome_Data_API {
 			'Voiture à deux portes'											=> 'Coupé',
 			'["Cabriolet","Voiture \u00e0 deux portes"]'					=> 'Cabriolet',
 			'Utilitaire sport'												=> 'VUS',
-			'Voiture à quatre portes'										=> 'Sedan',
+			'Voiture à quatre portes'										=> 'Berline',
 			'["Hayon","Voiture \u00e0 quatre portes"]'						=> 'Hayon',
 			'Véhicule spécial' 												=> 'Autre',
 			'["Caisse de s\u00e9rie","Pick-up \u00e0 cabine classique"]' 	=> 'Camion',
@@ -221,6 +222,9 @@ class Chrome_Data_API {
 			'Metris Cargo Van'			            => 'Metris',
 			'Metris Passenger Van'			        => 'Metris',
 			'NV200 Compact Cargo'			        => 'NV200',
+			'ProMaster châssis-cabine'		      	=> 'Promaster',
+			'ProMaster fourgon vitré'               => 'Promaster',
+			'ProMaster fourgon tronqué'		      	=> 'Promaster',
 			'ProMaster City Cargo Van'		      	=> 'Promaster City',
 			'ProMaster City Wagon'			        => 'Promaster City',
 			'Q60 Coupe'				                => 'Q60',
@@ -258,6 +262,33 @@ class Chrome_Data_API {
 			'Propulsion arrière',
 			'4 roues motrices',
 			'Quatre roues motrices',
+		);
+
+		$this->standard_model_specs = array(
+			'coupé',
+			'cabriolet',
+			'hybride berline',
+			'berline',
+			'à hayon',
+			'hayon',
+			'Fourgonnette commerciale tronquée',
+			'fourgonnette utilitaire',
+			'Fourgonnette de tourisme',
+			'fourgon tronqué',
+			'fourgon utilitaire',
+			'Fourgonnette',
+			'Fourgon',
+			'hybride rechargeable',
+			'hybride',
+			'rechargeable',
+			'Sportback',
+			'châssis-cabine',
+			'Cabine châssis',
+			'Décapotable',
+			'tourisme',
+			'Cargo compact',
+			'plus',
+			'5 portes',
 		);
 	}
 
@@ -685,28 +716,31 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 
 		$models = $this->get_models();
 		$models = $this->remove_duplicate_models( $models );
+		$language_suffix = '';
 
-		if ( $this->account_info['language'] != 'fr' ) {
-			$query = 'INSERT model ( model_year, model_name, model_name_cd, model_name_cd_fr, model_id, division_name, division_id, last_updated ) VALUES ';
-			$sql_values = array();
-	
-			foreach ( $models as $model ) {
-				$sql_values[] = "({$model->model_year}, \"{$model->model_name}\", \"{$model->model_name_cd}\", null, {$model->id}, \"{$model->division_name}\", {$model->division_id}, now())";
-			}
-			$query .= implode( ',', $sql_values );
-	
-			$this->db->query( 'TRUNCATE model' );
-			$result = $this->db->query( $query );
-			if ( $result ) {
-				$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all models' );
+		if ( $this->account_info['language'] == 'fr' ) {
+			$language_suffix = '_fr';
+		}
+
+		$query = 'INSERT INTO model' . $language_suffix . ' ( model_year, model_name, model_name_cd, model_name_en, model_id, division_name, division_id, last_updated ) VALUES ';
+		$sql_values = array();
+
+		foreach ( $models as $model ) {
+			if ( $this->account_info['language'] == 'fr' ) {
+				$model_name_en = $this->db->get_col( 'SELECT model_name FROM model WHERE model_id = ' . $model->id )[0];
 			} else {
-				$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all models' );
+				$model_name_en = $model->model_name;
 			}
+			$sql_values[] = "({$model->model_year}, \"{$model->model_name}\", \"{$model->model_name_cd}\", \"{$model_name_en}\", {$model->id}, \"{$model->division_name}\", {$model->division_id}, now())";
+		}
+		$query .= implode( ',', $sql_values );
+
+		$this->db->query( 'TRUNCATE model' . $language_suffix );
+		$result = $this->db->query( $query );
+		if ( $result ) {
+			$this->outputs[] = array( 'type' => 'success', 'msg' => 'Successfully updated all models' );
 		} else {
-			foreach ( $models as $model ) {
-				$query = 'UPDATE model SET model_name_cd_fr = "'. $model->model_name_cd . '" WHERE model_id = ' . $model->id . '; ';
-				$this->db->query( $query );
-			}
+			$this->outputs[] = array( 'type' => 'error', 'msg' => 'There was an error updating all models' );
 		}
 	}
 
@@ -719,6 +753,38 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	private function get_standard_model( $cd_model ) {
 		if ( array_key_exists( $cd_model, $this->standard_models ) ) {
 			return $this->standard_models[$cd_model];
+		}
+
+		$return_array = array();
+		if ( $this->account_info['language'] == 'fr' ) {
+			if ( stripos( $cd_model, 'F-350' ) !== false ) {
+				return 'F-350';
+			} else if ( stripos( $cd_model, 'F-650' ) !== false ) {
+				return 'F-650';
+			} else if ( stripos( $cd_model, 'F-750' ) !== false ) {
+				return 'F-750';
+			}
+			foreach( $this->standard_model_specs as $spec ) {
+				$pos = stripos( $cd_model, $spec );
+				$length = strlen( $spec );
+				if ( $pos !== false ) {
+					if ( 'Fourgonnette' === $spec ) {
+						if ( stripos( $cd_model, 'tourisme' ) ) {
+							$cd_model = substr( $cd_model, 0, strlen( $cd_model ) - 9 );
+						} else if ( stripos( $cd_model, 'utilitaire' ) ) {
+							$cd_model = substr( $cd_model, 0, strlen( $cd_model ) - 11 );
+						}
+					}
+					if ( $spec === $cd_model ) {
+						return $cd_model;
+					}
+					else if ( $pos === 0 ) {
+						return substr( $cd_model, $length + 1, strlen( $cd_model ) - $length + 1 );
+					} else {
+						return substr( $cd_model, 0, strlen( $cd_model ) - $length - 1 );
+					}
+				}
+			}
 		}
 		return $cd_model;
 	}
@@ -1598,7 +1664,6 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		);
 
 		foreach ( $styles as $style ) {
-
 			if ( array_key_exists( 'style', $style ) ) {
 
 				$value = $style['style'];
@@ -1683,8 +1748,21 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 		foreach( $queries as $values ) {
 			// Incase there are no entries to update for a particular table
 			if ( ! isset( $values['query']) || ! isset($values['prepare']) ) { continue; }
-			$query = $values['query'] . implode(',', $values['prepare'] );
-			$this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
+			// $query = $values['query'] . implode(',', $values['prepare'] );
+			// $this->db->query( $this->db->prepare( "$query ", $values['values'] ) );
+			try {
+				$chunkPrepares = array_chunk( $values['prepare'], 1000 );
+				$chunkValues = array_chunk( $values['values'], 1000 * substr_count($values['prepare'][0], '%' ) );
+
+				foreach ( $chunkValues as $i => $cvalues ) {
+					$cprepares = $chunkPrepares[$i];
+					$query = $values['query'] . implode(',', $cprepares );
+					$this->db->query( $this->db->prepare( "$query ", $cvalues ) );
+				}
+			} catch(Exception $e) {
+				var_dump($e);
+				exit();
+			}
 		}
 	}
 

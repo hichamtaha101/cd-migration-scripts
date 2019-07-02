@@ -157,7 +157,8 @@ class Convertus_Kraken_S3 {
 		foreach ( $responses as $response ) {
 			$media = $response['media'];
 			$results = $response['response']['results'];
-			
+
+			// $style_colors = $this->db->get_col( "SELECT code FROM showroom.exterior_color WHERE style_id = {$media['style_id']}" );
 			// Delete old entries
 			$extension = substr( $results['xs']['kraked_url'], -4 );
 			$delete_values[] = "( style_id LIKE '{$media['style_id']}' 
@@ -185,7 +186,12 @@ class Convertus_Kraken_S3 {
 			$this->db->query( $delete_sql . implode( ' OR ', $delete_values ) );
 		} 
 		if ( sizeOf( $insert_values ) > 0 ) {
-			$this->db->query( $insert_sql . implode( ',', $insert_values ) );
+			// $this->db->query( $insert_sql . implode( ',', $insert_values ) );
+			$insert_values_chunks = array_chunk( $insert_values, 1000 );
+
+			foreach ( $insert_values_chunks as $chunk ) {
+				$this->db->query( $insert_sql . implode( ',', $chunk ) );
+			}
 		}
 
 		// 4. Check to remove chromedata  02, 03, 12

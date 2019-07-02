@@ -11,21 +11,22 @@ define('WP_DEBUG', true);
 
 /** The name of the database for WordPress */
 // define('DB_NAME', 'dev_showroomdata');
-define('DB_NAME', 'showroom');
 
 /** MySQL database username */
-define('DB_USER', 'scriptrunner');
 // define('DB_USER', 'ctsang');
 // define('DB_USER', 'dev_primary');
 
-/** MySQL database password */
+/** MySQL database aws */
+define('DB_HOST', 'cluster-n001.cluster-cwfqso7lifzp.us-west-2.rds.amazonaws.com:3306');
 define('DB_PASSWORD', 'YTA2MWViYTA3NzcwNjlmZjAwNWY2MGIyM');
-// define('DB_PASSWORD', '');
+define('DB_NAME', 'showroom');
+define('DB_USER', 'scriptrunner');
+
+// define('DB_PASSWORD', 'gameboy123');
 // define('DB_PASSWORD', 'convertus2013');
 
 /** MySQL hostname */
-define('DB_HOST', 'cluster-n001.cluster-cwfqso7lifzp.us-west-2.rds.amazonaws.com');
-// define('DB_HOST', 'localhost');
+// define('DB_HOST', 'localhost:3000');
 // define('DB_HOST', '216.138.226.240');
 
 /** Database Charset to use in creating database tables. */
