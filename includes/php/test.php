@@ -15,7 +15,7 @@ include_once( 'functions.php' );
 5. SELECT * FROM `media` WHERE model_name = 'Explorer' AND url LIKE '%amazonaws.com/media%' AND type = 'colorized' : Colorized Images
 */
 
-// update_everything_for_model('Equinox');
+// update_everything_for_model('TT RS Coupe', 2019);
 
 /////////////////// ---------- for updating french data on live db ---------- //////////////////
 
@@ -31,13 +31,13 @@ include_once( 'functions.php' );
 // echo '<pre>' , var_dump($models), '</pre>';
 
 // $models = $db->get_col("SELECT DISTINCT model.model_name_cd FROM model LEFT JOIN media ON model.model_name_cd = media.model_name_cd AND media.model_year > 2018 WHERE media.model_name_cd is null");
-// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE division_name LIKE 'Infiniti'");
-$models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE model_year = 2020");
-// $models = array(
-//   'Journey',
-//   'ProMaster City Wagon',
-//   'ProMaster City Cargo Van',
-// );
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE division_name LIKE 'Volkswagen' AND model_name LIKE 'Beetle'");
+// $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE model_year = 2020");
+$models = array(
+  'Range Rover',
+  'Range Rover Velar'
+
+);
 
 foreach( $models as $index=>$model ) {
   if ( $index >= 0 ) {

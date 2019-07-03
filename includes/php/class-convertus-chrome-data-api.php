@@ -203,7 +203,6 @@ class Chrome_Data_API {
 			'ATS-V Coupe'				            => 'ATS-V',
 			'ATS-V Sedan'				            => 'ATS-V',
 			'Accord Sedan'				            => 'Accord',
-			'Beetle'					            => 'Convertible',
 			'CT6 Sedan'				                => 'CT6',
 			'CTS Sedan'				                => 'CTS',
 			'CTS-V Sedan'				            => 'CTS-V',

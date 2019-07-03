@@ -46,3 +46,4 @@
 2019-06-06 11:37:36: No drivetrain was found for model Sedona with style_id 408026<br>
 2019-06-06 11:38:25: No drivetrain was found for model Veloster with style_id 408292<br>
 2019-06-06 11:42:11: No drivetrain was found for model Veloster N with style_id 408269<br>
+2019-07-02 23:10:09: Did not successfully download all local Atlas images onto s3 specifically for 393204
