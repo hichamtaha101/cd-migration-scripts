@@ -139,33 +139,44 @@ function update_everything_for_model($model, $year) {
 
 	// Script breaks if something goes wrong in the following functions
 	$response1 = update_styles( $model, 'true', $year );
-	echo '<pre>' , var_dump($response1), '</pre>';
+	echo '<pre>' , json_encode($response1), '</pre>';
 	$testlog = fopen("test.txt", "a");
     $text = 'step 1 finished for ' . $model;
     fwrite($testlog, "\n" . $text);
 	fclose($testlog);
 	
+    flush();
+    ob_flush();
+	
 	$response2 = update_model_images( $model, 'view' );
-	echo '<pre>' , var_dump($response2), '</pre>';
+	echo '<pre>' , json_encode($response2), '</pre>';
     $testlog = fopen("test.txt", "a");
     $text = 'step 2 finished at for ' . $model;
     fwrite($testlog, "\n" . $text);
 	fclose($testlog);
 	
+    flush();
+    ob_flush();
+	
 	$response3 = update_ftps3( $model );
-	echo '<pre>' , var_dump($response3), '</pre>';
+	echo '<pre>' , json_encode($response3), '</pre>';
     $testlog = fopen("test.txt", "a");
     $text = 'step 3 finished at for ' . $model;
     fwrite($testlog, "\n" . $text);
 	fclose($testlog);
 
+    flush();
+    ob_flush();
 	
 	$response4 = update_model_images( $model, 'colorized' );
-	echo '<pre>' , var_dump($response4), '</pre>';
+	echo '<pre>' , json_encode($response4), '</pre>';
 	$testlog = fopen("test.txt", "a");
     $text = 'step 4 finished at for ' . $model . ' ---------------------- DONE ---------------------- ';
     fwrite($testlog, "\n" . $text);
 	fclose($testlog);
+	
+    flush();
+    ob_flush();
 
 	$outputs = array( array(
 		'type'	=> 'success',

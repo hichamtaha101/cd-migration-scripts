@@ -33,19 +33,47 @@ include_once( 'functions.php' );
 // $models = $db->get_col("SELECT DISTINCT model.model_name_cd FROM model LEFT JOIN media ON model.model_name_cd = media.model_name_cd AND media.model_year > 2018 WHERE media.model_name_cd is null");
 // $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE division_name LIKE 'Volkswagen' AND model_name LIKE 'Beetle'");
 // $models = $db->get_col("SELECT DISTINCT model_name_cd FROM model WHERE model_year = 2020");
-$models = array(
-  'Range Rover',
-  'Range Rover Velar'
 
-);
+ob_implicit_flush(true);
+ob_start();
 
-foreach( $models as $index=>$model ) {
-  if ( $index >= 0 ) {
-    echo '<pre>' , var_dump($index), ': ', var_dump($model) , '</pre>';
-    // update_styles( $model, false );
-    update_everything_for_model( $model, 2020 );
+$modelsyears = json_decode( '[
+  {"model":"124 Spider",       "year":2020},
+  {"model":"4500",             "year":2018},
+  {"model":"5500",             "year":2018},
+  {"model":"Envision",         "year":2020},
+  {"model":"MDX",              "year":2020},
+  {"model":"Sierra 3500HD",    "year":2020},
+  {"model":"Silverado 3500HD", "year":2020},
+  {"model":"Sonata Plug-In",   "year":2019},
+  {"model":"Stripped Chassis", "year":2018}
+]' );
+
+foreach( $modelsyears as $key => $m ) {
+  $remaining = count( $modelsyears ) - $key;
+  if ( $key >= 0 ) {
+    $time = time();
+    echo $key . '/' . count( $modelsyears ) . ': ' . $m->model . '<br>';
+
+    update_everything_for_model( $m->model, $m->year );
+    
+    array_push( $times, time(true) - $time );
+    $average         = array_sum( $times ) / count( $times );
+    $total_remaining = ( $average * $remaining );
+    $hours           = floor( $total_remaining / 3600 );
+    $minutes         = floor( ( $total_remaining % 3600 ) / 60 );
+    $seconds         = ( $total_remaining % 3600 ) % 60;
+
+    echo "Estimated time: $hours h : $minutes m : $seconds<br>";
+    flush();
+    ob_flush();
   }
 }
+
+echo count( $modelsyears ) . '/' . count( $modelsyears );
+
+ob_end_flush(); 
+
 	// Script breaks if something goes wrong in the following functions
 	// var_dump( update_styles( 'Silverado 1500', false ));
 	// var_dump( update_model_images( 'Silverado 1500', 'view' ));
@@ -70,7 +98,7 @@ foreach( $models as $index=>$model ) {
 //   }
 // }
 // var_dump(update_all_makes());
-// update_everything_for_model('Q5');
+// update_everything_for_model('X4');
 // var_dump( update_ftps3( 'Expedition' ));
 // var_dump( update_model_images( 'Expedition', 'view' ));
 /////////////////// ---------- end updating french data on live db ---------- //////////////////
