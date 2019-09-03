@@ -1,6 +1,6 @@
-const https = require('http')
+const https = require('https')
 
-https.get('http://wordpress.localhost/wp-admin/admin-ajax.php?action=showroom_get_data&endpoint=models&imageSize=xs&language=en', (resp) => {
+https.get('https://marcelo-showroom.achilles.ninja/wp-admin/admin-ajax.php?action=showroom_get_data&endpoint=models&imageSize=xs&language=en', (resp) => {
     let data = '';
 
     // A chunk of data has been recieved.
@@ -11,7 +11,7 @@ https.get('http://wordpress.localhost/wp-admin/admin-ajax.php?action=showroom_ge
     // The whole response has been received. Print out the result.
     resp.on('end', () => {
         let newData = JSON.parse(data);
-        let filteredData = newData.data.filter( d => d.image === 'http://wordpress.localhost/wp-content/plugins/convertus-showroom/include/images/no-car-image-xs.png' ).map( d => {
+        let filteredData = newData.data.filter( d => d.image === 'https://marcelo-showroom.achilles.ninja/wp-content/plugins/convertus-showroom/include/images/no-car-image-xs.png' ).map( d => {
             return {
                 make: d.make, 
                 model: d.model, 
