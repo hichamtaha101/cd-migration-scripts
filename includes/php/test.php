@@ -38,16 +38,15 @@ ob_implicit_flush(true);
 ob_start();
 
 $modelsyears = json_decode( '[
-  {"model":"124 Spider",       "year":2020},
-  {"model":"4500",             "year":2018},
-  {"model":"5500",             "year":2018},
-  {"model":"Envision",         "year":2020},
-  {"model":"MDX",              "year":2020},
-  {"model":"Sierra 3500HD",    "year":2020},
-  {"model":"Silverado 3500HD", "year":2020},
-  {"model":"Sonata Plug-In",   "year":2019},
-  {"model":"Stripped Chassis", "year":2018}
+  { "model": "Forte",   "year": 2019 },
+  { "model": "Forte",   "year": 2020 },
+  { "model": "Forte 5", "year": 2019 },
+  { "model": "Forte 5", "year": 2020 },
+  { "model": "forte5",  "year": 2019 },
+  { "model": "forte5",  "year": 2020 }
 ]' );
+
+$times = [];
 
 foreach( $modelsyears as $key => $m ) {
   $remaining = count( $modelsyears ) - $key;
