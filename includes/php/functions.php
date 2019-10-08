@@ -135,7 +135,7 @@ function update_database_structure() {
 	return 'Finished updating database structure.';
 }
 
-function update_everything_for_model($model, $year) {
+function update_everything_for_model($model, $year = '') {
 
 	// Script breaks if something goes wrong in the following functions
 	$response1 = update_styles( $model, 'true', $year );
@@ -199,7 +199,7 @@ function update_everything_for_model($model, $year) {
  * @param boolean $remove_media		Whether to remove ALL media entries when updating. Default removes Chrome Data ones only.
  * @return object					The updated object used for front-end display.
  */
-function update_styles( $model, $remove_media, $year ) {
+function update_styles( $model, $remove_media, $year = '' ) {
 	global $obj;
 	global $obj_fr;
 

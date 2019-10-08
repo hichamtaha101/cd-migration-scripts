@@ -68,12 +68,12 @@ class UpdateShowroom {
 		$models = is_json( file_get_contents( $this->url ), true );
 
 		$data = $models->success ? $models->data : array();
-		print_r( $data );
+		// print_r( $data );
 
-		$models = array_filter( $models, function( $m ) {
-			print_r( $m );
-			return true;
-		});
+		// $models = array_filter( $models, function( $m ) {
+		// 	// print_r( $m );
+		// 	return true;
+		// });
 
 		return $data;
 	}
