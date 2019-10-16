@@ -36,41 +36,12 @@ include_once( 'functions.php' );
 
 ob_implicit_flush(true);
 ob_start();
-
-$modelsyears = json_decode( '[
-  { "model": "Forte",   "year": 2019 },
-  { "model": "Forte",   "year": 2020 },
-  { "model": "Forte 5", "year": 2019 },
-  { "model": "Forte 5", "year": 2020 },
-  { "model": "forte5",  "year": 2019 },
-  { "model": "forte5",  "year": 2020 }
-]' );
-
-$times = [];
-
-foreach( $modelsyears as $key => $m ) {
-  $remaining = count( $modelsyears ) - $key;
-  if ( $key >= 0 ) {
-    $time = time();
-    echo $key . '/' . count( $modelsyears ) . ': ' . $m->model . '<br>';
-
-    update_everything_for_model( $m->model, $m->year );
-    
-    array_push( $times, time(true) - $time );
-    $average         = array_sum( $times ) / count( $times );
-    $total_remaining = ( $average * $remaining );
-    $hours           = floor( $total_remaining / 3600 );
-    $minutes         = floor( ( $total_remaining % 3600 ) / 60 );
-    $seconds         = ( $total_remaining % 3600 ) % 60;
-
-    echo "Estimated time: $hours h : $minutes m : $seconds<br>";
-    flush();
-    ob_flush();
-  }
-}
-
-echo count( $modelsyears ) . '/' . count( $modelsyears );
-
+// $response = update_all_models();
+// var_dump( $response );
+// $response = update_styles( '6 Series', 'false', 2020 );
+// var_dump( $response );
+// $response = update_styles( '6 Series', 'false', 2021 );
+// var_dump( $response );
 ob_end_flush(); 
 
 	// Script breaks if something goes wrong in the following functions

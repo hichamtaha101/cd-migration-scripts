@@ -40,7 +40,7 @@ class Chrome_Data_API {
 		);
 
 		$this->soap  = new SoapClient( $this->api_url );
-		$this->years = $this->get_years( 3 );
+		$this->years = $this->get_years( 4 );
 
 		// Standardize body types
 		$this->body_types = array(
@@ -846,14 +846,14 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 				case 'object':
 					$soap_call = $this->get_style_details( $soap_response->id );
 					if ( $soap_call === FALSE ) { break; } // Skip this
-					$styles[] = $this->set_style( $soap_call, $soap_response->id );
+					$styles[] = $this->set_style( $soap_call, $response_item );
 					break;
 					// Model has multiple years ( array )
 				case 'array':
 					foreach ( $soap_response as $i => $response_item ) {
 						$soap_call = $this->get_style_details( $response_item->id );
 						if ( $soap_call === FALSE ) { continue; } // Skip this
-						$styles[] = $this->set_style( $soap_call, $response_item->id );
+						$styles[] = $this->set_style( $soap_call, $response_item );
 					}
 					break;
 				default:
@@ -865,7 +865,7 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 					break;
 			}
 		}
-
+		
 		// Test to see if all models styles pass
 		$meets_reqs = $this->meets_requirements( $styles );
 		if ( $meets_reqs['success'] == '' ) {
@@ -933,13 +933,14 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 	/**
 	 * Reads the chromedata feed and formats the information for the database.
 	 *
-	 * @param object $soap_call	The soap request object containing the style's response from chromedata.
-	 * @param integer $style_id	The ID of the style.
-	 * @return object			The formatted style object.
+	 * @param object $soap_call			The soap request object containing the style's response from chromedata.
+	 * @param integer $response_item	The original response of the style.
+	 * @return object					The formatted style object.
 	 */
-	private function set_style( $soap_call, $style_id ) {
+	private function set_style( $soap_call, $response_item ) {
 
 		$style = array();
+		$style_id = $response_item->id;
 		$response = $soap_call->response;
 
 		// Store all custom manufacture options
@@ -973,6 +974,17 @@ class Convertus_DB_Updater extends Chrome_Data_API {
 			}
 			$style['style']['body_type_standard'] = $this->get_standard_bt($style['style']['body_type']);
 			$style['style']['model_name'] = $this->get_standard_model( $style['style']['model_name_cd'] );
+		}
+		
+		// Special model condition for bodytypes, based off name instead of misleading body_type feed.
+		if ( $style['style']['model_name'] === '4 Series' ) {
+			if ( strpos( $response_item->name, 'Cabriolet' ) !== false ) {
+				$style['style']['body_type_standard'] = 'Convertible';
+			} else if ( strpos( $response_item->name, 'Gran Coupe' ) !== false ) {
+				$style['style']['body_type_standard'] = 'Sedan';
+			} else if ( strpos( $response_item->name, 'Coupe' ) !== false ) {
+				$style['style']['body_type_standard'] = 'Coupe';
+			}
 		}
 
 		if ( isset( $response->engine ) ) {
